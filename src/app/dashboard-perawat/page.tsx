@@ -36,7 +36,6 @@ interface Report {
   tanggalWaktuPelaporan: string;
 }
 
-// Mobile Report Card Component
 interface MobileReportCardProps {
   report: Report;
   onDetailClick: (report: Report) => void;
@@ -47,7 +46,6 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-      {/* Main Card Content */}
       <div
         className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -76,7 +74,6 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
             ></i>
           </div>
         </div>
-
         <div className="flex justify-between items-center">
           <button
             onClick={(e) => {
@@ -90,7 +87,6 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
         </div>
       </div>
 
-      {/* Expanded Details */}
       {isExpanded && (
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="space-y-2 text-xs">
@@ -135,233 +131,86 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
 
 export default function DashboardPerawatPage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState("2025-01-01");
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-
-  const [reports] = useState<Report[]>([
-    {
-      id: 1,
-      tanggal: "01 / 01 / 2025",
-      kategori: "Keselamatan Pasien",
-      status: "Selesai",
-      grading: "Hijau",
-      catatanKepalaRuangan: "Sudah ditindaklanjuti dengan baik",
-      catatanChiefnursing: "Perlu monitoring berkelanjutan",
-      catatanVerifikator: "Laporan telah diverifikasi",
-      kode: "LP001",
-      kodeLaporan: "LP001-2025-001",
-      namaPerawatYangMenangani: "Siti Nurhaliza",
-      namaRuanganPerawatYangMenangani: "Ruang ICU",
-      namaPasien: "Ahmad Suryanto",
-      noRm: "123456",
-      umur: "45 tahun",
-      jenisKelamin: "Laki-laki",
-      tanggalMasukRs: "2025-01-01",
-      unitYangMelaporkan: "ICU",
-      lokasiKejadian: "Ruang ICU Bed 3",
-      tanggalInsiden: "2025-01-01",
-      judulInsiden: "Kesalahan pemberian obat",
-      kronologi: "Pasien diberikan obat yang salah dosis pada pukul 08:00 WIB",
-      tindakanAwal: "Menghentikan pemberian obat dan konsultasi dokter",
-      tindakanOleh: "Perawat jaga dan dokter spesialis",
-      dampak: "Tidak ada dampak serius pada pasien",
-      probablitas: "Rendah",
-      rekomendasiTindakan: "Peningkatan protokol double check",
-      tanggalWaktuPelaporan: "2025-01-01 09:00",
-    },
-    {
-      id: 2,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-    {
-      id: 3,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-    {
-      id: 4,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-    {
-      id: 5,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-    {
-      id: 6,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-    {
-      id: 7,
-      tanggal: "01 / 01 / 2025",
-      kategori: "",
-      status: "",
-      grading: "",
-      catatanKepalaRuangan: "",
-      catatanChiefnursing: "",
-      catatanVerifikator: "",
-      kode: "",
-      kodeLaporan: "",
-      namaPerawatYangMenangani: "",
-      namaRuanganPerawatYangMenangani: "",
-      namaPasien: "",
-      noRm: "",
-      umur: "",
-      jenisKelamin: "",
-      tanggalMasukRs: "",
-      unitYangMelaporkan: "",
-      lokasiKejadian: "",
-      tanggalInsiden: "",
-      judulInsiden: "",
-      kronologi: "",
-      tindakanAwal: "",
-      tindakanOleh: "",
-      dampak: "",
-      probablitas: "",
-      rekomendasiTindakan: "",
-      tanggalWaktuPelaporan: "",
-    },
-  ]);
-
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const token = Cookies.get("token");
+
+  const fetchReports = async () => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(
+        "https://safe-nurse-backend.vercel.app/api/laporan/perawat",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil data laporan");
+
+      const resData = await res.json();
+
+      const mappedReports = resData.data.map((r: any) => ({
+        id: r.kode_laporan,
+        kodeLaporan: r.kode_laporan,
+        namaPerawatYangMenangani: r.perawat.nama_perawat,
+        namaRuanganPerawatYangMenangani: r.ruangan.nama_ruangan,
+        namaPasien: r.nama_pasien,
+        noRm: r.no_rm,
+        umur: r.umur,
+        jenisKelamin: r.jenis_kelamin,
+        tanggalMasukRs: r.tgl_msk_rs,
+        unitYangMelaporkan: r.unit_yang_melaporkan,
+        lokasiKejadian: r.lokasi_insiden,
+        tanggalInsiden: r.tgl_insiden,
+        judulInsiden: r.judul_insiden,
+        kronologi: r.kronologi,
+        tindakanAwal: r.tindakan_awal,
+        tindakanOleh: r.tindakan_oleh,
+        dampak: r.dampak,
+        probablitas: r.probabilitas,
+        status: r.status,
+        grading: r.grading,
+        kategori: r.kategori,
+        rekomendasiTindakan: r.rekomendasi_tindakan,
+        tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
+        catatanKepalaRuangan: r.catatan_kepala_ruangan,
+        catatanChiefnursing: r.catatan_chief_nursing,
+        catatanVerifikator: r.catatan_verifikator,
+        tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
+      }));
+
+      setReports(mappedReports);
+      setFilteredReports(mappedReports); // default semua
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleAddReport = () => {
-    router.push("/tambah-laporan");
-  };
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
+  // filter otomatis setiap kali selectedDate berubah
+  useEffect(() => {
+    if (selectedDate) {
+      setFilteredReports(reports.filter((r) => r.tanggal === selectedDate));
+    } else {
+      setFilteredReports(reports);
+    }
+  }, [selectedDate, reports]);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const handleAddReport = () => router.push("/tambah-laporan");
   const handleDetailClick = (report: Report) => {
     setSelectedReport(report);
     setShowDetailModal(true);
@@ -501,10 +350,8 @@ export default function DashboardPerawatPage() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-white border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] w-full sm:w-auto text-black"
-                  style={{
-                    colorScheme: "light",
-                  }}
+                  className="bg-white border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95]"
+                  placeholder="Filter tanggal"
                 />
               </div>
 
@@ -536,47 +383,53 @@ export default function DashboardPerawatPage() {
 
               {/* Table Body */}
               <div className="divide-y divide-gray-200">
-                {reports.map((report, index) => (
-                  <div
-                    key={report.id}
-                    className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } hover:bg-blue-50 transition-colors`}
-                  >
-                    <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
-                      {report.tanggal}
+                {filteredReports.length > 0 ? (
+                  filteredReports.map((report, index) => (
+                    <div
+                      key={report.kodeLaporan}
+                      className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } hover:bg-blue-50 transition-colors`}
+                    >
+                      <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
+                        {report.tanggal}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.kategori}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.status}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.grading}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.catatanKepalaRuangan || "-"}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.catatanChiefnursing || "-"}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.catatanVerifikator || "-"}
+                      </div>
+                      <div className="text-gray-600 text-center">
+                        {report.kodeLaporan}
+                      </div>
+                      <div className="text-center">
+                        <button
+                          onClick={() => handleDetailClick(report)}
+                          className="bg-[#0B7A95] text-white px-3 py-1 rounded text-xs hover:bg-[#0a6b85] transition-colors"
+                        >
+                          Detail
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-gray-600 text-center">
-                      {report.kategori}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.status}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.grading}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.catatanKepalaRuangan}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.catatanChiefnursing}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.catatanVerifikator}
-                    </div>
-                    <div className="text-gray-600 text-center">
-                      {report.kode}
-                    </div>
-                    <div className="text-center">
-                      <button
-                        onClick={() => handleDetailClick(report)}
-                        className="bg-[#0B7A95] text-white px-3 py-1 rounded text-xs hover:bg-[#0a6b85] transition-colors"
-                      >
-                        Detail
-                      </button>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-6">
+                    Tidak ada laporan ditemukan
                   </div>
-                ))}
+                )}
               </div>
             </div>
 

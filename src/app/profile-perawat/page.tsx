@@ -1,19 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 
 export default function ProfilePage() {
-  const [userData] = useState({
-    nama: "Siti Nurhaliza",
-    noStr: "12345678901234567890",
-    nip: "198501012010012001",
-    unitKerja: "Ruang ICU",
-    jabatan: "Perawat Pelaksana",
-    email: "perawat@gmail.com",
-  });
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
+  // State lain (harus di atas, sebelum return)
   const [showEditModal, setShowEditModal] = useState(false);
   const [showChangeProfileModal, setShowChangeProfileModal] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -23,12 +18,50 @@ export default function ProfilePage() {
     confirmPassword: "",
   });
   const [profileForm, setProfileForm] = useState({
-    nama: userData.nama || "",
+    nama: "",
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get("token"); // ambil JWT dari cookie
+    if (!token) {
+      window.location.href = "/login"; // kalau token ga ada → redirect
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          "https://safe-nurse-backend.vercel.app/api/perawat/oVteW89a6AIVOvFtyt3iV",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Gagal ambil data perawat");
+        }
+
+        const data = await res.json();
+        console.log("API response:", data); // 🔥 cek isi response
+        setUserData(data);
+        setProfileForm({
+          nama: data.nama_perawat || "",
+        });
+      } catch (error) {
+        console.error("Error fetch perawat:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -36,7 +69,7 @@ export default function ProfilePage() {
 
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.email,
+      email: userData.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
@@ -54,15 +87,51 @@ export default function ProfilePage() {
     });
   };
 
-  const handleSubmitEdit = (e: React.FormEvent) => {
+  const handleSubmitEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (editForm.password !== editForm.confirmPassword) {
       alert("Password dan konfirmasi password tidak cocok!");
       return;
     }
-    // Handle form submission here
-    console.log("Form submitted:", editForm);
-    setShowEditModal(false);
+
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ada, silakan login ulang.");
+        return;
+      }
+
+      const res = await fetch(
+        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: editForm.oldPassword,
+            newPassword: editForm.password,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal mengubah password");
+      }
+
+      const result = await res.json();
+      console.log("Password updated:", result);
+
+      alert("Password berhasil diubah!");
+
+      // ✅ Tutup modal otomatis
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error change password:", error);
+      alert("Terjadi kesalahan saat mengubah password");
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -70,12 +139,17 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    // Hapus token dari localStorage
-    Cookies.remove("token");
-
-    // Redirect ke halaman login
-    window.location.href = "/login";
+    Cookies.remove("token"); // hapus token
+    window.location.href = "/login"; // redirect
   };
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
+
+  if (!userData) {
+    return <p className="text-center mt-10">Data tidak ditemukan</p>;
+  }
 
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
@@ -314,10 +388,10 @@ export default function ProfilePage() {
                       <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                     </div>
                     <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                      Nama Lengkap
+                      {userData.nama_perawat || "-"}
                     </h2>
                     <p className="text-gray-600 text-center text-xs md:text-sm">
-                      {userData.email}
+                      {userData.users.email}
                     </p>
                   </div>
 
@@ -332,7 +406,7 @@ export default function ProfilePage() {
                           Nama Lengkap :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.nama || "-"}
+                          {userData.nama_perawat || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-2">
@@ -340,7 +414,7 @@ export default function ProfilePage() {
                           Nama Ruangan :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.unitKerja || "-"}
+                          {userData.ruangan?.nama_ruangan}
                         </span>
                       </div>
                     </div>
@@ -368,7 +442,7 @@ export default function ProfilePage() {
                           Email
                         </label>
                         <p className="text-gray-800 text-sm md:text-base">
-                          {userData.email}
+                          {userData.users.email}
                         </p>
                       </div>
                       <div className="animate-fade-in-delay-4">
@@ -426,21 +500,6 @@ export default function ProfilePage() {
 
             {/* Form */}
             <form onSubmit={handleSubmitEdit} className="space-y-4">
-              {/* Email Field */}
-              <div>
-                <label className="block text-[#2C3E50] font-medium mb-2">
-                  Email :
-                </label>
-                <input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800"
-                  placeholder="Masukkan email baru"
-                  required
-                />
-              </div>
-
               {/* Old Password Field */}
               <div>
                 <label className="block text-[#2C3E50] font-medium mb-2">
@@ -568,7 +627,51 @@ export default function ProfilePage() {
             </div>
 
             {/* Form */}
-            <form className="space-y-4">
+            <form
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+
+                try {
+                  const token = Cookies.get("token");
+                  if (!token) {
+                    alert("Token tidak ada, silakan login ulang.");
+                    return;
+                  }
+
+                  const res = await fetch(
+                    "https://safe-nurse-backend.vercel.app/api/perawat/update",
+                    {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify({
+                        nama_perawat: profileForm.nama,
+                      }),
+                    }
+                  );
+
+                  if (!res.ok) throw new Error("Gagal update profile");
+
+                  const updated = await res.json();
+                  console.log("Profile updated:", updated);
+
+                  // update state supaya UI langsung ke-refresh
+                  setUserData((prev: any) => ({
+                    ...prev,
+                    nama_perawat: profileForm.nama,
+                  }));
+
+                  alert("Profile berhasil diupdate!");
+                  setShowChangeProfileModal(false);
+                } catch (err) {
+                  console.error("Error update profile:", err);
+                  alert("Terjadi kesalahan saat update profile");
+                }
+              }}
+            >
               {/* Nama Lengkap Field */}
               <div>
                 <label className="block text-[#2C3E50] font-medium mb-2">

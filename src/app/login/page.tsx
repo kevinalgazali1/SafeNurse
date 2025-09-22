@@ -44,13 +44,13 @@ const handleSubmit = async (e: React.FormEvent) => {
       const decoded: JwtPayload = jwtDecode(data.token);
 
       // Redirect awal (sementara, middleware nanti akan handle juga)
-      if (decoded.role === "superadmin") {
+      if (decoded.role === "super_admin") {
         window.location.href = "/dashboard-superadmin";
       } else if (decoded.role === "perawat") {
         window.location.href = "/dashboard-perawat";
-      } else if (decoded.role === "kepala-ruangan") {
+      } else if (decoded.role === "kepala_ruangan") {
         window.location.href = "/dashboard-kepala-ruangan";
-      } else if (decoded.role === "chiefnursing") {
+      } else if (decoded.role === "chief_nursing") {
         window.location.href = "/dashboard-chiefnursing";
       } else if (decoded.role === "verifikator") {
         window.location.href = "/dashboard-verifikator";

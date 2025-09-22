@@ -5,19 +5,13 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 export default function ResetPasswordPage() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [token, setToken] = useState("");
-  // const searchParams = useSearchParams();
-  // const token = searchParams.get("token");
-
-  useEffect(() => {
-    const searchParams = useSearchParams();
-    setToken(searchParams.get("token") || "");
-  }, []);
 
   useEffect(() => {
     setIsLoaded(true);

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Cookies from "js-cookie";
 
 // Extend Window interface for SpeechRecognition
 declare global {
@@ -60,7 +61,10 @@ export default function TambahLaporanPage() {
     tindakanOleh: "",
     dampakInsiden: "",
     frekuensiKejadian: "",
+    kategori: "",
   });
+  // Ambil token dari cookies
+  const token = Cookies.get("token");
   const [isListening, setIsListening] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
@@ -226,14 +230,57 @@ export default function TambahLaporanPage() {
           break;
 
         case "kronologi":
+          // Simpan sementara dulu kronologi yang diinput user
           updatedData.kronologi = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage(
-            "bot",
-            "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
-          );
-          setCurrentStep("tindakanSegera");
+
+          const validateChronology = async () => {
+            try {
+              const res = await fetch(
+                "https://safe-nurse-backend.vercel.app/api/laporan/validateChronology",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ chronology: response }),
+                }
+              );
+
+              const data = await res.json();
+
+              if (data.is_lengkap) {
+                // Kalau lengkap → lanjut ke step berikutnya
+                addMessage(
+                  "bot",
+                  "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+                );
+                setCurrentStep("tindakanSegera");
+              } else {
+                // Kalau tidak lengkap → kasih evaluasi
+                addMessage(
+                  "bot",
+                  `Kronologi belum lengkap. Evaluasi:\n\n${data.evaluasi}`
+                );
+                addMessage(
+                  "bot",
+                  "Silakan masukkan kronologi ulang dengan lebih lengkap."
+                );
+                setCurrentStep("kronologi"); // tetap di step kronologi
+              }
+            } catch (error) {
+              console.error("Error validate chronology:", error);
+              addMessage(
+                "bot",
+                "Terjadi kesalahan saat validasi kronologi. Coba lagi ya."
+              );
+              setCurrentStep("kronologi"); // tetap di step kronologi
+            }
+          };
+
+          validateChronology();
           break;
 
         case "tindakanSegera":
@@ -268,13 +315,89 @@ export default function TambahLaporanPage() {
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
 
-          // Generate and show summary
-          const summary = generateReportSummary(updatedData);
-          addMessage("bot", summary);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
+          const cleanAndGenerateSummary = async () => {
+            try {
+              const res = await fetch(
+                "https://safe-nurse-backend.vercel.app/api/laporan/clean",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    nama_pasien: updatedData.namaPasien,
+                    no_rm: updatedData.noRM,
+                    umur: updatedData.umur,
+                    jenis_kelamin: updatedData.jenisKelamin,
+                    tgl_msk_rs: updatedData.tglMasukRS,
+                    unit_yang_melaporkan: updatedData.unitPelapor,
+                    lokasi_insiden: updatedData.lokasiInsiden,
+                    tgl_insiden: updatedData.tglKejadian,
+                    judul_insiden: updatedData.judulInsiden,
+                    kronologi: updatedData.kronologi,
+                    tindakan_awal: updatedData.tindakanSegera,
+                    tindakan_oleh: updatedData.tindakanOleh,
+                    dampak: updatedData.dampakInsiden,
+                    probabilitas: updatedData.frekuensiKejadian,
+                  }),
+                }
+              );
+
+              const result = await res.json();
+
+              if (res.ok && result.data) {
+                const clean = result.data;
+
+                // Simpan kategori ke reportData
+                const updatedWithKategori = {
+                  ...updatedData,
+                  kategori: clean.kategori,
+                };
+                setReportData(updatedWithKategori);
+                saveToLocalStorage(updatedWithKategori);
+
+                const summary =
+                  `**Ringkasan Laporan Insiden (Versi Bersih)**\n\n` +
+                  `**Data Pasien**\n` +
+                  `1. Nama Pasien : ${clean.nama_pasien}\n` +
+                  `2. No. RM : ${clean.no_rm}\n` +
+                  `3. Umur : ${clean.umur}\n` +
+                  `4. Jenis Kelamin : ${clean.jenis_kelamin}\n` +
+                  `5. Tanggal Masuk RS : ${clean.tgl_msk_rs}\n\n` +
+                  `**Rincian Kejadian**\n` +
+                  `1. Unit Pelapor : ${clean.unit_yang_melaporkan}\n` +
+                  `2. Lokasi Insiden : ${clean.lokasi_insiden}\n` +
+                  `3. Tanggal/Jam Kejadian : ${clean.tgl_insiden}\n` +
+                  `4. Judul Insiden : ${clean.judul_insiden}\n` +
+                  `5. Kronologi : ${clean.kronologi}\n` +
+                  `6. Tindakan Segera : ${clean.tindakan_awal}\n` +
+                  `7. Tindakan Oleh : ${clean.tindakan_oleh}\n` +
+                  `8. Dampak Insiden : ${clean.dampak}\n` +
+                  `9. Frekuensi Kejadian : ${clean.probabilitas}\n`
+
+                addMessage("bot", summary);
+
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                }, 2000);
+              } else {
+                addMessage(
+                  "bot",
+                  result.message || "Gagal membersihkan data laporan."
+                );
+              }
+            } catch (err) {
+              console.error("Error generate summary:", err);
+              addMessage(
+                "bot",
+                "Terjadi kesalahan saat generate ringkasan laporan."
+              );
+            }
+          };
+
+          cleanAndGenerateSummary();
           break;
 
         case "konfirmasi":
@@ -283,11 +406,64 @@ export default function TambahLaporanPage() {
             !response.toLowerCase().includes("belum") &&
             !response.toLowerCase().includes("tidak")
           ) {
-            addMessage(
-              "bot",
-              "Terima kasih, laporan berhasil dikirimkan dan tersimpan. Jaga kesehatan dan tetap semangat!"
-            );
-            setCurrentStep("end");
+            // Kirim laporan ke backend
+            const submitLaporan = async () => {
+              try {
+                const res = await fetch(
+                  "https://safe-nurse-backend.vercel.app/api/laporan/generate",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      nama_pasien: reportData.namaPasien,
+                      no_rm: reportData.noRM,
+                      umur: reportData.umur,
+                      jenis_kelamin: reportData.jenisKelamin,
+                      tgl_msk_rs: reportData.tglMasukRS,
+                      unit_yang_melaporkan: reportData.unitPelapor,
+                      lokasi_insiden: reportData.lokasiInsiden,
+                      tgl_insiden: reportData.tglKejadian,
+                      judul_insiden: reportData.judulInsiden,
+                      kronologi: reportData.kronologi,
+                      tindakan_awal: reportData.tindakanSegera,
+                      tindakan_oleh: reportData.tindakanOleh,
+                      dampak: reportData.dampakInsiden,
+                      probabilitas: reportData.frekuensiKejadian,
+                      kategori: reportData.kategori,
+                    }),
+                  }
+                );
+
+                const result = await res.json();
+
+                console.log(result)
+
+                if (res.ok) {
+                  addMessage(
+                    "bot",
+                    "Terima kasih, laporan berhasil dikirimkan dan tersimpan. Jaga kesehatan dan tetap semangat!"
+                  );
+                  setCurrentStep("end");
+                } else {
+                  addMessage(
+                    "bot",
+                    result.message ||
+                      "Gagal mengirim laporan. Silakan coba lagi."
+                  );
+                }
+              } catch (err) {
+                console.error("Error submit laporan:", err);
+                addMessage(
+                  "bot",
+                  "Terjadi kesalahan saat mengirim laporan. Silakan coba lagi."
+                );
+              }
+            };
+
+            submitLaporan();
           } else if (
             response.toLowerCase().includes("belum") ||
             response.toLowerCase().includes("tidak") ||
@@ -1227,7 +1403,7 @@ export default function TambahLaporanPage() {
               if (!isProcessingResponse) {
                 // Update data
                 const updatedData = { ...reportData };
-                updatedData.dampakInsiden = "Kematian";
+                updatedData.dampakInsiden = "kematian";
                 setReportData(updatedData);
                 saveToLocalStorage(updatedData);
 
@@ -1248,14 +1424,14 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Kematian
+            kematian
           </button>
           <button
             onClick={() => {
               if (!isProcessingResponse) {
                 // Update data
                 const updatedData = { ...reportData };
-                updatedData.dampakInsiden = "Cidera irreversible/ cidera berat";
+                updatedData.dampakInsiden = "cidera berat";
                 setReportData(updatedData);
                 saveToLocalStorage(updatedData);
 
@@ -1283,7 +1459,7 @@ export default function TambahLaporanPage() {
               if (!isProcessingResponse) {
                 // Update data
                 const updatedData = { ...reportData };
-                updatedData.dampakInsiden = "Cidera reversible/ cidera sedang";
+                updatedData.dampakInsiden = "cidera sedang";
                 setReportData(updatedData);
                 saveToLocalStorage(updatedData);
 
@@ -1311,7 +1487,7 @@ export default function TambahLaporanPage() {
               if (!isProcessingResponse) {
                 // Update data
                 const updatedData = { ...reportData };
-                updatedData.dampakInsiden = "Cidera ringan";
+                updatedData.dampakInsiden = "cidera ringan";
                 setReportData(updatedData);
                 saveToLocalStorage(updatedData);
 
@@ -1332,14 +1508,14 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Cidera ringan
+            cidera ringan
           </button>
           <button
             onClick={() => {
               if (!isProcessingResponse) {
                 // Update data
                 const updatedData = { ...reportData };
-                updatedData.dampakInsiden = "Tidak ada cidera";
+                updatedData.dampakInsiden = "tidak ada cidera";
                 setReportData(updatedData);
                 saveToLocalStorage(updatedData);
 
@@ -1360,7 +1536,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Tidak ada cidera
+            tidak ada cidera
           </button>
         </div>
       );
@@ -1370,7 +1546,7 @@ export default function TambahLaporanPage() {
       return (
         <div className="flex flex-col gap-2 mb-4 items-start">
           <button
-            onClick={() => handleQuickResponse("Kematian")}
+            onClick={() => handleQuickResponse("kematian")}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
               isProcessingResponse
@@ -1378,11 +1554,11 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Kematian
+            kematian
           </button>
           <button
             onClick={() =>
-              handleQuickResponse("Cidera irreversible/ cidera berat")
+              handleQuickResponse("cidera berat")
             }
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1395,7 +1571,7 @@ export default function TambahLaporanPage() {
           </button>
           <button
             onClick={() =>
-              handleQuickResponse("Cidera reversible/ cidera sedang")
+              handleQuickResponse("cidera sedang")
             }
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1407,7 +1583,7 @@ export default function TambahLaporanPage() {
             Cidera reversible/ cidera sedang
           </button>
           <button
-            onClick={() => handleQuickResponse("Cidera ringan")}
+            onClick={() => handleQuickResponse("cidera ringan")}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
               isProcessingResponse
@@ -1415,10 +1591,10 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Cidera ringan
+            cidera ringan
           </button>
           <button
-            onClick={() => handleQuickResponse("Tidak ada cidera")}
+            onClick={() => handleQuickResponse("tidak ada cidera")}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
               isProcessingResponse
@@ -1426,7 +1602,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            Tidak ada cidera
+            tidak ada cidera
           </button>
         </div>
       );
