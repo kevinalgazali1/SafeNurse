@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import {
   BarChart,
   Bar,
@@ -40,6 +44,7 @@ export default function DashboardVerifikatorPage() {
 
   const [insidenData, setInsidenData] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<Insiden[]>([]);
+  const [laporanData, setLaporanData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const toggleMobileMenu = () => {
@@ -63,6 +68,7 @@ export default function DashboardVerifikatorPage() {
         );
 
         const json = await res.json();
+        setLaporanData(json.data || []);
         if (json?.data) {
           setInsidenData(json.data);
           setFilteredData(json.data);
@@ -159,12 +165,49 @@ export default function DashboardVerifikatorPage() {
     value: val,
   }));
 
+  // === Export PDF ===
   const handleExportPDF = () => {
-    console.log("Export PDF");
+    const doc = new jsPDF();
+    doc.text("Laporan Insiden", 14, 10);
+
+    const tableData = laporanData.map((item, index) => [
+      index + 1,
+      item.kode_laporan,
+      item.nama_pasien,
+      item.umur,
+      item.kategori,
+      item.grading,
+      item.status,
+    ]);
+
+    autoTable(doc, {
+      head: [
+        ["No", "Kode", "Nama Pasien", "Umur", "Kategori", "Grading", "Status"],
+      ],
+      body: tableData,
+    });
+
+    doc.save("laporan-insiden.pdf");
   };
 
+  // === Export Excel ===
   const handleExportExcel = () => {
-    console.log("Export Excel");
+    const ws = XLSX.utils.json_to_sheet(
+      laporanData.map((item, index) => ({
+        No: index + 1,
+        Kode: item.kode_laporan,
+        "Nama Pasien": item.nama_pasien,
+        Umur: item.umur,
+        Kategori: item.kategori,
+        Grading: item.grading,
+        Status: item.status,
+      }))
+    );
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([excelBuffer]), "laporan-insiden.xlsx");
   };
 
   return (
