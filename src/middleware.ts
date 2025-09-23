@@ -19,6 +19,14 @@ export function middleware(req: NextRequest) {
   try {
     const decoded = jwtDecode<JwtPayload>(token);
 
+    // === ✅ Cek token expired ===
+    if (decoded.exp && decoded.exp < Date.now() / 1000) {
+      // Hapus token agar tidak looping
+      const response = NextResponse.redirect(new URL("/login", req.url));
+      response.cookies.delete("token");
+      return response;
+    }
+
     // Mapping role ke prefix folder
     const roleToPrefix: Record<string, string[]> = {
       super_admin: ["dashboard-superadmin"],
@@ -51,8 +59,6 @@ export function middleware(req: NextRequest) {
     };
 
     const currentPath = req.nextUrl.pathname;
-
-    // Cari role prefix yang sesuai
     const allowedPrefixes = roleToPrefix[decoded.role];
 
     if (allowedPrefixes) {
@@ -61,11 +67,9 @@ export function middleware(req: NextRequest) {
       );
 
       if (!match) {
-        // Redirect ke dashboard role masing-masing
         return NextResponse.redirect(new URL(`/${allowedPrefixes[0]}`, req.url));
       }
     } else {
-      // Role tidak dikenali
       return NextResponse.redirect(new URL("/login", req.url));
     }
   } catch (err) {
@@ -76,10 +80,8 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// Terapkan ke semua route yang butuh proteksi
 export const config = {
   matcher: [
-    // Semua route, kecuali login, forgot, reset, api, _next (assets), favicon, images
     "/((?!login|forgot-password|reset-password|api|_next|favicon.ico|images).*)",
   ],
 };
