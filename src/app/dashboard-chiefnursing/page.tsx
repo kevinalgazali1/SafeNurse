@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -307,6 +308,14 @@ export default function DashboardChiefNursing() {
     setShowDetailModal(false);
     setSelectedReport(null);
     setCatatan("");
+  };
+
+    const handleRevisi = () => {
+    setShowRevisiModal(true);
+    setSelectedKategori("");
+    setSelectedGrading("");
+    setCatatanRevisi("");
+    setTindakanAwal("");
   };
 
   const handleValidasi = async () => {
