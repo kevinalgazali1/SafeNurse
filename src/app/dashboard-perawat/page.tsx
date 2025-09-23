@@ -216,6 +216,22 @@ export default function DashboardPerawatPage() {
     setShowDetailModal(true);
   };
 
+  const formatTanggal = (tanggal: string) => {
+    if (!tanggal || tanggal === "-") return "-";
+
+    const date = new Date(tanggal);
+
+    return (
+      new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date) + " WITA"
+    ); // tambahkan zona sesuai kebutuhan
+  };
+
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
@@ -588,7 +604,7 @@ export default function DashboardPerawatPage() {
                   Tanggal insiden :
                 </label>
                 <p className="text-gray-800 bg-white/50 p-2 rounded">
-                  {selectedReport.tanggalInsiden}
+                  {formatTanggal(selectedReport.tanggalInsiden)}
                 </p>
               </div>
 
@@ -698,7 +714,7 @@ export default function DashboardPerawatPage() {
                   Tanggal waktu pelaporan :
                 </label>
                 <p className="text-gray-800 bg-white/50 p-2 rounded">
-                  {selectedReport.tanggalWaktuPelaporan}
+                  {formatTanggal(selectedReport.tanggalWaktuPelaporan)}
                 </p>
               </div>
             </div>

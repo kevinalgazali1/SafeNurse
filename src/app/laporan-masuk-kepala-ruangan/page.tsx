@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 interface Report {
-  id: number;
-  title: string;
-
+  id: string;
+  tanggal: string;
+  kategori: string;
+  status: string;
+  grading: string;
+  catatanKepalaRuangan: string;
+  catatanChiefnursing: string;
+  catatanVerifikator: string;
+  kode: string;
   kodeLaporan: string;
   namaPerawatYangMenangani: string;
   namaRuanganPerawatYangMenangani: string;
@@ -23,85 +30,65 @@ interface Report {
   tindakanOleh: string;
   dampak: string;
   probablitas: string;
+  rekomendasiTindakan: string;
+  tanggalWaktuPelaporan: string;
+
+  // tambahan
+  historyAksi: {
+    id_aksi: string;
+    aksi: string;
+    kategori: string;
+    grading: string;
+    rekomendasi_tindakan: string;
+    [key: string]: any; // jaga-jaga ada field tambahan
+  }[];
+
+  historyCatatan: {
+    id_catatan: string;
+    catatan: string;
+    created_at: string;
+  }[];
+}
+
+interface ReportDetail extends Report {
+  namaRuanganPerawatYangMenangani: string;
+  namaPasien: string;
+  noRm: string;
+  umur: string;
+  jenisKelamin: string;
+  tanggalMasukRs: string;
+  unitYangMelaporkan: string;
+  lokasiKejadian: string;
+  tanggalInsiden: string;
+  kronologi: string;
+  tindakanAwal: string;
+  tindakanOleh: string;
+  dampak: string;
+  probablitas: string;
   status: string;
   grading: string;
   kategori: string;
   rekomendasiTindakan: string;
-  tanggalWaktuPelaporan: string;
+
+  // tambahan
+  historyAksi: {
+    id_aksi: string;
+    aksi: string;
+    kategori: string;
+    grading: string;
+    rekomendasi_tindakan: string;
+    [key: string]: any; // jaga-jaga ada field tambahan
+  }[];
+
+  historyCatatan: {
+    id_catatan: string;
+    catatan: string;
+    created_at: string;
+  }[];
 }
 
 export default function LaporanMasukKepalaRuangan() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const [reports] = useState<Report[]>([
-    {
-      id: 1,
-      title: "Laporan Insiden Keselamatan Pasien",
-      status: "Menunggu Validasi",
-      kodeLaporan: "IKP-2024-001",
-      namaPerawatYangMenangani: "Ns. Sarah Wijaya, S.Kep",
-      namaRuanganPerawatYangMenangani: "Ruang ICU Lantai 3",
-      namaPasien: "Budi Santoso",
-      noRm: "RM-123456",
-      umur: "45 tahun",
-      jenisKelamin: "Laki-laki",
-      tanggalMasukRs: "15 Januari 2024",
-      unitYangMelaporkan: "Unit Perawatan Intensif",
-      lokasiKejadian: "Ruang ICU Bed 3",
-      tanggalInsiden: "16 Januari 2024, 14:30 WIB",
-      judulInsiden: "Pasien Jatuh dari Tempat Tidur",
-      kronologi:
-        "Pasien mencoba turun dari tempat tidur tanpa bantuan perawat saat akan ke kamar mandi. Pasien terjatuh dan mengeluh nyeri pada pinggul kanan.",
-      tindakanAwal:
-        "Pasien segera dibantu naik ke tempat tidur, dilakukan pemeriksaan fisik dan vital sign. Dokter jaga dipanggil untuk evaluasi lebih lanjut.",
-      tindakanOleh: "Ns. Sarah Wijaya dan Dr. Ahmad Fauzi",
-      dampak:
-        "Pasien mengalami nyeri ringan pada pinggul kanan, tidak ada fraktur berdasarkan pemeriksaan awal",
-      probablitas: "Sedang",
-
-      grading: "Kuning",
-      kategori: "KTD (Kejadian Tidak Diharapkan)",
-      rekomendasiTindakan:
-        "Pemasangan bed rail, edukasi pasien tentang keselamatan, dan pengawasan ketat saat mobilisasi",
-      tanggalWaktuPelaporan: "16 Januari 2024, 15:00 WIB",
-    },
-    {
-      id: 2,
-      title: "Laporan Medication Error",
-      status: "Sudah Divalidasi",
-      kodeLaporan: "IKP-2024-002",
-      namaPerawatYangMenangani: "Ns. Maya Sari, S.Kep",
-      namaRuanganPerawatYangMenangani: "Ruang Penyakit Dalam",
-      namaPasien: "Siti Rahayu",
-      noRm: "RM-789012",
-      umur: "62 tahun",
-      jenisKelamin: "Perempuan",
-      tanggalMasukRs: "10 Januari 2024",
-      unitYangMelaporkan: "Ruang Penyakit Dalam",
-      lokasiKejadian: "Ruang Penyakit Dalam Bed 12",
-      tanggalInsiden: "17 Januari 2024, 08:00 WIB",
-      judulInsiden: "Kesalahan Dosis Obat",
-      kronologi:
-        "Perawat memberikan dosis insulin yang salah (10 unit seharusnya 5 unit) karena kesalahan membaca instruksi dokter.",
-      tindakanAwal:
-        "Segera dilakukan monitoring gula darah ketat, dokter diberitahu, dan diberikan snack untuk mencegah hipoglikemia",
-      tindakanOleh: "Ns. Maya Sari dan Dr. Linda Kusuma",
-      dampak:
-        "Pasien mengalami gula darah rendah ringan (70 mg/dL), tidak ada komplikasi serius",
-      probablitas: "Rendah",
-
-      grading: "Hijau",
-      kategori: "KNC (Kejadian Nyaris Cedera)",
-      rekomendasiTindakan:
-        "Double check sistem untuk pemberian obat, pelatihan ulang prosedur pemberian insulin",
-      tanggalWaktuPelaporan: "17 Januari 2024, 08:30 WIB",
-    },
-  ]);
-
+  const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [catatan, setCatatan] = useState("");
@@ -111,12 +98,103 @@ export default function LaporanMasukKepalaRuangan() {
   const [selectedGrading, setSelectedGrading] = useState("");
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [tindakanAwal, setTindakanAwal] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleReportClick = (report: Report) => {
-    setSelectedReport(report);
-    setCatatan("");
-    setShowModal(true);
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const token = Cookies.get("token");
+
+  // === Ambil data ringkas laporan masuk ===
+  const fetchReports = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        "https://safe-nurse-backend.vercel.app/api/laporan/laporanMasuk",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+      const resData = await res.json();
+      console.log(resData);
+
+      const mappedReports = resData.data.map((r: any) => ({
+        id: r.kode_laporan,
+        kodeLaporan: r.kode_laporan,
+        judulInsiden: r.judul_insiden,
+        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+        tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
+      }));
+
+      setReports(mappedReports);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // === Ambil detail berdasarkan kode laporan ===
+  const fetchReportDetail = async (id: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        `https://safe-nurse-backend.vercel.app/api/laporan/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil detail laporan");
+      const resData = await res.json();
+      console.log("Detail response:", resData);
+
+      const r = resData.data;
+
+      const detail: ReportDetail = {
+        id: r.kode_laporan,
+        kodeLaporan: r.kode_laporan,
+        judulInsiden: r.judul_insiden || "-",
+        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+        tanggalWaktuPelaporan: r.tgl_waktu_pelaporan || "-",
+        namaRuanganPerawatYangMenangani: r.ruangan?.nama_ruangan || "-",
+        namaPasien: r.nama_pasien || "-",
+        noRm: r.no_rm || "-",
+        umur: r.umur?.toString() || "-",
+        jenisKelamin: r.jenis_kelamin || "-",
+        tanggalMasukRs: r.tgl_msk_rs || "-",
+        unitYangMelaporkan: r.unit_yang_melaporkan || "-",
+        lokasiKejadian: r.lokasi_insiden || "-",
+        tanggalInsiden: r.tgl_insiden || "-",
+        kronologi: r.kronologi || "-",
+        tindakanAwal: r.tindakan_awal || "-",
+        tindakanOleh: r.tindakan_oleh || "-",
+        dampak: r.dampak || "-",
+        probablitas: r.probabilitas || "-",
+        status: r.status || "-",
+        grading: r.grading || "-",
+        kategori: r.kategori || "-",
+        rekomendasiTindakan: r.rekomendasi_tindakan || "-",
+      };
+
+      setSelectedReport(detail);
+      setShowModal(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -124,9 +202,43 @@ export default function LaporanMasukKepalaRuangan() {
     setCatatan("");
   };
 
-  const handleValidasi = () => {
-    console.log("Validasi laporan:", selectedReport?.id);
-    handleCloseModal();
+  const handleCloseRiwayatModal = () => {
+    setShowRiwayatModal(false);
+  };
+
+  const handleValidasi = async () => {
+    if (!selectedReport) return;
+    const reportId = selectedReport.id; // contoh: LAP-20250918-4342
+
+    try {
+      const res = await fetch(
+        `https://safe-nurse-backend.vercel.app/api/laporan/approve/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // pastikan token valid
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Gagal memvalidasi laporan");
+      }
+
+      const data = await res.json();
+      console.log("✅ Validasi berhasil:", data);
+
+      // Refresh data laporan biar status ter-update
+      await fetchReports();
+
+      handleCloseModal();
+      alert("Laporan berhasil divalidasi!");
+    } catch (err: any) {
+      console.error("❌ Error validasi:", err.message);
+      alert(err.message || "Terjadi kesalahan saat validasi laporan");
+    }
   };
 
   const handleRevisi = () => {
@@ -145,21 +257,102 @@ export default function LaporanMasukKepalaRuangan() {
     setTindakanAwal("");
   };
 
-  const handleKirimRevisi = () => {
-    console.log("Kirim revisi:", {
-      reportId: selectedReport?.id,
-      kategori: selectedKategori,
-      grading: selectedGrading,
-      catatan: catatanRevisi,
-      tindakanAwal: tindakanAwal,
-    });
-    handleCloseRevisiModal();
-    handleCloseModal();
+  const handleKirimRevisi = async () => {
+    if (!selectedReport) return;
+
+    const reportId = selectedReport.id; // sekarang pasti string (LAP-xxxx)
+    try {
+      const res = await fetch(
+        `https://safe-nurse-backend.vercel.app/api/laporan/revisi/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            kategori: selectedKategori,
+            grading: selectedGrading,
+            rekomendasi_tindakan: tindakanAwal,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengirim revisi");
+
+      const resData = await res.json();
+      console.log("Revisi berhasil:", resData);
+
+      // Refresh list laporan agar perubahan terlihat
+      await fetchReports();
+
+      // Tutup modal setelah berhasil
+      handleCloseRevisiModal();
+      handleCloseModal();
+
+      // Notifikasi sederhana
+      alert("Revisi berhasil dikirim!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengirim revisi. Silakan coba lagi.");
+    }
   };
 
   const handleTolak = () => {
     console.log("Tolak laporan:", selectedReport?.id, "Catatan:", catatan);
     handleCloseModal();
+  };
+
+  const handleKirimCatatan = async () => {
+    if (!selectedReport) return;
+
+    const reportId = selectedReport.id;
+
+    try {
+      const res = await fetch(
+        `https://safe-nurse-backend.vercel.app/api/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ catatan }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal mengirim catatan");
+      }
+
+      const data = await res.json();
+      console.log("Catatan berhasil dikirim:", data);
+
+      // reset input catatan setelah berhasil
+      setCatatan("");
+      handleCloseModal();
+
+      // kalau mau refresh data laporan
+      // await fetchReportDetail(selectedReport.kodeLaporan);
+    } catch (error) {
+      console.error("Error saat kirim catatan:", error);
+    }
+  };
+
+  const formatTanggal = (tanggal: string) => {
+    if (!tanggal || tanggal === "-") return "-";
+
+    const date = new Date(tanggal);
+
+    return (
+      new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date) + " WITA"
+    ); // tambahkan zona sesuai kebutuhan
   };
 
   return (
@@ -306,7 +499,7 @@ export default function LaporanMasukKepalaRuangan() {
                 <div
                   key={report.id}
                   className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer"
-                  onClick={() => handleReportClick(report)}
+                  onClick={() => fetchReportDetail(report.id)}
                 >
                   <div className="flex items-start space-x-3 sm:space-x-4">
                     <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0">
@@ -466,7 +659,7 @@ export default function LaporanMasukKepalaRuangan() {
                   tanggal insiden :
                 </label>
                 <p className="text-gray-800 bg-white/50 p-2 rounded">
-                  {selectedReport.tanggalInsiden}
+                  {formatTanggal(selectedReport.tanggalInsiden)}
                 </p>
               </div>
 
@@ -576,7 +769,7 @@ export default function LaporanMasukKepalaRuangan() {
                   tanggal waktu pelaporan :
                 </label>
                 <p className="text-gray-800 bg-white/50 p-2 rounded">
-                  {selectedReport.tanggalWaktuPelaporan}
+                  {formatTanggal(selectedReport.tanggalWaktuPelaporan)}
                 </p>
               </div>
 
@@ -625,10 +818,7 @@ export default function LaporanMasukKepalaRuangan() {
               {/* Kirim Catatan Button */}
               <div className="flex justify-center pt-4">
                 <button
-                  onClick={() => {
-                    console.log("Kirim catatan:", catatan);
-                    // Add your send note logic here
-                  }}
+                  onClick={handleKirimCatatan}
                   className="bg-[#0B7A95] text-white px-6 sm:px-8 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
                 >
                   Kirim Catatan
@@ -703,10 +893,10 @@ export default function LaporanMasukKepalaRuangan() {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { name: "Merah", color: "bg-red-500" },
-                    { name: "Kuning", color: "bg-yellow-500" },
-                    { name: "Hijau", color: "bg-green-500" },
-                    { name: "Biru", color: "bg-blue-500" },
+                    { name: "merah", color: "bg-red-500" },
+                    { name: "kuning", color: "bg-yellow-500" },
+                    { name: "hijau", color: "bg-green-500" },
+                    { name: "biru", color: "bg-blue-500" },
                   ].map((grading) => (
                     <button
                       key={grading.name}
@@ -740,7 +930,7 @@ export default function LaporanMasukKepalaRuangan() {
               {/* Tombol Kirim Revisi */}
               <div className="flex justify-center mb-6">
                 <button
-                  onClick={() => console.log("Kirim Revisi:", tindakanAwal)}
+                  onClick={handleKirimRevisi}
                   className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
                   disabled={!tindakanAwal.trim()}
                 >
@@ -765,7 +955,7 @@ export default function LaporanMasukKepalaRuangan() {
               {/* Action Button */}
               <div className="flex justify-center">
                 <button
-                  onClick={handleKirimRevisi}
+                  onClick={handleKirimCatatan}
                   className="bg-[#2C3E50] text-white px-8 py-2 rounded-lg hover:bg-[#34495e] transition-colors font-medium text-sm"
                   disabled={!selectedKategori || !selectedGrading}
                 >
@@ -778,7 +968,7 @@ export default function LaporanMasukKepalaRuangan() {
       )}
 
       {/* Modal Riwayat */}
-      {showRiwayatModal && (
+      {showRiwayatModal && selectedReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#A8C8D8] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
             {/* Header Modal */}
@@ -792,7 +982,7 @@ export default function LaporanMasukKepalaRuangan() {
                 </h2>
               </div>
               <button
-                onClick={() => setShowRiwayatModal(false)}
+                onClick={handleCloseRiwayatModal}
                 className="text-white hover:text-gray-200 transition-colors"
               >
                 <i className="fas fa-times text-xl"></i>
@@ -801,14 +991,14 @@ export default function LaporanMasukKepalaRuangan() {
 
             {/* Content Modal */}
             <div className="p-6 space-y-6">
-              {/* Riwayat Catatan */}
+              {/* Tabel Riwayat Catatan */}
               <div>
                 <h3 className="text-[#2C3E50] font-bold mb-4 text-lg">
                   Riwayat Catatan
                 </h3>
 
                 {/* Desktop Table */}
-                <div className="hidden md:block bg-white/50 rounded-lg overflow-hidden">
+                <div className="bg-white/50 rounded-lg overflow-hidden hidden md:block">
                   <table className="w-full">
                     <thead className="bg-[#6B8CAE] text-white">
                       <tr>
@@ -821,109 +1011,78 @@ export default function LaporanMasukKepalaRuangan() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-15 10:30
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Pasien menunjukkan perbaikan kondisi
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-14 14:20
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Perlu monitoring lebih intensif
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-13 09:15
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Catatan awal laporan
-                        </td>
-                      </tr>
+                      {selectedReport.historyCatatan?.length > 0 ? (
+                        selectedReport.historyCatatan.map((item) => (
+                          <tr key={item.id_catatan}>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {new Date(item.created_at).toLocaleString(
+                                "id-ID",
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                }
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {item.catatan}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={2}
+                            className="px-4 py-3 text-sm text-gray-500 text-center"
+                          >
+                            Belum ada catatan
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile Cards */}
                 <div className="md:hidden space-y-3">
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-15 10:30
-                        </span>
-                      </div>
-                      <div className="border-t pt-2">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Catatan
-                        </span>
-                        <p className="text-sm text-gray-800 mt-1">
-                          Pasien menunjukkan perbaikan kondisi
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-14 14:20
-                        </span>
-                      </div>
-                      <div className="border-t pt-2">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Catatan
-                        </span>
-                        <p className="text-sm text-gray-800 mt-1">
-                          Perlu monitoring lebih intensif
-                        </p>
+                  {selectedReport.historyCatatan?.map((item) => (
+                    <div
+                      key={item.id_catatan}
+                      className="bg-white/50 rounded-lg p-4"
+                    >
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs text-gray-600 font-medium">
+                            Tanggal
+                          </span>
+                          <span className="text-sm text-gray-800">
+                            {new Date(item.created_at).toLocaleString("id-ID", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <span className="text-xs text-gray-600 font-medium">
+                            Catatan
+                          </span>
+                          <p className="text-sm text-gray-800 mt-1">
+                            {item.catatan}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-13 09:15
-                        </span>
-                      </div>
-                      <div className="border-t pt-2">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Catatan
-                        </span>
-                        <p className="text-sm text-gray-800 mt-1">
-                          Catatan awal laporan
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Riwayat Tindakan */}
+              {/* Tabel Riwayat Tindakan */}
               <div>
                 <h3 className="text-[#2C3E50] font-bold mb-4 text-lg">
                   Riwayat Tindakan
                 </h3>
 
                 {/* Desktop Table */}
-                <div className="hidden md:block bg-white/50 rounded-lg overflow-hidden">
+                <div className="bg-white/50 rounded-lg overflow-hidden hidden md:block">
                   <table className="w-full">
                     <thead className="bg-[#6B8CAE] text-white">
                       <tr>
@@ -945,209 +1104,129 @@ export default function LaporanMasukKepalaRuangan() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-15 10:30
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                            Validasi
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Kategori A
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Grade 2
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Lanjutkan perawatan standar
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-14 14:20
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                            Revisi
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Kategori B
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Grade 1
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Perlu evaluasi ulang
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          2024-01-13 09:15
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                            Submit
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Kategori A
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Grade 1
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800">
-                          Tindakan awal sesuai protokol
-                        </td>
-                      </tr>
+                      {selectedReport.historyAksi?.length > 0 ? (
+                        selectedReport.historyAksi.map((aksi) => (
+                          <tr key={aksi.id_aksi}>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {aksi.created_at
+                                ? new Date(aksi.created_at).toLocaleString(
+                                    "id-ID",
+                                    {
+                                      dateStyle: "medium",
+                                      timeStyle: "short",
+                                    }
+                                  )
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  aksi.aksi === "validasi"
+                                    ? "bg-green-100 text-green-800"
+                                    : aksi.aksi === "revisi"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {aksi.aksi}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {aksi.kategori}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {aksi.grading}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-800">
+                              {aksi.rekomendasi_tindakan}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-4 py-3 text-sm text-gray-500 text-center"
+                          >
+                            Belum ada riwayat tindakan
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile Cards */}
                 <div className="md:hidden space-y-3">
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-15 10:30
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Aksi
+                  {selectedReport.historyAksi?.map((aksi) => (
+                    <div
+                      key={aksi.id_aksi}
+                      className="bg-white/50 rounded-lg p-4"
+                    >
+                      <div className="flex flex-col space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs text-gray-600 font-medium">
+                            Tanggal
                           </span>
-                          <div className="mt-1">
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                              Validasi
+                          <span className="text-sm text-gray-800">
+                            {aksi.created_at
+                              ? new Date(aksi.created_at).toLocaleString(
+                                  "id-ID",
+                                  {
+                                    dateStyle: "medium",
+                                    timeStyle: "short",
+                                  }
+                                )
+                              : "-"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-xs text-gray-600 font-medium">
+                              Aksi
                             </span>
+                            <div className="mt-1">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  aksi.aksi === "validasi"
+                                    ? "bg-green-100 text-green-800"
+                                    : aksi.aksi === "revisi"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {aksi.aksi}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Kategori
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Kategori A
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Grading
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">Grade 2</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Rekomendasi
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Lanjutkan perawatan standar
-                          </p>
+                          <div>
+                            <span className="text-xs text-gray-600 font-medium">
+                              Kategori
+                            </span>
+                            <p className="text-sm text-gray-800 mt-1">
+                              {aksi.kategori}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-600 font-medium">
+                              Grading
+                            </span>
+                            <p className="text-sm text-gray-800 mt-1">
+                              {aksi.grading}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-600 font-medium">
+                              Rekomendasi
+                            </span>
+                            <p className="text-sm text-gray-800 mt-1">
+                              {aksi.rekomendasi_tindakan}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-14 14:20
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Aksi
-                          </span>
-                          <div className="mt-1">
-                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                              Revisi
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Kategori
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Kategori B
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Grading
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">Grade 1</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Rekomendasi
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Perlu evaluasi ulang
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/50 rounded-lg p-4">
-                    <div className="flex flex-col space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Tanggal
-                        </span>
-                        <span className="text-sm text-gray-800 font-medium">
-                          2024-01-13 09:15
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Aksi
-                          </span>
-                          <div className="mt-1">
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                              Submit
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Kategori
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Kategori A
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Grading
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">Grade 1</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 font-medium">
-                            Rekomendasi
-                          </span>
-                          <p className="text-sm text-gray-800 mt-1">
-                            Tindakan awal sesuai protokol
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -1,25 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Cookies from "js-cookie";
 
 export default function ProfileVerifikatorPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const [userData] = useState({
-    nama: "Dr. Ahmad Wijaya",
-    noStr: "12345678901234567890",
-    nip: "198501012010011001",
-    unitKerja: "Tim Verifikator",
-    jabatan: "Verifikator Senior",
-    noTelp: "081234567890",
-    email: "verifikator@gmail.com",
-  });
-
+  // State lain (harus di atas, sebelum return)
   const [showEditModal, setShowEditModal] = useState(false);
   const [showChangeProfileModal, setShowChangeProfileModal] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -29,27 +18,69 @@ export default function ProfileVerifikatorPage() {
     confirmPassword: "",
   });
   const [profileForm, setProfileForm] = useState({
-    nama: userData.nama || "",
-    jabatan: userData.jabatan || "",
-    unitKerja: userData.unitKerja || "",
-    noTelp: userData.noTelp || "",
+    nama: "",
+    jabatan: "",
+    unit_kerja: "",
+    no_telp: "",
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    const token = Cookies.get("token"); // ambil JWT dari cookie
+    if (!token) {
+      window.location.href = "/login"; // kalau token ga ada → redirect
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          "https://safe-nurse-backend.vercel.app/api/verifikator/mBZInqBCsp7AhxgwwjYT2",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Gagal ambil data Verifikator");
+        }
+
+        const data = await res.json();
+        console.log("API response:", data); // 🔥 cek isi response
+        setUserData(data);
+        setProfileForm({
+          nama: data.nama_verifikator || "",
+          jabatan: data.jabatan || "",
+          unit_kerja: data.unit_kerja || "",
+          no_telp: data.no_telp || "",
+        });
+      } catch (error) {
+        console.error("Error fetch Verifikator:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.email,
+      email: userData.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
     });
     setShowEditModal(true);
-  };
-
-  const handleChangeProfile = () => {
-    setShowChangeProfileModal(true);
   };
 
   const handleCloseModal = () => {
@@ -62,27 +93,126 @@ export default function ProfileVerifikatorPage() {
     });
   };
 
-  const handleSubmitEdit = (e: React.FormEvent) => {
+  const handleSubmitEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (editForm.password !== editForm.confirmPassword) {
       alert("Password dan konfirmasi password tidak cocok!");
       return;
     }
-    // Handle form submission here
-    console.log("Form submitted:", editForm);
-    setShowEditModal(false);
+
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ada, silakan login ulang.");
+        return;
+      }
+
+      const res = await fetch(
+        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: editForm.oldPassword,
+            newPassword: editForm.password,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal mengubah password");
+      }
+
+      const result = await res.json();
+      console.log("Password updated:", result);
+
+      alert("Password berhasil diubah!");
+
+      // ✅ Tutup modal otomatis
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error change password:", error);
+      alert("Terjadi kesalahan saat mengubah password");
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setEditForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleLogout = () => {
-    window.location.href = "/login";
+  // Tambahkan fungsi baru
+  const handleSubmitProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ada, silakan login ulang.");
+        return;
+      }
+
+      const res = await fetch(
+        "https://safe-nurse-backend.vercel.app/api/verifikator/update",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nama_verifikator: profileForm.nama,
+            jabatan: profileForm.jabatan,
+            unit_kerja: profileForm.unit_kerja,
+            no_telp: profileForm.no_telp,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal update profile");
+      }
+
+      const result = await res.json();
+      console.log("Profile updated:", result);
+
+      alert("Profil berhasil diperbarui!");
+
+      // update state biar tampilan ikut berubah
+      setUserData((prev: any) => ({
+        ...prev,
+        nama_verifikator: profileForm.nama,
+        jabatan: profileForm.jabatan,
+        unit_kerja: profileForm.unit_kerja,
+        no_telp: profileForm.no_telp,
+      }));
+
+      // Tutup modal
+      setShowChangeProfileModal(false);
+    } catch (error) {
+      console.error("Error update profile:", error);
+      alert("Terjadi kesalahan saat update profil");
+    }
   };
 
+  const handleLogout = () => {
+    Cookies.remove("token"); // hapus token
+    window.location.href = "/login"; // redirect
+  };
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
+
+  if (!userData) {
+    return <p className="text-center mt-10">Data tidak ditemukan</p>;
+  }
+
   return (
-    <>
+    <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       <style jsx>{`
         @keyframes fadeIn {
           from {
@@ -105,14 +235,18 @@ export default function ProfileVerifikatorPage() {
         }
 
         @keyframes bounceGentle {
-          0%, 20%, 50%, 80%, 100% {
+          0%,
+          20%,
+          50%,
+          80%,
+          100% {
             transform: translateY(0);
           }
           40% {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
           }
           60% {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
           }
         }
 
@@ -125,15 +259,43 @@ export default function ProfileVerifikatorPage() {
         }
 
         .animate-slide-up-delay-1 {
+          animation: slideUp 0.6s ease-out 0.1s both;
+        }
+
+        .animate-slide-up-delay-2 {
           animation: slideUp 0.6s ease-out 0.2s both;
         }
 
+        .animate-slide-up-delay-3 {
+          animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        .animate-slide-up-delay-4 {
+          animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
         .animate-fade-in-delay-1 {
-          animation: fadeIn 0.8s ease-out 0.4s both;
+          animation: fadeIn 0.8s ease-out 0.2s both;
         }
 
         .animate-fade-in-delay-2 {
+          animation: fadeIn 0.8s ease-out 0.4s both;
+        }
+
+        .animate-fade-in-delay-3 {
           animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .animate-fade-in-delay-4 {
+          animation: fadeIn 0.8s ease-out 0.8s both;
+        }
+
+        .animate-fade-in-delay-5 {
+          animation: fadeIn 0.8s ease-out 1s both;
+        }
+
+        .animate-fade-in-delay-6 {
+          animation: fadeIn 0.8s ease-out 1.2s both;
         }
 
         .animate-bounce-gentle {
@@ -141,20 +303,29 @@ export default function ProfileVerifikatorPage() {
         }
 
         .hover\\:shadow-3xl:hover {
-          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         @media (max-width: 768px) {
           .animate-slide-up,
           .animate-slide-up-delay-1,
+          .animate-slide-up-delay-2,
+          .animate-slide-up-delay-3,
+          .animate-slide-up-delay-4 {
+            animation-duration: 0.4s;
+          }
+
           .animate-fade-in,
           .animate-fade-in-delay-1,
-          .animate-fade-in-delay-2 {
-            animation-duration: 0.4s;
+          .animate-fade-in-delay-2,
+          .animate-fade-in-delay-3,
+          .animate-fade-in-delay-4,
+          .animate-fade-in-delay-5,
+          .animate-fade-in-delay-6 {
+            animation-duration: 0.6s;
           }
         }
       `}</style>
-      <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
@@ -286,9 +457,9 @@ export default function ProfileVerifikatorPage() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 px-4 md:px-6 py-4 md:py-6 animate-fade-in">
+      <main className="flex-1 px-4 md:px-6 py-4 md:py-6">
         <div
-          className="bg-white rounded-lg p-4 md:p-6 h-full relative overflow-hidden animate-slide-up"
+          className="bg-white rounded-lg p-4 md:p-6 h-full relative overflow-hidden animate-fade-in"
           style={{
             background: "linear-gradient(180deg, #b9dce3 0%, #0a7a9a 100%)",
           }}
@@ -308,35 +479,35 @@ export default function ProfileVerifikatorPage() {
             <div className="flex justify-center items-center min-h-full">
               <div className="max-w-4xl w-full space-y-6">
                 {/* Top Section - Profile Info and General Information */}
-                <div className="flex flex-col lg:flex-row gap-4 md:gap-6 animate-slide-up-delay-1">
+                <div className="flex flex-col lg:flex-row gap-4 md:gap-6 animate-slide-up">
                   {/* Left Box - Profile Picture, Name, Email */}
-                  <div className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-bounce-gentle">
-                    <div className="w-20 md:w-24 h-20 md:h-24 bg-[#4A9B8E] rounded-full flex items-center justify-center mb-3 md:mb-4">
-                      <i className="fas fa-user-shield text-2xl md:text-3xl text-white"></i>
+                  <div className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-slide-up-delay-1">
+                    <div className="w-20 md:w-24 h-20 md:h-24 bg-[#4A9B8E] rounded-full flex items-center justify-center mb-3 md:mb-4 animate-bounce-gentle">
+                      <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                     </div>
                     <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                      Verifikator
+                      {userData.nama_verifikator}
                     </h2>
                     <p className="text-gray-600 text-center text-xs md:text-sm">
-                      {userData.email}
+                      {userData.users.email}
                     </p>
                   </div>
 
                   {/* Right Box - General Information */}
-                  <div className="flex-1 bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl relative transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-slide-up-delay-1">
+                  <div className="flex-1 bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl relative transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-slide-up-delay-2">
                     <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">
                       General Information
                     </h3>
                     <div className="space-y-2 md:space-y-3">
-                      <div className="flex flex-col sm:flex-row">
+                      <div className="flex flex-col sm:flex-row animate-fade-in-delay-1">
                         <span className="text-gray-600 text-sm md:text-base sm:w-40">
                           Nama Lengkap :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.nama || "-"}
+                          {userData.nama_verifikator || "-"}
                         </span>
                       </div>
-                      <div className="flex flex-col sm:flex-row">
+                      <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
                         <span className="text-gray-600 text-sm md:text-base sm:w-40">
                           Jabatan :
                         </span>
@@ -344,28 +515,28 @@ export default function ProfileVerifikatorPage() {
                           {userData.jabatan || "-"}
                         </span>
                       </div>
-                      <div className="flex flex-col sm:flex-row">
+                      <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
                         <span className="text-gray-600 text-sm md:text-base sm:w-40">
                           Unit Kerja :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.unitKerja || "-"}
+                          {userData.unit_kerja || "-"}
                         </span>
                       </div>
-                      <div className="flex flex-col sm:flex-row">
+                      <div className="flex flex-col sm:flex-row animate-fade-in-delay-4">
                         <span className="text-gray-600 text-sm md:text-base sm:w-40">
                           No Telp :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.noTelp || "-"}
+                          {userData.no_telp || "-"}
                         </span>
                       </div>
                     </div>
                     {/* Change Profile Button */}
                     <div className="mt-4 md:mt-6 flex justify-end">
                       <button
-                        onClick={handleChangeProfile}
-                        className="bg-[#6B8CAE] text-white px-3 md:px-4 py-2 rounded-lg hover:bg-[#5A7A9A] transition-colors font-medium text-xs md:text-sm transform hover:scale-105 transition-all duration-300"
+                        onClick={() => setShowChangeProfileModal(true)}
+                        className="bg-[#6B8CAE] text-white px-3 md:px-4 py-2 rounded-lg hover:bg-[#5A7A9A] transition-all duration-300 font-medium text-xs md:text-sm transform hover:scale-105 hover:shadow-lg"
                       >
                         Change Profile
                       </button>
@@ -374,21 +545,21 @@ export default function ProfileVerifikatorPage() {
                 </div>
 
                 {/* Bottom Box - Security */}
-                <div className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-fade-in-delay-1">
+                <div className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl animate-slide-up-delay-3">
                   <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">
                     Security
                   </h3>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                      <div>
+                      <div className="animate-fade-in-delay-5">
                         <label className="text-xs md:text-sm text-gray-600">
                           Email
                         </label>
                         <p className="text-sm md:text-base text-gray-800">
-                          {userData.email}
+                          {userData.users.email}
                         </p>
                       </div>
-                      <div>
+                      <div className="animate-fade-in-delay-6">
                         <label className="text-xs md:text-sm text-gray-600">
                           Password
                         </label>
@@ -399,7 +570,7 @@ export default function ProfileVerifikatorPage() {
                     </div>
                     <button
                       onClick={handleChangeAccount}
-                      className="bg-[#6B8CAE] text-white px-3 md:px-6 py-2 rounded-lg hover:bg-[#5A7A9A] transition-colors font-medium text-xs md:text-base w-full sm:w-auto transform hover:scale-105 transition-all duration-300"
+                      className="bg-[#6B8CAE] text-white px-3 md:px-6 py-2 rounded-lg hover:bg-[#5A7A9A] transition-all duration-300 font-medium text-xs md:text-base w-full sm:w-auto transform hover:scale-105 hover:shadow-lg"
                     >
                       Change Account
                     </button>
@@ -407,10 +578,10 @@ export default function ProfileVerifikatorPage() {
                 </div>
 
                 {/* Logout Button */}
-                <div className="flex justify-center animate-fade-in-delay-2">
+                <div className="flex justify-center animate-slide-up-delay-4">
                   <button
                     onClick={handleLogout}
-                    className="bg-[#2C3E50] text-white px-4 md:px-8 py-2 md:py-3 rounded-lg hover:bg-[#34495E] transition-colors font-medium text-sm md:text-base w-full sm:w-auto max-w-xs transform hover:scale-105 transition-all duration-300"
+                    className="bg-[#2C3E50] text-white px-4 md:px-8 py-2 md:py-3 rounded-lg hover:bg-[#34495E] transition-all duration-300 font-medium text-sm md:text-base w-full sm:w-auto max-w-xs transform hover:scale-105 hover:shadow-lg"
                   >
                     Logout
                   </button>
@@ -443,21 +614,6 @@ export default function ProfileVerifikatorPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmitEdit} className="space-y-4">
-              {/* Email Field */}
-              <div>
-                <label className="block text-[#2C3E50] font-medium mb-2">
-                  Email :
-                </label>
-                <input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800"
-                  placeholder="Masukkan email baru"
-                  required
-                />
-              </div>
-
               {/* Old Password Field */}
               <div>
                 <label className="block text-[#2C3E50] font-medium mb-2">
@@ -585,7 +741,7 @@ export default function ProfileVerifikatorPage() {
             </div>
 
             {/* Form */}
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmitProfile}>
               {/* Nama Lengkap Field */}
               <div>
                 <label className="block text-[#2C3E50] font-medium mb-2">
@@ -627,15 +783,15 @@ export default function ProfileVerifikatorPage() {
                 </label>
                 <input
                   type="text"
-                  value={profileForm.unitKerja}
+                  value={profileForm.unit_kerja}
                   onChange={(e) =>
                     setProfileForm({
                       ...profileForm,
-                      unitKerja: e.target.value,
+                      unit_kerja: e.target.value,
                     })
                   }
                   className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800"
-                  placeholder="Masukkan unit kerja"
+                  placeholder="Masukkan Unit Kerja"
                   required
                 />
               </div>
@@ -647,9 +803,9 @@ export default function ProfileVerifikatorPage() {
                 </label>
                 <input
                   type="tel"
-                  value={profileForm.noTelp}
+                  value={profileForm.no_telp}
                   onChange={(e) =>
-                    setProfileForm({ ...profileForm, noTelp: e.target.value })
+                    setProfileForm({ ...profileForm, no_telp: e.target.value })
                   }
                   className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800"
                   placeholder="Masukkan nomor telepon"
@@ -670,7 +826,6 @@ export default function ProfileVerifikatorPage() {
           </div>
         </div>
       )}
-      </div>
-    </>
+    </div>
   );
 }

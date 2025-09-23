@@ -1,51 +1,163 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Cookies from "js-cookie";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+
+const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6"];
+
+interface Insiden {
+  kode_laporan: string;
+  nama_pasien: string;
+  kategori: string;
+  grading: string;
+  tgl_insiden: string;
+  tgl_msk_rs: string;
+  ruangan?: {
+    nama_ruangan: string;
+  };
+}
 
 export default function DashboardVerifikatorPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   const [filterUnit, setFilterUnit] = useState("Semua");
   const [filterKategori, setFilterKategori] = useState("Semua");
   const [filterGrading, setFilterGrading] = useState("Semua");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
 
-  const [insidenData] = useState([
-    {
-      id: 1,
-      tanggal: "01 / 01 / 2025",
-      unit: "IGD",
-      kategori: "KTD",
-      grading: "Merah",
+  const [insidenData, setInsidenData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<Insiden[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = Cookies.get("token");
+        if (!token) return;
+
+        const res = await fetch(
+          "https://safe-nurse-backend.vercel.app/api/laporan/verifikator",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const json = await res.json();
+        if (json?.data) {
+          setInsidenData(json.data);
+          setFilteredData(json.data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleFilter = () => {
+    let data = [...insidenData];
+
+    if (filterUnit !== "Semua") {
+      data = data.filter(
+        (d) =>
+          d.ruangan?.nama_ruangan?.toLowerCase() === filterUnit.toLowerCase()
+      );
+    }
+    if (filterKategori !== "Semua") {
+      data = data.filter(
+        (d) => d.kategori?.toLowerCase() === filterKategori.toLowerCase()
+      );
+    }
+    if (filterGrading !== "Semua") {
+      data = data.filter(
+        (d) => d.grading?.toLowerCase() === filterGrading.toLowerCase()
+      );
+    }
+    if (filterDateFrom) {
+      data = data.filter(
+        (d) => new Date(d.tgl_insiden) >= new Date(filterDateFrom)
+      );
+    }
+    if (filterDateTo) {
+      data = data.filter(
+        (d) => new Date(d.tgl_insiden) <= new Date(filterDateTo)
+      );
+    }
+
+    setFilteredData(data);
+  };
+
+  // === Chart Data Calculation ===
+  const kategoriCounts = filteredData.reduce<Record<string, number>>(
+    (acc, d) => {
+      const key = d.kategori || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
     },
-    {
-      id: 2,
-      tanggal: "01 / 01 / 2025",
-      unit: "IGD",
-      kategori: "KTD",
-      grading: "Merah",
+    {}
+  );
+
+  const gradingCounts = filteredData.reduce<Record<string, number>>(
+    (acc, d) => {
+      const key = d.grading || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
     },
-    {
-      id: 3,
-      tanggal: "01 / 01 / 2025",
-      unit: "IGD",
-      kategori: "KTD",
-      grading: "Merah",
-    },
-    {
-      id: 4,
-      tanggal: "01 / 01 / 2025",
-      unit: "IGD",
-      kategori: "KTD",
-      grading: "Merah",
-    },
-  ]);
+    {}
+  );
+
+  const weeklyCounts = filteredData.reduce<Record<string, number>>((acc, d) => {
+    const week = getWeekNumber(new Date(d.tgl_insiden));
+    acc[week] = (acc[week] || 0) + 1;
+    return acc;
+  }, {});
+
+  function getWeekNumber(date: Date) {
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDays = Math.floor(
+      (date.getTime() - startOfYear.getTime()) / 86400000
+    );
+    return "W" + Math.ceil((pastDays + startOfYear.getDay() + 1) / 7);
+  }
+
+  // urutkan minggu
+  const weeklyData = Object.entries(weeklyCounts).map(([week, count]) => ({
+    week,
+    count,
+  }));
+
+  const kategoriData = Object.entries(kategoriCounts).map(([key, val]) => ({
+    name: key,
+    value: val,
+  }));
+
+  const gradingData = Object.entries(gradingCounts).map(([key, val]) => ({
+    name: key,
+    value: val,
+  }));
 
   const handleExportPDF = () => {
     console.log("Export PDF");
@@ -53,16 +165,6 @@ export default function DashboardVerifikatorPage() {
 
   const handleExportExcel = () => {
     console.log("Export Excel");
-  };
-
-  const handleFilter = () => {
-    console.log("Apply filter:", {
-      unit: filterUnit,
-      kategori: filterKategori,
-      grading: filterGrading,
-      dateFrom: filterDateFrom,
-      dateTo: filterDateTo,
-    });
   };
 
   return (
@@ -127,11 +229,15 @@ export default function DashboardVerifikatorPage() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden text-white hover:text-[#0B7A95] transition-colors"
             onClick={toggleMobileMenu}
           >
-            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+            <i
+              className={`fas ${
+                isMobileMenuOpen ? "fa-times" : "fa-bars"
+              } text-xl`}
+            ></i>
           </button>
         </div>
 
@@ -320,23 +426,14 @@ export default function DashboardVerifikatorPage() {
                 <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
                   Grafik Tren Insiden
                 </h4>
-                <div className="h-32 sm:h-48 flex items-end justify-center space-x-1 sm:space-x-2">
-                  {/* Bar Chart Simulation */}
-                  {[65, 45, 80, 60, 90, 70, 85, 55].map((height, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div
-                        className="bg-[#6B8CAE] w-4 sm:w-6 rounded-t"
-                        style={{ height: `${height}%` }}
-                      ></div>
-                      <span className="text-xs text-[#2C3E50] mt-1 hidden sm:block">
-                        Week {index + 1}
-                      </span>
-                      <span className="text-xs text-[#2C3E50] mt-1 sm:hidden">
-                        W{index + 1}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={weeklyData}>
+                    <XAxis dataKey="week" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#6B8CAE" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Distribusi Berdasarkan Kategori */}
@@ -344,49 +441,26 @@ export default function DashboardVerifikatorPage() {
                 <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
                   Distribusi Berdasarkan Kategori
                 </h4>
-                <div className="h-32 sm:h-48 flex items-center justify-center">
-                  {/* Pie Chart Simulation */}
-                  <div
-                      className="w-24 h-24 sm:w-32 sm:h-32 rounded-full relative"
-                    style={{
-                      background: `conic-gradient(
-                      #3b82f6 0deg 144deg,
-                      #ef4444 144deg 216deg,
-                      #22c55e 216deg 288deg,
-                      #f59e0b 288deg 324deg,
-                      #8b5cf6 324deg 360deg
-                    )`,
-                    }}
-                  >
-                    <div className="absolute inset-3 sm:inset-4 bg-white rounded-full flex items-center justify-center">
-                        <span className="text-xs font-semibold text-[#2C3E50]">
-                          Total
-                        </span>
-                      </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mt-3 sm:mt-4">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#3b82f6] rounded"></div>
-                    <span className="text-xs text-[#2C3E50]">KTD</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#ef4444] rounded"></div>
-                    <span className="text-xs text-[#2C3E50]">KPC</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#22c55e] rounded"></div>
-                    <span className="text-xs text-[#2C3E50]">KNC</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#f59e0b] rounded"></div>
-                    <span className="text-xs text-[#2C3E50]">KTC</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#8b5cf6] rounded"></div>
-                    <span className="text-xs text-[#2C3E50]">Sentinel</span>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={kategoriData}
+                      dataKey="value"
+                      nameKey="name"
+                      outerRadius={80}
+                      label
+                    >
+                      {kategoriData.map((_, index) => (
+                        <Cell
+                          key={index}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Distribusi Berdasarkan Grading */}
@@ -394,40 +468,26 @@ export default function DashboardVerifikatorPage() {
                 <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
                   Distribusi Berdasarkan Grading
                 </h4>
-                <div className="h-32 sm:h-48 flex items-center justify-center">
-                  {/* Pie Chart Simulation */}
-                  <div
-                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full relative"
-                    style={{
-                      background: `conic-gradient(
-                      #ef4444 0deg 108deg,
-                      #f59e0b 108deg 180deg,
-                      #22c55e 180deg 252deg,
-                      #3b82f6 252deg 360deg
-                    )`,
-                    }}
-                  >
-                    <div className="absolute inset-3 sm:inset-4 bg-white rounded-full flex items-center justify-center">
-                      <span className="text-xs font-semibold text-[#2C3E50]">
-                        Total
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mt-3 sm:mt-4">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#ef4444] rounded"></div>
-                    <span className="text-xs sm:text-sm text-[#2C3E50]">High</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#f59e0b] rounded"></div>
-                    <span className="text-xs sm:text-sm text-[#2C3E50]">Medium</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-[#10b981] rounded"></div>
-                    <span className="text-xs sm:text-sm text-[#2C3E50]">Low</span>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={gradingData}
+                      dataKey="value"
+                      nameKey="name"
+                      outerRadius={80}
+                      label
+                    >
+                      {gradingData.map((_, index) => (
+                        <Cell
+                          key={index}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
@@ -476,10 +536,10 @@ export default function DashboardVerifikatorPage() {
                       } hover:bg-blue-50 transition-colors`}
                     >
                       <div className="text-center font-medium text-[#2C3E50]">
-                        {item.tanggal}
+                        {item.tgl_msk_rs}
                       </div>
                       <div className="text-center text-[#2C3E50]">
-                        {item.unit}
+                        {item.ruangan?.nama_ruangan}
                       </div>
                       <div className="text-center text-[#2C3E50]">
                         {item.kategori}
@@ -497,20 +557,36 @@ export default function DashboardVerifikatorPage() {
                     >
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-medium text-gray-600">Tanggal:</span>
-                          <span className="text-sm font-medium text-[#2C3E50]">{item.tanggal}</span>
+                          <span className="text-xs font-medium text-gray-600">
+                            Tanggal:
+                          </span>
+                          <span className="text-sm font-medium text-[#2C3E50]">
+                            {item.tgl_msk_rs}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-medium text-gray-600">Unit:</span>
-                          <span className="text-sm text-[#2C3E50]">{item.unit}</span>
+                          <span className="text-xs font-medium text-gray-600">
+                            Unit:
+                          </span>
+                          <span className="text-sm text-[#2C3E50]">
+                            {item.ruangan?.nama_ruangan}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-medium text-gray-600">Kategori:</span>
-                          <span className="text-sm text-[#2C3E50]">{item.kategori}</span>
+                          <span className="text-xs font-medium text-gray-600">
+                            Kategori:
+                          </span>
+                          <span className="text-sm text-[#2C3E50]">
+                            {item.kategori}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-medium text-gray-600">Grading:</span>
-                          <span className="text-sm text-[#2C3E50]">{item.grading}</span>
+                          <span className="text-xs font-medium text-gray-600">
+                            Grading:
+                          </span>
+                          <span className="text-sm text-[#2C3E50]">
+                            {item.grading}
+                          </span>
                         </div>
                       </div>
                     </div>
