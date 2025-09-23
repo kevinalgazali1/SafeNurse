@@ -14,7 +14,6 @@ interface Report {
   catatanKepalaRuangan: string;
   catatanChiefnursing: string;
   catatanVerifikator: string;
-  kode: string;
   kodeLaporan: string;
   namaPerawatYangMenangani: string;
   namaRuanganPerawatYangMenangani: string;
@@ -117,7 +116,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
             </div>
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Kode Laporan:</span>
-              <span className="text-gray-800">{report.kode}</span>
+              <span className="text-gray-800">{report.kodeLaporan}</span>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
