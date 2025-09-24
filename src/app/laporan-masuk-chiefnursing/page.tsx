@@ -161,15 +161,16 @@ export default function LaporanMasukChiefNursingPage() {
       const r = resData.data;
 
       const detail: ReportDetail = {
-        id: r.kode_laporan,
-        kodeLaporan: r.kode_laporan,
+        id: r.id || r.kode_laporan || "-",
+        kode: r.kode || r.kode_laporan || "-",
+        kodeLaporan: r.kode_laporan || "-",
         judulInsiden: r.judul_insiden || "-",
-        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+        namaPerawatYangMenangani: r.perawat.nama_perawat || "-",
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan || "-",
-        namaRuanganPerawatYangMenangani: r.ruangan?.nama_ruangan || "-",
+        namaRuanganPerawatYangMenangani: r.ruangan.nama_ruangan || "-",
         namaPasien: r.nama_pasien || "-",
         noRm: r.no_rm || "-",
-        umur: r.umur?.toString() || "-",
+        umur: r.umur || "-",
         jenisKelamin: r.jenis_kelamin || "-",
         tanggalMasukRs: r.tgl_msk_rs || "-",
         unitYangMelaporkan: r.unit_yang_melaporkan || "-",
@@ -180,10 +181,18 @@ export default function LaporanMasukChiefNursingPage() {
         tindakanOleh: r.tindakan_oleh || "-",
         dampak: r.dampak || "-",
         probablitas: r.probabilitas || "-",
+        rekomendasiTindakan: r.rekomendasi_tindakan || "-",
         status: r.status || "-",
         grading: r.grading || "-",
         kategori: r.kategori || "-",
-        rekomendasiTindakan: r.rekomendasi_tindakan || "-",
+        tanggal: r.tanggal || "-",
+        catatanKepalaRuangan: r.catatan_kepala_ruangan || "-",
+        catatanChiefnursing: r.catatan_chiefnursing || "-",
+        catatanVerifikator: r.catatan_verifikator || "-",
+
+        // tambahan
+        historyAksi: r.history_aksi || [],
+        historyCatatan: r.history_catatan || [],
       };
 
       setSelectedReport(detail);
@@ -203,7 +212,7 @@ export default function LaporanMasukChiefNursingPage() {
     setCatatan("");
   };
 
-    const handleCloseRiwayatModal = () => {
+  const handleCloseRiwayatModal = () => {
     setShowRiwayatModal(false);
   };
 
@@ -366,9 +375,7 @@ export default function LaporanMasukChiefNursingPage() {
             {/* Riwayat */}
             <button
               className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
-              onClick={() =>
-                (window.location.href = "/dashboard-chiefnursing")
-              }
+              onClick={() => (window.location.href = "/dashboard-chiefnursing")}
             >
               <i className="fas fa-clipboard-list text-lg mb-1"></i>
               <span className="text-xs">Riwayat</span>
@@ -449,9 +456,7 @@ export default function LaporanMasukChiefNursingPage() {
               {/* Manage Profil */}
               <button
                 className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
-                onClick={() =>
-                  (window.location.href = "/profile-chiefnursing")
-                }
+                onClick={() => (window.location.href = "/profile-chiefnursing")}
               >
                 <i className="fas fa-user text-lg mr-3"></i>
                 <span>Profil</span>

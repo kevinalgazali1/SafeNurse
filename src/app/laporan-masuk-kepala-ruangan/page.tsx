@@ -161,15 +161,16 @@ export default function LaporanMasukKepalaRuangan() {
       const r = resData.data;
 
       const detail: ReportDetail = {
-        id: r.kode_laporan,
-        kodeLaporan: r.kode_laporan,
+        id: r.id || r.kode_laporan || "-",
+        kode: r.kode || r.kode_laporan || "-",
+        kodeLaporan: r.kode_laporan || "-",
         judulInsiden: r.judul_insiden || "-",
-        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+        namaPerawatYangMenangani: r.perawat.nama_perawat || "-",
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan || "-",
-        namaRuanganPerawatYangMenangani: r.ruangan?.nama_ruangan || "-",
+        namaRuanganPerawatYangMenangani: r.ruangan.nama_ruangan || "-",
         namaPasien: r.nama_pasien || "-",
         noRm: r.no_rm || "-",
-        umur: r.umur?.toString() || "-",
+        umur: r.umur || "-",
         jenisKelamin: r.jenis_kelamin || "-",
         tanggalMasukRs: r.tgl_msk_rs || "-",
         unitYangMelaporkan: r.unit_yang_melaporkan || "-",
@@ -180,10 +181,18 @@ export default function LaporanMasukKepalaRuangan() {
         tindakanOleh: r.tindakan_oleh || "-",
         dampak: r.dampak || "-",
         probablitas: r.probabilitas || "-",
+        rekomendasiTindakan: r.rekomendasi_tindakan || "-",
         status: r.status || "-",
         grading: r.grading || "-",
         kategori: r.kategori || "-",
-        rekomendasiTindakan: r.rekomendasi_tindakan || "-",
+        tanggal: r.tanggal || "-",
+        catatanKepalaRuangan: r.catatan_kepala_ruangan || "-",
+        catatanChiefnursing: r.catatan_chiefnursing || "-",
+        catatanVerifikator: r.catatan_verifikator || "-",
+
+        // tambahan
+        historyAksi: r.history_aksi || [],
+        historyCatatan: r.history_catatan || [],
       };
 
       setSelectedReport(detail);
