@@ -264,6 +264,7 @@ export default function DashboardChiefNursing() {
 
       const mappedDetail: Report = {
         id: r.kode_laporan,
+        kode: r.kode || r.kode_laporan,
         kodeLaporan: r.kode_laporan,
         namaPerawatYangMenangani: r.perawat.nama_perawat,
         namaRuanganPerawatYangMenangani: r.ruangan.nama_ruangan,
@@ -396,6 +397,14 @@ export default function DashboardChiefNursing() {
 
   const handleRiwayat = () => {
     setShowRiwayatModal(true);
+  };
+
+  const handleRevisi = () => {
+    setShowRevisiModal(true);
+    setSelectedKategori("");
+    setSelectedGrading("");
+    setCatatanRevisi("");
+    setTindakanAwal("");
   };
 
   const handleCloseRiwayatModal = () => {
