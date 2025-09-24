@@ -39,7 +39,7 @@ export default function ProfileKepalaRuanganPage() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://safe-nurse-backend.vercel.app/api/kepala_ruangan/h2RgvOhkqkBT7O5oQLJ1A",
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/h2RgvOhkqkBT7O5oQLJ1A`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function ProfileKepalaRuanganPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/forgot_password/change_password`,
         {
           method: "POST",
           headers: {
@@ -157,7 +157,7 @@ export default function ProfileKepalaRuanganPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/kepala_ruangan/update",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/update`,
         {
           method: "PUT",
           headers: {

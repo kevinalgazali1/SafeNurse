@@ -21,7 +21,7 @@ export default function NotificationsChiefNursingPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/notifikasi",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
         {
           method: "GET",
           headers: {

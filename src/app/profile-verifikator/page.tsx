@@ -39,7 +39,7 @@ export default function ProfileVerifikatorPage() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://safe-nurse-backend.vercel.app/api/verifikator/mBZInqBCsp7AhxgwwjYT2",
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/verifikator/mBZInqBCsp7AhxgwwjYT2`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function ProfileVerifikatorPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/forgot_password/change_password`,
         {
           method: "POST",
           headers: {
@@ -157,7 +157,7 @@ export default function ProfileVerifikatorPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/verifikator/update",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/verifikator/update`,
         {
           method: "PUT",
           headers: {

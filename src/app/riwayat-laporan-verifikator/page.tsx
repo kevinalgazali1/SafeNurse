@@ -172,7 +172,7 @@ export default function DashboardChiefNursing() {
 
     try {
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/laporan/verifikator",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/verifikator`,
         {
           method: "GET",
           headers: {
@@ -244,7 +244,7 @@ export default function DashboardChiefNursing() {
       if (!token) return;
 
       const res = await fetch(
-        `https://safe-nurse-backend.vercel.app/api/laporan/${report.kodeLaporan}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/${report.kodeLaporan}`,
         {
           method: "GET",
           headers: {
@@ -317,7 +317,7 @@ export default function DashboardChiefNursing() {
 
     try {
       const res = await fetch(
-        `https://safe-nurse-backend.vercel.app/api/laporan/approve/${reportId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/approve/${reportId}`,
         {
           method: "POST",
           headers: {
@@ -360,7 +360,7 @@ export default function DashboardChiefNursing() {
     const reportId = selectedReport.id; // sekarang pasti string (LAP-xxxx)
     try {
       const res = await fetch(
-        `https://safe-nurse-backend.vercel.app/api/laporan/revisi/${reportId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/revisi/${reportId}`,
         {
           method: "POST",
           headers: {
@@ -434,7 +434,7 @@ export default function DashboardChiefNursing() {
 
     try {
       const res = await fetch(
-        `https://safe-nurse-backend.vercel.app/api/laporan/addCatatan/${reportId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
         {
           method: "POST",
           headers: {

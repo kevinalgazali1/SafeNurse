@@ -38,7 +38,7 @@ export default function ProfileChiefNursingPage() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://safe-nurse-backend.vercel.app/api/chief_nursing/aC0G2gaxLDaqz2954Vzri",
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/chief_nursing/aC0G2gaxLDaqz2954Vzri`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ export default function ProfileChiefNursingPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/forgot_password/change_password`,
         {
           method: "POST",
           headers: {
@@ -155,7 +155,7 @@ export default function ProfileChiefNursingPage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/chief_nursing/update",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/chief_nursing/update`,
         {
           method: "PUT",
           headers: {

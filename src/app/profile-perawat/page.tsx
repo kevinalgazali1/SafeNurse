@@ -36,7 +36,7 @@ export default function ProfilePage() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://safe-nurse-backend.vercel.app/api/perawat/oVteW89a6AIVOvFtyt3iV",
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/perawat/oVteW89a6AIVOvFtyt3iV`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -104,7 +104,7 @@ export default function ProfilePage() {
       }
 
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/forgot_password/change_password",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/forgot_password/change_password`,
         {
           method: "POST",
           headers: {
@@ -641,7 +641,7 @@ export default function ProfilePage() {
                   }
 
                   const res = await fetch(
-                    "https://safe-nurse-backend.vercel.app/api/perawat/update",
+                    `${process.env.NEXT_PUBLIC_BACKEND_API}/perawat/update`,
                     {
                       method: "PUT",
                       headers: {

@@ -146,7 +146,7 @@ export default function DashboardPerawatPage() {
 
     try {
       const res = await fetch(
-        "https://safe-nurse-backend.vercel.app/api/laporan/perawat",
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/perawat`,
         {
           method: "GET",
           headers: {

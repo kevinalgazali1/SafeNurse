@@ -59,7 +59,7 @@ export default function DashboardVerifikatorPage() {
         if (!token) return;
 
         const res = await fetch(
-          "https://safe-nurse-backend.vercel.app/api/laporan/verifikator",
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/verifikator`,
           {
             headers: {
               "Content-Type": "application/json",
