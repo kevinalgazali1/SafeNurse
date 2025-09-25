@@ -82,6 +82,7 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!login|forgot-password|reset-password|api|_next|favicon.ico|images).*)",
+    "/((?!login|forgot-password|reset-password|api|_next|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico)).*)",
   ],
 };
+
