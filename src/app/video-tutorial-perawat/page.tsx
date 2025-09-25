@@ -78,7 +78,7 @@ export default function VideoTutorialPerawatPage() {
   };
 
   return (
-    <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
+    <div className="bg-[#d9f0f6] min-h-screen flex flex-col animate-fade-in">
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
@@ -100,10 +100,16 @@ export default function VideoTutorialPerawatPage() {
 
             {/* Notifikasi */}
             <button
-              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
               onClick={() => (window.location.href = "/notifications-perawat")}
             >
-              <i className="fas fa-bell text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-bell text-lg mb-1"></i>
+                {/* Notification Count Badge */}
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  3
+                </span>
+              </div>
               <span className="text-xs">Notifikasi</span>
             </button>
 
@@ -151,12 +157,18 @@ export default function VideoTutorialPerawatPage() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                 onClick={() =>
                   (window.location.href = "/notifications-perawat")
                 }
               >
-                <i className="fas fa-bell text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-bell text-lg mr-3"></i>
+                  {/* Notification Count Badge */}
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    3
+                  </span>
+                </div>
                 <span>Notifikasi</span>
               </button>
 
@@ -180,9 +192,9 @@ export default function VideoTutorialPerawatPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 md:px-6 py-4 md:py-6">
+      <main className="flex-1 px-4 md:px-6 py-4 md:py-6 animate-slide-up">
         <div
-          className="bg-white rounded-lg p-4 md:p-8 h-full relative overflow-hidden"
+          className="bg-white rounded-lg p-4 md:p-8 h-full relative overflow-hidden animate-scale-in"
           style={{
             background: "linear-gradient(180deg, #b9dce3 0%, #0a7a9a 100%)",
           }}
@@ -190,7 +202,7 @@ export default function VideoTutorialPerawatPage() {
           {/* Background pattern */}
           <Image
             alt="Background medical pattern"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none animate-float"
             src="/bgperawat.png"
             fill
             style={{ zIndex: 0 }}
@@ -199,14 +211,14 @@ export default function VideoTutorialPerawatPage() {
           {/* Content */}
           <div className="relative z-10">
             {/* Title Section */}
-            <div className="mb-6 md:mb-8">
-              <h1 className="text-white text-2xl md:text-4xl font-bold mb-1 md:mb-2">
+            <div className="mb-6 md:mb-8 animate-fade-in-up">
+              <h1 className="text-white text-2xl md:text-4xl font-bold mb-1 md:mb-2 animate-text-glow">
                 Video Edukasi
               </h1>
-              <h2 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4">
+              <h2 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 animate-text-glow animate-fade-in-delayed">
                 Tutorial Penggunaan
               </h2>
-              <h4 className="text-white text-3xl md:text-6xl font-bold">
+              <h4 className="text-white text-3xl md:text-6xl font-bold animate-text-glow animate-fade-in-delayed-2">
                 SAFE<span className="text-[#09839C]">Nurse</span>
               </h4>
             </div>
@@ -215,21 +227,24 @@ export default function VideoTutorialPerawatPage() {
             <div className="overflow-x-auto pb-4">
               {/* Desktop: Horizontal Scrollable, Mobile: Grid Layout */}
               <div
-                className="hidden md:flex md:space-x-6"
+                className="hidden md:flex md:space-x-6 animate-slide-in-right"
                 style={{ width: "max-content" }}
               >
-                {videos.map((video) => (
+                {videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className="flex-shrink-0 w-80 bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                    className="flex-shrink-0 w-80 bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-3 animate-video-card"
+                    style={{
+                      animationDelay: `${index * 0.15}s`
+                    }}
                     onClick={() => handleVideoClick(video.url)}
                   >
                     {/* Video Thumbnail */}
-                    <div className="relative h-48 bg-gray-200">
+                    <div className="relative h-48 bg-gray-200 overflow-hidden">
                       <Image
                         src={video.thumbnail}
                         alt={video.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                         width={320}
                         height={180}
                         onError={(e) => {
@@ -239,19 +254,19 @@ export default function VideoTutorialPerawatPage() {
                         }}
                       />
                       {/* Play Button Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all">
-                        <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                          <i className="fas fa-play text-2xl text-gray-700 ml-1"></i>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all duration-300">
+                        <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-300 hover:scale-110 animate-pulse-gentle">
+                          <i className="fas fa-play text-2xl text-gray-700 ml-1 animate-bounce-subtle"></i>
                         </div>
                       </div>
                     </div>
 
                     {/* Video Info */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <div className="p-4 animate-fade-in-up">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2 animate-fade-in-right">
                         {video.title}
                       </h3>
-                      <p className="text-sm text-[#0B7A95] font-medium">
+                      <p className="text-sm text-[#0B7A95] font-medium animate-fade-in-delayed">
                         SAFE<span className="text-[#09839C]">Nurse</span>
                       </p>
                     </div>
@@ -260,19 +275,22 @@ export default function VideoTutorialPerawatPage() {
               </div>
 
               {/* Mobile: Grid Layout */}
-              <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {videos.map((video) => (
+              <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up">
+                {videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                    className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 animate-video-card-mobile"
+                    style={{
+                      animationDelay: `${index * 0.1}s`
+                    }}
                     onClick={() => handleVideoClick(video.url)}
                   >
                     {/* Video Thumbnail */}
-                    <div className="relative h-40 bg-gray-200">
+                    <div className="relative h-40 bg-gray-200 overflow-hidden">
                       <Image
                         src={video.thumbnail}
                         alt={video.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                         width={320}
                         height={180}
                         onError={(e) => {
@@ -282,19 +300,19 @@ export default function VideoTutorialPerawatPage() {
                         }}
                       />
                       {/* Play Button Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all">
-                        <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                          <i className="fas fa-play text-lg text-gray-700 ml-1"></i>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all duration-300">
+                        <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-300 hover:scale-110 animate-pulse-gentle">
+                          <i className="fas fa-play text-lg text-gray-700 ml-1 animate-bounce-subtle"></i>
                         </div>
                       </div>
                     </div>
 
                     {/* Video Info */}
-                    <div className="p-3">
-                      <h3 className="text-base font-semibold text-gray-800 mb-1">
+                    <div className="p-3 animate-fade-in-up">
+                      <h3 className="text-base font-semibold text-gray-800 mb-1 animate-fade-in-right">
                         {video.title}
                       </h3>
-                      <p className="text-xs text-[#0B7A95] font-medium">
+                      <p className="text-xs text-[#0B7A95] font-medium animate-fade-in-delayed">
                         SAFE<span className="text-[#09839C]">Nurse</span>
                       </p>
                     </div>
@@ -305,6 +323,114 @@ export default function VideoTutorialPerawatPage() {
           </div>
         </div>
       </main>
+
+      {/* Custom CSS Animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slide-down {
+          from { transform: translateY(-20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slide-up {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slide-in-right {
+          from { transform: translateX(30px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fade-in-up {
+          from { transform: translateY(10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fade-in-right {
+          from { transform: translateX(10px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes scale-in {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes video-card {
+          from { 
+            transform: translateY(30px) scale(0.9); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateY(0) scale(1); 
+            opacity: 1; 
+          }
+        }
+        
+        @keyframes video-card-mobile {
+          from { 
+            transform: translateY(20px) scale(0.95); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateY(0) scale(1); 
+            opacity: 1; 
+          }
+        }
+        
+        @keyframes bounce-subtle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        
+        @keyframes pulse-gentle {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+        
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 5px rgba(11, 122, 149, 0.3); }
+          50% { box-shadow: 0 0 20px rgba(11, 122, 149, 0.6); }
+        }
+        
+        @keyframes text-glow {
+          0%, 100% { text-shadow: 0 0 5px rgba(11, 122, 149, 0.3); }
+          50% { text-shadow: 0 0 15px rgba(11, 122, 149, 0.6); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in { animation: fade-in 0.8s ease-out; }
+        .animate-slide-down { animation: slide-down 0.6s ease-out; }
+        .animate-slide-up { animation: slide-up 0.8s ease-out; }
+        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out; }
+        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out; }
+        .animate-fade-in-right { animation: fade-in-right 0.6s ease-out; }
+        .animate-scale-in { animation: scale-in 0.8s ease-out; }
+        .animate-video-card { animation: video-card 0.8s ease-out; }
+        .animate-video-card-mobile { animation: video-card-mobile 0.6s ease-out; }
+        .animate-bounce-subtle { animation: bounce-subtle 2s infinite; }
+        .animate-pulse-gentle { animation: pulse-gentle 2s infinite; }
+        .animate-glow { animation: glow 2s infinite; }
+        .animate-text-glow { animation: text-glow 3s infinite; }
+        .animate-float { animation: float 6s infinite; }
+        .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+        .animate-fade-in-delayed { animation: fade-in 1s ease-out 0.3s both; }
+        .animate-fade-in-delayed-2 { animation: fade-in 1s ease-out 0.6s both; }
+      `}</style>
     </div>
   );
 }

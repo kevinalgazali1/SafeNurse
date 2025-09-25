@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 
 export default function ProfileChiefNursingPage() {
   const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // State lain (harus di atas, sebelum return)
   const [showEditModal, setShowEditModal] = useState(false);
@@ -61,7 +61,7 @@ export default function ProfileChiefNursingPage() {
       } catch (error) {
         console.error("Error fetch kepala ruangan:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -200,15 +200,40 @@ export default function ProfileChiefNursingPage() {
     window.location.href = "/login"; // redirect
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading...</p>;
-  }
+ 
 
-  if (!userData) {
-    return <p className="text-center mt-10">Data tidak ditemukan</p>;
-  }
 
   return (
+    <>
+      {isLoading ? (
+        <div className="fixed inset-0 bg-[#d9f0f6] z-50 flex items-center justify-center">
+          <div className="text-center">
+            {/* Loading Spinner */}
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
+            </div>
+            
+            {/* Loading Text */}
+            <div className="space-y-2">
+              <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
+                Memuat Data Profil...
+              </h3>
+              <p className="text-[#0B7A95]/70 text-sm">
+                Mohon tunggu sebentar
+              </p>
+            </div>
+            
+            {/* Loading Dots Animation */}
+            <div className="flex justify-center space-x-1 mt-4">
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       <style jsx>{`
         @keyframes fadeIn {
@@ -346,12 +371,18 @@ export default function ProfileChiefNursingPage() {
 
             {/* Notifikasi */}
             <button
-              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
               onClick={() =>
                 (window.location.href = "/notifications-chiefnursing")
               }
             >
-              <i className="fas fa-bell text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-bell text-lg mb-1"></i>
+                {/* Notification Count Badge */}
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  3
+                </span>
+              </div>
               <span className="text-xs">Notifikasi</span>
             </button>
 
@@ -403,12 +434,18 @@ export default function ProfileChiefNursingPage() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                 onClick={() =>
                   (window.location.href = "/notifications-chiefnursing")
                 }
               >
-                <i className="fas fa-bell text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-bell text-lg mr-3"></i>
+                  {/* Notification Count Badge */}
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    3
+                  </span>
+                </div>
                 <span>Notifikasi</span>
               </button>
 
@@ -776,5 +813,8 @@ export default function ProfileChiefNursingPage() {
         </div>
       )}
     </div>
+        </>
+      )}
+    </>
   );
 }

@@ -40,13 +40,162 @@ export default function DashboardVerifikatorPage() {
   const [filterUnit, setFilterUnit] = useState("Semua");
   const [filterKategori, setFilterKategori] = useState("Semua");
   const [filterGrading, setFilterGrading] = useState("Semua");
-  const [filterDateFrom, setFilterDateFrom] = useState("");
-  const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
 
   const [insidenData, setInsidenData] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<Insiden[]>([]);
   const [laporanData, setLaporanData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // CSS Keyframes untuk animasi
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideDown {
+        from { 
+          opacity: 0; 
+          transform: translateY(-20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes scaleIn {
+        from { 
+          opacity: 0; 
+          transform: scale(0.95); 
+        }
+        to { 
+          opacity: 1; 
+          transform: scale(1); 
+        }
+      }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes textGlow {
+        0%, 100% { text-shadow: 0 0 5px rgba(44,62,80,0.5); }
+        50% { text-shadow: 0 0 20px rgba(44,62,80,0.8), 0 0 30px rgba(44,62,80,0.6); }
+      }
+      
+      @keyframes fadeInRight {
+        from { 
+          opacity: 0; 
+          transform: translateX(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes fadeInLeft {
+        from { 
+          opacity: 0; 
+          transform: translateX(-30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes pulseGentle {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+      
+      @keyframes bounceSubtle {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      
+      @keyframes fadeInDelayed {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes fadeInDelayed2 {
+        0% { opacity: 0; transform: translateX(-20px); }
+        100% { opacity: 1; transform: translateX(0); }
+      }
+      
+      @keyframes fadeInDelayed3 {
+        0% { opacity: 0; transform: translateX(20px); }
+        100% { opacity: 1; transform: translateX(0); }
+      }
+      
+      @keyframes glow {
+        0%, 100% { box-shadow: 0 0 5px rgba(107,140,174,0.3); }
+        50% { box-shadow: 0 0 20px rgba(107,140,174,0.6), 0 0 30px rgba(107,140,174,0.4); }
+      }
+      
+      @keyframes chartSlideUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(40px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      .animate-fadeIn { animation: fadeIn 0.8s ease-out; }
+      .animate-slideDown { animation: slideDown 0.6s ease-out; }
+      .animate-scaleIn { animation: scaleIn 0.5s ease-out; }
+      .animate-float { animation: float 6s ease-in-out infinite; }
+      .animate-fadeInUp { animation: fadeInUp 0.7s ease-out; }
+      .animate-textGlow { animation: textGlow 3s ease-in-out infinite; }
+      .animate-fadeInRight { animation: fadeInRight 0.8s ease-out; }
+      .animate-fadeInLeft { animation: fadeInLeft 0.8s ease-out; }
+      .animate-pulseGentle { animation: pulseGentle 3s ease-in-out infinite; }
+      .animate-bounceSubtle { animation: bounceSubtle 2s ease-in-out infinite; }
+      .animate-fadeInDelayed { animation: fadeInDelayed 0.8s ease-out 0.2s both; }
+      .animate-fadeInDelayed2 { animation: fadeInDelayed2 0.8s ease-out 0.4s both; }
+      .animate-fadeInDelayed3 { animation: fadeInDelayed3 0.8s ease-out 0.6s both; }
+      .animate-glow { animation: glow 4s ease-in-out infinite; }
+      .animate-chartSlideUp { animation: chartSlideUp 0.9s ease-out; }
+      
+      .hover-lift:hover { 
+        transform: translateY(-3px) scale(1.01); 
+        transition: all 0.3s ease; 
+      }
+      
+      .stagger-1 { animation-delay: 0.1s; }
+      .stagger-2 { animation-delay: 0.2s; }
+      .stagger-3 { animation-delay: 0.3s; }
+      .stagger-4 { animation-delay: 0.4s; }
+      .stagger-5 { animation-delay: 0.5s; }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -77,7 +226,7 @@ export default function DashboardVerifikatorPage() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -103,15 +252,18 @@ export default function DashboardVerifikatorPage() {
         (d) => d.grading?.toLowerCase() === filterGrading.toLowerCase()
       );
     }
-    if (filterDateFrom) {
-      data = data.filter(
-        (d) => new Date(d.tgl_insiden) >= new Date(filterDateFrom)
-      );
+    if (filterYear) {
+      data = data.filter((d) => {
+        const insidenDate = new Date(d.tgl_insiden);
+        return insidenDate.getFullYear().toString() === filterYear;
+      });
     }
-    if (filterDateTo) {
-      data = data.filter(
-        (d) => new Date(d.tgl_insiden) <= new Date(filterDateTo)
-      );
+    if (filterMonth) {
+      data = data.filter((d) => {
+        const insidenDate = new Date(d.tgl_insiden);
+        const month = (insidenDate.getMonth() + 1).toString().padStart(2, '0');
+        return month === filterMonth;
+      });
     }
 
     setFilteredData(data);
@@ -166,30 +318,7 @@ export default function DashboardVerifikatorPage() {
     value: val,
   }));
 
-  // === Export PDF ===
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Laporan Insiden", 14, 10);
-
-    const tableData = laporanData.map((item, index) => [
-      index + 1,
-      item.kode_laporan,
-      item.nama_pasien,
-      item.umur,
-      item.kategori,
-      item.grading,
-      item.status,
-    ]);
-
-    autoTable(doc, {
-      head: [
-        ["No", "Kode", "Nama Pasien", "Umur", "Kategori", "Grading", "Status"],
-      ],
-      body: tableData,
-    });
-
-    doc.save("laporan-insiden.pdf");
-  };
+ 
 
   // === Export Excel ===
   const handleExportExcel = () => {
@@ -212,7 +341,37 @@ export default function DashboardVerifikatorPage() {
   };
 
   return (
-    <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
+    <>
+      {isLoading ? (
+        <div className="fixed inset-0 bg-[#d9f0f6] z-50 flex items-center justify-center">
+          <div className="text-center">
+            {/* Loading Spinner */}
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
+            </div>
+            
+            {/* Loading Text */}
+            <div className="space-y-2">
+              <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
+                Memuat Data Dashboard...
+              </h3>
+              <p className="text-[#0B7A95]/70 text-sm">
+                Mohon tunggu sebentar
+              </p>
+            </div>
+            
+            {/* Loading Dots Animation */}
+            <div className="flex justify-center space-x-1 mt-4">
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+    <div className="bg-[#d9f0f6] min-h-screen flex flex-col animate-fadeIn">
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
         <div className="flex justify-between items-center">
@@ -242,12 +401,18 @@ export default function DashboardVerifikatorPage() {
 
             {/* Notifikasi */}
             <button
-              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
               onClick={() =>
                 (window.location.href = "/notifications-verifikator")
               }
             >
-              <i className="fas fa-bell text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-bell text-lg mb-1"></i>
+                {/* Notification Count Badge */}
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  3
+                </span>
+              </div>
               <span className="text-xs">Notifikasi</span>
             </button>
 
@@ -308,12 +473,18 @@ export default function DashboardVerifikatorPage() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                 onClick={() =>
                   (window.location.href = "/notifications-verifikator")
                 }
               >
-                <i className="fas fa-bell text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-bell text-lg mr-3"></i>
+                  {/* Notification Count Badge */}
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    3
+                  </span>
+                </div>
                 <span>Notifikasi</span>
               </button>
 
@@ -342,12 +513,12 @@ export default function DashboardVerifikatorPage() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6">
-        <div className="bg-[#A8C8E1] rounded-lg p-4 sm:p-6 h-full relative overflow-hidden">
+      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 animate-slideDown">
+        <div className="bg-[#A8C8E1] rounded-lg p-4 sm:p-6 h-full relative overflow-hidden animate-scaleIn">
           {/* Background pattern */}
           <Image
             alt="Background medical pattern"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none animate-float"
             src="/bgperawat.png"
             fill
             style={{ zIndex: 0 }}
@@ -356,17 +527,18 @@ export default function DashboardVerifikatorPage() {
           {/* Content */}
           <div className="relative z-10">
             {/* Header */}
-            <div className="mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-2">
+            <div className="mb-4 sm:mb-6 animate-fadeInUp">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-2 animate-textGlow">
                 Dashboard Insiden dan Data
               </h2>
             </div>
 
             {/* Filter Data Section */}
-            <div className="bg-white rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-              <h3 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
+            <div className="bg-white rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 animate-fadeInLeft hover-lift animate-glow">
+              <h3 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4 animate-pulseGentle">
                 Filter Data
               </h3>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 items-end">
                 {/* Unit */}
                 <div>
@@ -422,32 +594,51 @@ export default function DashboardVerifikatorPage() {
                   </select>
                 </div>
 
-                {/* Date From */}
+                {/* Tahun */}
                 <div>
                   <label className="block text-sm font-medium text-[#2C3E50] mb-1">
-                    Data
+                    Tahun
                   </label>
-                  <input
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                  <select
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value)}
                     className="w-full px-3 py-2 bg-[#6B8CAE] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
-                    placeholder="dd/mm/yy"
-                  />
+                  >
+                    <option value="">Semua Tahun</option>
+                    <option value="2024">2026</option>
+                    <option value="2024">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                  </select>
                 </div>
 
-                {/* To */}
+                {/* Bulan */}
                 <div>
                   <label className="block text-sm font-medium text-[#2C3E50] mb-1">
-                    To
+                    Bulan
                   </label>
-                  <input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
+                  <select
+                    value={filterMonth}
+                    onChange={(e) => setFilterMonth(e.target.value)}
                     className="w-full px-3 py-2 bg-[#6B8CAE] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
-                    placeholder="dd/mm/yy"
-                  />
+                  >
+                    <option value="">Semua Bulan</option>
+                    <option value="01">Januari</option>
+                    <option value="02">Februari</option>
+                    <option value="03">Maret</option>
+                    <option value="04">April</option>
+                    <option value="05">Mei</option>
+                    <option value="06">Juni</option>
+                    <option value="07">Juli</option>
+                    <option value="08">Agustus</option>
+                    <option value="09">September</option>
+                    <option value="10">Oktober</option>
+                    <option value="11">November</option>
+                    <option value="12">Desember</option>
+                  </select>
                 </div>
 
                 {/* Filter Button */}
@@ -464,10 +655,10 @@ export default function DashboardVerifikatorPage() {
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6 animate-fadeInRight">
               {/* Grafik Tren Insiden */}
-              <div className="bg-white rounded-lg p-3 sm:p-4">
-                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
+              <div className="bg-white rounded-lg p-3 sm:p-4 animate-chartSlideUp stagger-1 hover-lift animate-glow">
+                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4 animate-bounceSubtle">
                   Grafik Tren Insiden
                 </h4>
                 <ResponsiveContainer width="100%" height={250}>
@@ -481,8 +672,8 @@ export default function DashboardVerifikatorPage() {
               </div>
 
               {/* Distribusi Berdasarkan Kategori */}
-              <div className="bg-white rounded-lg p-3 sm:p-4">
-                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
+              <div className="bg-white rounded-lg p-3 sm:p-4 animate-chartSlideUp stagger-2 hover-lift animate-glow">
+                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4 animate-bounceSubtle">
                   Distribusi Berdasarkan Kategori
                 </h4>
                 <ResponsiveContainer width="100%" height={250}>
@@ -508,8 +699,8 @@ export default function DashboardVerifikatorPage() {
               </div>
 
               {/* Distribusi Berdasarkan Grading */}
-              <div className="bg-white rounded-lg p-3 sm:p-4">
-                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4">
+              <div className="bg-white rounded-lg p-3 sm:p-4 animate-chartSlideUp stagger-3 hover-lift animate-glow">
+                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-3 sm:mb-4 animate-bounceSubtle">
                   Distribusi Berdasarkan Grading
                 </h4>
                 <ResponsiveContainer width="100%" height={250}>
@@ -536,22 +727,16 @@ export default function DashboardVerifikatorPage() {
             </div>
 
             {/* Data Insiden Table */}
-            <div className="bg-white rounded-lg overflow-hidden">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 sm:p-4 border-b space-y-2 sm:space-y-0">
-                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50]">
+            <div className="bg-white rounded-lg overflow-hidden animate-fadeInDelayed hover-lift animate-glow">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 sm:p-4 border-b space-y-2 sm:space-y-0 animate-fadeInDelayed2">
+                <h4 className="text-base sm:text-lg font-semibold text-[#2C3E50] animate-pulseGentle">
                   Data Insiden
                 </h4>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-                  <button
-                    onClick={handleExportPDF}
-                    className="bg-[#6B8CAE] text-white px-3 sm:px-4 py-2 rounded text-xs sm:text-sm hover:bg-[#5a7a9e] transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <i className="fas fa-file-pdf"></i>
-                    <span>Ekspor PDF</span>
-                  </button>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto animate-fadeInDelayed3">
+                
                   <button
                     onClick={handleExportExcel}
-                    className="bg-[#6B8CAE] text-white px-3 sm:px-4 py-2 rounded text-xs sm:text-sm hover:bg-[#5a7a9e] transition-colors flex items-center justify-center space-x-2"
+                    className="bg-[#6B8CAE] text-white px-3 sm:px-4 py-2 rounded text-xs sm:text-sm hover:bg-[#5a7a9e] transition-colors flex items-center justify-center space-x-2 hover-lift animate-pulseGentle"
                   >
                     <i className="fas fa-file-excel"></i>
                     <span>Ekspor Excel</span>
@@ -560,7 +745,7 @@ export default function DashboardVerifikatorPage() {
               </div>
 
               {/* Table Header - Hidden on mobile */}
-              <div className="bg-[#2C3E50] text-white hidden sm:block">
+              <div className="bg-[#2C3E50] text-white hidden sm:block animate-fadeInUp">
                 <div className="grid grid-cols-4 gap-4 px-4 py-3 text-sm font-medium">
                   <div className="text-center">Tanggal</div>
                   <div className="text-center">Unit</div>
@@ -572,7 +757,7 @@ export default function DashboardVerifikatorPage() {
               {/* Table Body */}
               <div className="divide-y divide-gray-200">
                 {insidenData.map((item, index) => (
-                  <div key={item.id}>
+                  <div key={item.id} className="animate-fadeInUp hover-lift" style={{animationDelay: `${index * 0.1}s`}}>
                     {/* Desktop View */}
                     <div
                       className={`hidden sm:grid grid-cols-4 gap-4 px-4 py-3 text-sm ${
@@ -642,5 +827,8 @@ export default function DashboardVerifikatorPage() {
         </div>
       </main>
     </div>
+        </>
+      )}
+    </>
   );
 }

@@ -25,6 +25,7 @@ interface Report {
   unitYangMelaporkan: string;
   lokasiKejadian: string;
   tanggalInsiden: string;
+  yangDilaporkan: string;
   judulInsiden: string;
   kronologi: string;
   tindakanAwal: string;
@@ -100,6 +101,182 @@ export default function LaporanMasukVerifikator() {
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // CSS Keyframes untuk animasi
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes textGlow {
+        0%, 100% {
+          text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        50% {
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      @keyframes glow {
+        0%, 100% {
+          box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+      }
+
+      @keyframes pulseGentle {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes bounceSubtle {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-3px);
+        }
+      }
+
+      @keyframes fadeInDelayed {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInDelayed2 {
+        0% {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-slideDown {
+        animation: slideDown 0.6s ease-out;
+      }
+
+      .animate-scaleIn {
+        animation: scaleIn 0.5s ease-out;
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .animate-fadeInRight {
+        animation: fadeInRight 0.8s ease-out;
+      }
+
+      .animate-textGlow {
+        animation: textGlow 2s ease-in-out infinite;
+      }
+
+      .animate-glow {
+        animation: glow 2s ease-in-out infinite;
+      }
+
+      .animate-pulseGentle {
+        animation: pulseGentle 2s ease-in-out infinite;
+      }
+
+      .animate-bounceSubtle {
+        animation: bounceSubtle 1s ease-in-out infinite;
+      }
+
+      .animate-fadeInDelayed {
+        animation: fadeInDelayed 0.8s ease-out;
+      }
+
+      .animate-fadeInDelayed2 {
+        animation: fadeInDelayed2 0.8s ease-out;
+      }
+
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -109,8 +286,12 @@ export default function LaporanMasukVerifikator() {
 
   // === Ambil data ringkas laporan masuk ===
   const fetchReports = async () => {
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
     try {
+      setIsLoading(true);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/laporanMasuk`,
         {
@@ -136,6 +317,8 @@ export default function LaporanMasukVerifikator() {
       setReports(mappedReports);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -176,6 +359,7 @@ export default function LaporanMasukVerifikator() {
         unitYangMelaporkan: r.unit_yang_melaporkan || "-",
         lokasiKejadian: r.lokasi_insiden || "-",
         tanggalInsiden: r.tgl_insiden || "-",
+        yangDilaporkan: "-",
         kronologi: r.kronologi || "-",
         tindakanAwal: r.tindakan_awal || "-",
         tindakanOleh: r.tindakan_oleh || "-",
@@ -212,7 +396,7 @@ export default function LaporanMasukVerifikator() {
     setCatatan("");
   };
 
-    const handleCloseRiwayatModal = () => {
+  const handleCloseRiwayatModal = () => {
     setShowRiwayatModal(false);
   };
 
@@ -361,6 +545,36 @@ export default function LaporanMasukVerifikator() {
   };
 
   return (
+    <>
+      {isLoading ? (
+        <div className="fixed inset-0 bg-[#d9f0f6] z-50 flex items-center justify-center">
+          <div className="text-center">
+            {/* Loading Spinner */}
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
+            </div>
+            
+            {/* Loading Text */}
+            <div className="space-y-2">
+              <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
+                Memuat Data Laporan Masuk...
+              </h3>
+              <p className="text-[#0B7A95]/70 text-sm">
+                Mohon tunggu sebentar
+              </p>
+            </div>
+            
+            {/* Loading Dots Animation */}
+            <div className="flex justify-center space-x-1 mt-4">
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+              <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
@@ -394,12 +608,18 @@ export default function LaporanMasukVerifikator() {
 
             {/* Notifikasi */}
             <button
-              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
               onClick={() =>
                 (window.location.href = "/notifications-verifikator")
               }
             >
-              <i className="fas fa-bell text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-bell text-lg mb-1"></i>
+                {/* Notification Count Badge */}
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  3
+                </span>
+              </div>
               <span className="text-xs">Notifikasi</span>
             </button>
 
@@ -460,12 +680,18 @@ export default function LaporanMasukVerifikator() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                 onClick={() =>
                   (window.location.href = "/notifications-verifikator")
                 }
               >
-                <i className="fas fa-bell text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-bell text-lg mr-3"></i>
+                  {/* Notification Count Badge */}
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    3
+                  </span>
+                </div>
                 <span>Notifikasi</span>
               </button>
 
@@ -489,16 +715,16 @@ export default function LaporanMasukVerifikator() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6">
+      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 animate-slideDown">
         {/* Background Pattern */}
         <div
-          className="relative rounded-xl p-4 sm:p-8 h-full"
+          className="relative rounded-xl p-4 sm:p-8 h-full animate-scaleIn"
           style={{
             background: "linear-gradient(180deg, #b9dce3 0%, #0a7a9a 100%)",
           }}
         >
           <div
-            className="absolute inset-0 opacity-20 pointer-events-none rounded-xl"
+            className="absolute inset-0 opacity-20 pointer-events-none rounded-xl animate-float"
             style={{
               backgroundImage: `url('/bgperawat.png')`,
               backgroundSize: "cover",
@@ -510,23 +736,30 @@ export default function LaporanMasukVerifikator() {
           {/* Content Container */}
           <div className="relative z-10">
             {/* Page Title */}
-            <div className="mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+            <div className="mb-6 sm:mb-8 animate-fadeInUp">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 animate-textGlow">
                 Daftar Laporan Masuk
               </h2>
             </div>
 
             {/* Reports List */}
-            <div className="space-y-3 sm:space-y-4">
-              {reports.map((report) => (
+            <div className="space-y-3 sm:space-y-4 animate-fadeInRight">
+              {reports.map((report, index) => (
                 <div
                   key={report.id}
-                  className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer"
+                  className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer hover-lift animate-glow ${
+                    index === 0
+                      ? "animate-fadeInDelayed"
+                      : index === 1
+                      ? "animate-fadeInDelayed2"
+                      : "animate-fadeInDelayed"
+                  }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                   onClick={() => fetchReportDetail(report.id)}
                 >
                   <div className="flex items-start space-x-3 sm:space-x-4">
-                    <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0">
-                      <i className="fas fa-envelope text-white text-sm sm:text-lg"></i>
+                    <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0 animate-pulseGentle">
+                      <i className="fas fa-envelope text-white text-sm sm:text-lg animate-bounceSubtle"></i>
                     </div>
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-800 mb-1 leading-tight">
@@ -686,6 +919,16 @@ export default function LaporanMasukVerifikator() {
                 </p>
               </div>
 
+              {/* Yang Dilaporkan */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                  Yang Dilaporkan :
+                </label>
+                <p className="text-gray-800 bg-white/50 p-2 rounded">
+                  {selectedReport.yangDilaporkan}
+                </p>
+              </div>
+
               {/* judul insiden */}
               <div>
                 <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
@@ -794,6 +1037,100 @@ export default function LaporanMasukVerifikator() {
                 <p className="text-gray-800 bg-white/50 p-2 rounded">
                   {formatTanggal(selectedReport.tanggalWaktuPelaporan)}
                 </p>
+              </div>
+              
+              {/* Validasi Kepala Ruangan */}
+              <div className="bg-white/30 p-4 rounded-lg mt-4">
+                <h3 className="text-[#2C3E50] font-bold mb-3 text-base">
+                  Validasi Kepala Ruangan
+                </h3>
+
+                {/* Kategori */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Kategori:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Grading */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Grading:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Rekomendasi Tindakan */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Rekomendasi Tindakan:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Catatan */}
+                <div>
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Catatan:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+              </div>
+
+              {/* Validasi Chief Nursing */}
+              <div className="bg-white/30 p-4 rounded-lg mt-4">
+                <h3 className="text-[#2C3E50] font-bold mb-3 text-base">
+                  Validasi Chief Nursing
+                </h3>
+
+                {/* Kategori */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Kategori:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Grading */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Grading:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Rekomendasi Tindakan */}
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Rekomendasi Tindakan:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
+
+                {/* Catatan */}
+                <div>
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Catatan:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    -
+                  </p>
+                </div>
               </div>
 
               {/* Action Buttons - Moved above Catatan */}
@@ -1251,5 +1588,10 @@ export default function LaporanMasukVerifikator() {
         </div>
       )}
     </div>
+        </>
+      )}
+    </>
   );
 }
+
+// ...existing code...

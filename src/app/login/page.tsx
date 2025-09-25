@@ -21,15 +21,18 @@ export default function LoginPage() {
     setIsLoaded(true);
   }, []);
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) {
@@ -71,10 +74,30 @@ const handleSubmit = async (e: React.FormEvent) => {
           isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         }`}
       >
-        <h1 className="text-white text-xl font-bold">
-          Safe
-          <span className="font-bold text-[#0B7A95]">Nurse</span>
-        </h1>
+        <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
 
         {/* Login Button */}
         <button

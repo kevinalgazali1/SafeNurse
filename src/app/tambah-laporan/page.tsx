@@ -23,6 +23,7 @@ interface ReportData {
   unitPelapor: string;
   lokasiInsiden: string;
   tglKejadian: string;
+  yangDilaporkan: string;
   judulInsiden: string;
   kronologi: string;
   tindakanSegera: string;
@@ -55,6 +56,7 @@ export default function TambahLaporanPage() {
     unitPelapor: "",
     lokasiInsiden: "",
     tglKejadian: "",
+    yangDilaporkan: "",
     judulInsiden: "",
     kronologi: "",
     tindakanSegera: "",
@@ -123,12 +125,13 @@ export default function TambahLaporanPage() {
       `1. Unit Pelapor : ${data.unitPelapor}\n` +
       `2. Lokasi Insiden : ${data.lokasiInsiden}\n` +
       `3. Tanggal/Jam Kejadian : ${data.tglKejadian}\n` +
-      `4. Judul Insiden : ${data.judulInsiden}\n` +
-      `5. Kronologi : ${data.kronologi}\n` +
-      `6. Tindakan Segera : ${data.tindakanSegera}\n` +
-      `7. Tindakan Oleh : ${data.tindakanOleh}\n` +
-      `8. Dampak Insiden : ${data.dampakInsiden}\n` +
-      `9. Frekuensi Kejadian : ${data.frekuensiKejadian}`
+      `4. Yang Dilaporkan : ${data.yangDilaporkan}\n` +
+      `5. Judul Insiden : ${data.judulInsiden}\n` +
+      `6. Kronologi : ${data.kronologi}\n` +
+      `7. Tindakan Segera : ${data.tindakanSegera}\n` +
+      `8. Tindakan Oleh : ${data.tindakanOleh}\n` +
+      `9. Dampak Insiden : ${data.dampakInsiden}\n` +
+      `10. Frekuensi Kejadian : ${data.frekuensiKejadian}`
     );
   };
 
@@ -212,6 +215,14 @@ export default function TambahLaporanPage() {
 
         case "tglKejadian":
           updatedData.tglKejadian = response;
+          setReportData(updatedData);
+          saveToLocalStorage(updatedData);
+          addMessage("bot", "Yang Dilaporkan?");
+          setCurrentStep("yangDilaporkan");
+          break;
+
+        case "yangDilaporkan":
+          updatedData.yangDilaporkan = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
           addMessage("bot", "Judul Insiden?");
@@ -369,12 +380,13 @@ export default function TambahLaporanPage() {
                   `1. Unit Pelapor : ${clean.unit_yang_melaporkan}\n` +
                   `2. Lokasi Insiden : ${clean.lokasi_insiden}\n` +
                   `3. Tanggal/Jam Kejadian : ${clean.tgl_insiden}\n` +
-                  `4. Judul Insiden : ${clean.judul_insiden}\n` +
-                  `5. Kronologi : ${clean.kronologi}\n` +
-                  `6. Tindakan Segera : ${clean.tindakan_awal}\n` +
-                  `7. Tindakan Oleh : ${clean.tindakan_oleh}\n` +
-                  `8. Dampak Insiden : ${clean.dampak}\n` +
-                  `9. Frekuensi Kejadian : ${clean.probabilitas}\n`
+                  `4. Yang Dilaporkan : ${updatedData.yangDilaporkan}\n` +
+                  `5. Judul Insiden : ${clean.judul_insiden}\n` +
+                  `6. Kronologi : ${clean.kronologi}\n` +
+                  `7. Tindakan Segera : ${clean.tindakan_awal}\n` +
+                  `8. Tindakan Oleh : ${clean.tindakan_oleh}\n` +
+                  `9. Dampak Insiden : ${clean.dampak}\n` +
+                  `10. Frekuensi Kejadian : ${clean.probabilitas}\n`;
 
                 addMessage("bot", summary);
 
@@ -439,7 +451,7 @@ export default function TambahLaporanPage() {
 
                 const result = await res.json();
 
-                console.log(result)
+                console.log(result);
 
                 if (res.ok) {
                   addMessage(
@@ -526,7 +538,7 @@ export default function TambahLaporanPage() {
 
         case "pilihRincianKejadian":
           const nomorRincian = parseInt(response.trim());
-          if (nomorRincian >= 1 && nomorRincian <= 9) {
+          if (nomorRincian >= 1 && nomorRincian <= 10) {
             switch (nomorRincian) {
               case 1:
                 addMessage("bot", "Berikan jawaban barunya:");
@@ -542,31 +554,35 @@ export default function TambahLaporanPage() {
                 break;
               case 4:
                 addMessage("bot", "Berikan jawaban barunya:");
-                setCurrentStep("editJudulInsiden");
+                setCurrentStep("editYangDilaporkan");
                 break;
               case 5:
                 addMessage("bot", "Berikan jawaban barunya:");
-                setCurrentStep("editKronologi");
+                setCurrentStep("editJudulInsiden");
                 break;
               case 6:
                 addMessage("bot", "Berikan jawaban barunya:");
-                setCurrentStep("editTindakanSegera");
+                setCurrentStep("editKronologi");
                 break;
               case 7:
                 addMessage("bot", "Berikan jawaban barunya:");
-                setCurrentStep("editTindakanOleh");
+                setCurrentStep("editTindakanSegera");
                 break;
               case 8:
                 addMessage("bot", "Berikan jawaban barunya:");
-                setCurrentStep("editDampakInsiden");
+                setCurrentStep("editTindakanOleh");
                 break;
               case 9:
+                addMessage("bot", "Berikan jawaban barunya:");
+                setCurrentStep("editDampakInsiden");
+                break;
+              case 10:
                 addMessage("bot", "Berikan jawaban barunya:");
                 setCurrentStep("editFrekuensiKejadian");
                 break;
             }
           } else {
-            addMessage("bot", "Mohon masukkan nomor yang valid (1-9).");
+            addMessage("bot", "Mohon masukkan nomor yang valid (1-10).");
           }
           break;
 
@@ -645,6 +661,19 @@ export default function TambahLaporanPage() {
         case "editTglKejadian":
           // Tidak langsung memproses response, karena akan menggunakan sistem kalender dan jam
           // Response akan diproses melalui tombol konfirmasi di UI
+          break;
+
+        case "editYangDilaporkan":
+          updatedData.yangDilaporkan = response;
+          setReportData(updatedData);
+          saveToLocalStorage(updatedData);
+          const summaryAfterEditYangDilaporkan =
+            generateReportSummary(updatedData);
+          addMessage("bot", summaryAfterEditYangDilaporkan);
+          setTimeout(() => {
+            addMessage("bot", "Apakah laporan sudah sesuai?");
+            setCurrentStep("konfirmasi");
+          }, 2000);
           break;
 
         case "editJudulInsiden":
@@ -742,8 +771,11 @@ export default function TambahLaporanPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        // Only populate input field, don't auto-send
-        setInputValue(transcript);
+        // Append new transcript to existing input value instead of replacing
+        setInputValue((prevValue) => {
+          // If there's existing text, add a space after the existing text
+          return prevValue ? `${prevValue} ${transcript}` : transcript;
+        });
         setIsListening(false);
       };
 
@@ -1109,7 +1141,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            4. Judul Insiden
+            4. Yang Dilaporkan
           </button>
           <button
             onClick={() => handleQuickResponse("5")}
@@ -1120,7 +1152,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            5. Kronologi
+            5. Judul Insiden
           </button>
           <button
             onClick={() => handleQuickResponse("6")}
@@ -1131,7 +1163,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            6. Tindakan Segera
+            6. Kronologi
           </button>
           <button
             onClick={() => handleQuickResponse("7")}
@@ -1142,7 +1174,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            7. Tindakan Oleh
+            7. Tindakan Segera
           </button>
           <button
             onClick={() => handleQuickResponse("8")}
@@ -1153,7 +1185,7 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            8. Dampak Insiden
+            8. Tindakan Oleh
           </button>
           <button
             onClick={() => handleQuickResponse("9")}
@@ -1164,7 +1196,18 @@ export default function TambahLaporanPage() {
                 : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
             }`}
           >
-            9. Frekuensi Kejadian
+            9. Dampak Insiden
+          </button>
+          <button
+            onClick={() => handleQuickResponse("10")}
+            disabled={isProcessingResponse}
+            className={`px-4 py-2 rounded-full text-sm transition-colors inline-block ${
+              isProcessingResponse
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
+            }`}
+          >
+            10. Frekuensi Kejadian
           </button>
         </div>
       );
@@ -1557,9 +1600,7 @@ export default function TambahLaporanPage() {
             kematian
           </button>
           <button
-            onClick={() =>
-              handleQuickResponse("cidera berat")
-            }
+            onClick={() => handleQuickResponse("cidera berat")}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
               isProcessingResponse
@@ -1570,9 +1611,7 @@ export default function TambahLaporanPage() {
             Cidera irreversible/ cidera berat
           </button>
           <button
-            onClick={() =>
-              handleQuickResponse("cidera sedang")
-            }
+            onClick={() => handleQuickResponse("cidera sedang")}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
               isProcessingResponse
@@ -1800,10 +1839,24 @@ export default function TambahLaporanPage() {
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
+          <div className="flex items-center space-x-4 animate-fadeInLeft animate-delay-100">
+            {/* Back Button */}
+            <button
+              className="flex items-center text-red-800 hover:text-red-800 transition-colors bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
+              onClick={() => (window.location.href = "/dashboard-perawat")}
+              title="Kembali ke Dashboard"
+            >
+              <i className="fas fa-arrow-left text-lg mr-2 text-red-800"></i>
+              <span className="hidden sm:inline text-sm font-medium">
+                Batal
+              </span>
+            </button>
+
+            <h1 className="text-white text-xl font-bold">
+              Safe
+              <span className="font-bold text-[#0B7A95]">Nurse</span>
+            </h1>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -1818,10 +1871,16 @@ export default function TambahLaporanPage() {
 
             {/* Notifikasi */}
             <button
-              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+              className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
               onClick={() => (window.location.href = "/notifications-perawat")}
             >
-              <i className="fas fa-bell text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-bell text-lg mb-1"></i>
+                {/* Notification Count Badge */}
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  3
+                </span>
+              </div>
               <span className="text-xs">Notifikasi</span>
             </button>
 
@@ -1872,12 +1931,18 @@ export default function TambahLaporanPage() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2 relative"
                 onClick={() =>
                   (window.location.href = "/notifications-perawat")
                 }
               >
-                <i className="fas fa-bell text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-bell text-lg mr-3"></i>
+                  {/* Notification Count Badge */}
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    3
+                  </span>
+                </div>
                 <span>Notifikasi</span>
               </button>
 
@@ -1992,6 +2057,7 @@ export default function TambahLaporanPage() {
                 currentStep !== "frekuensiKejadian" &&
                 currentStep !== "tglMasukRS" &&
                 currentStep !== "tglKejadian" &&
+                currentStep !== "konfirmasi" &&
                 currentStep !== "editJenisKelamin" &&
                 currentStep !== "editDampakInsiden" &&
                 currentStep !== "editFrekuensiKejadian" &&
@@ -2007,10 +2073,16 @@ export default function TambahLaporanPage() {
                           onKeyPress={(e) =>
                             e.key === "Enter" && handleSendMessage()
                           }
-                          placeholder="Ketik pesan Anda..."
-                          disabled={isProcessingResponse}
+                          placeholder={
+                            currentStep === "greeting"
+                              ? "Silakan pilih Ya atau Tidak"
+                              : "Ketik pesan Anda..."
+                          }
+                          disabled={
+                            isProcessingResponse || currentStep === "greeting"
+                          }
                           className={`w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black ${
-                            isProcessingResponse
+                            isProcessingResponse || currentStep === "greeting"
                               ? "bg-gray-100 cursor-not-allowed"
                               : ""
                           }`}
@@ -2019,13 +2091,18 @@ export default function TambahLaporanPage() {
 
                       <button
                         onClick={startVoiceRecognition}
+                        disabled={currentStep === "greeting"}
                         className={`p-2 rounded-full transition-all duration-200 ${
-                          isListening
+                          currentStep === "greeting"
+                            ? "bg-gray-300 text-gray-400 cursor-not-allowed"
+                            : isListening
                             ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50"
                             : "bg-gray-200 text-gray-600 hover:bg-gray-300 hover:shadow-md"
                         }`}
                         title={
-                          isListening
+                          currentStep === "greeting"
+                            ? "Silakan pilih Ya atau Tidak"
+                            : isListening
                             ? "Klik untuk berhenti merekam"
                             : "Rekam Suara"
                         }
@@ -2039,13 +2116,19 @@ export default function TambahLaporanPage() {
 
                       <button
                         onClick={handleSendMessage}
-                        disabled={isProcessingResponse}
+                        disabled={
+                          isProcessingResponse || currentStep === "greeting"
+                        }
                         className={`p-2 rounded-full transition-colors ${
-                          isProcessingResponse
+                          isProcessingResponse || currentStep === "greeting"
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
                         }`}
-                        title="Kirim Pesan"
+                        title={
+                          currentStep === "greeting"
+                            ? "Silakan pilih Ya atau Tidak"
+                            : "Kirim Pesan"
+                        }
                       >
                         <i className="fas fa-paper-plane"></i>
                       </button>
