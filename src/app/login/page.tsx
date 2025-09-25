@@ -133,7 +133,7 @@ export default function LoginPage() {
             <Image
               alt="Background medical icons with microphone, clipboard, and sound waves in light blue shades"
               className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none"
-              src="/backgroundlogin.png"
+              src="/bgperawat.png"
               fill
               style={{ zIndex: 0 }}
             />
@@ -238,13 +238,13 @@ export default function LoginPage() {
               background: "linear-gradient(180deg, #b9dce3 0%, #0a7a9a 100%)",
             }}
           >
-            {/* <Image
+            <Image
               alt="Background medical icons with microphone, clipboard, and sound waves in light blue shades"
               className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none"
-              src="/backgroundlogin.png"
+              src="/bgperawat.png"
               fill
               style={{ zIndex: 0 }}
-            /> */}
+            />
             <Image
               alt="Photo of a doctor and nurse pointing at a clipboard with medical documents"
               className="absolute inset-0 w-full h-full object-cover z-10 hover:scale-105 transition-transform duration-500"
