@@ -86,7 +86,7 @@ export default function LoginPage() {
 
           {/* Logo Unhas */}
           <Image
-            src="../logounhas.png"
+            src="public/logounhas.png"
             alt="Logo Unhas"
             width={40}
             height={40}
