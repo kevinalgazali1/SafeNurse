@@ -51,6 +51,19 @@ interface Report {
     catatan: string;
     created_at: string;
   }[];
+
+  validasiKepalaRuangan: {
+    kategori: string;
+    grading: string;
+    rekomendasiTindakan: string;
+    catatan: string;
+  };
+  validasiChiefNursing: {
+    kategori: string;
+    grading: string;
+    rekomendasiTindakan: string;
+    catatan: string;
+  };
 }
 
 // MobileReportCard Component Interface
@@ -543,6 +556,21 @@ export default function DashboardChiefNursing() {
         // isi array dari backend
         historyAksi: r.history_aksi || [],
         historyCatatan: r.history_catatan || [],
+
+        validasiKepalaRuangan: {
+          kategori: r.validasi_kepala_ruangan?.kategori || "-",
+          grading: r.validasi_kepala_ruangan?.grading || "-",
+          rekomendasiTindakan:
+            r.validasi_kepala_ruangan?.rekomendasi_tindakan || "-",
+          catatan: r.validasi_kepala_ruangan?.catatan || "-",
+        },
+        validasiChiefNursing: {
+          kategori: r.validasi_chief_nursing?.kategori || "-",
+          grading: r.validasi_chief_nursing?.grading || "-",
+          rekomendasiTindakan:
+            r.validasi_chief_nursing?.rekomendasi_tindakan || "-",
+          catatan: r.validasi_chief_nursing?.catatan || "-",
+        },
       };
 
       setSelectedReport(mappedDetail);
@@ -720,22 +748,29 @@ export default function DashboardChiefNursing() {
             <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
             <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
           </div>
-          
+
           {/* Loading Text */}
           <div className="space-y-2">
             <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
               Memuat Data Riwayat Laporan...
             </h3>
-            <p className="text-[#0B7A95]/70 text-sm">
-              Mohon tunggu sebentar
-            </p>
+            <p className="text-[#0B7A95]/70 text-sm">Mohon tunggu sebentar</p>
           </div>
-          
+
           {/* Loading Dots Animation */}
           <div className="flex justify-center space-x-1 mt-4">
-            <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-            <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-            <div className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -950,7 +985,7 @@ export default function DashboardChiefNursing() {
                       } hover:bg-blue-50 transition-colors`}
                     >
                       <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
-                        {report.tanggal}
+                        {new Date(report.tanggalWaktuPelaporan).toLocaleDateString("id-ID")}
                       </div>
                       <div className="text-gray-600 text-center">
                         {report.kategori}
@@ -1263,50 +1298,46 @@ export default function DashboardChiefNursing() {
                   {formatTanggal(selectedReport.tanggalWaktuPelaporan)}
                 </p>
               </div>
-              
+
               {/* Validasi Kepala Ruangan */}
               <div className="bg-white/30 p-4 rounded-lg mt-4">
                 <h3 className="text-[#2C3E50] font-bold mb-3 text-base">
                   Validasi Kepala Ruangan
                 </h3>
 
-                {/* Kategori */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Kategori:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiKepalaRuangan.kategori}
                   </p>
                 </div>
 
-                {/* Grading */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Grading:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiKepalaRuangan.grading}
                   </p>
                 </div>
 
-                {/* Rekomendasi Tindakan */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Rekomendasi Tindakan:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiKepalaRuangan.rekomendasiTindakan}
                   </p>
                 </div>
 
-                {/* Catatan */}
                 <div>
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Catatan:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiKepalaRuangan.catatan}
                   </p>
                 </div>
               </div>
@@ -1317,43 +1348,39 @@ export default function DashboardChiefNursing() {
                   Validasi Chief Nursing
                 </h3>
 
-                {/* Kategori */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Kategori:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiChiefNursing.kategori}
                   </p>
                 </div>
 
-                {/* Grading */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Grading:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiChiefNursing.grading}
                   </p>
                 </div>
 
-                {/* Rekomendasi Tindakan */}
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Rekomendasi Tindakan:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiChiefNursing.rekomendasiTindakan}
                   </p>
                 </div>
 
-                {/* Catatan */}
                 <div>
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
                     Catatan:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    -
+                    {selectedReport.validasiChiefNursing.catatan}
                   </p>
                 </div>
               </div>

@@ -838,7 +838,7 @@ export default function DashboardChiefNursing() {
                       } hover:bg-blue-50 transition-colors`}
                     >
                       <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
-                        {report.tanggal}
+                        {new Date(report.tanggalWaktuPelaporan).toLocaleDateString("id-ID")}
                       </div>
                       <div className="text-gray-600 text-center">
                         {report.kategori}
