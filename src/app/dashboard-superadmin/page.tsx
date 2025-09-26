@@ -1,78 +1,133 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Cookies from "js-cookie";
+
+interface User {
+  id_user: string;
+  email: string;
+  role: string;
+  nama: string;
+  nama_ruangan: string;
+}
 
 export default function DashboardSuperAdmin() {
   const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [ruanganList, setRuanganList] = useState<any[]>([]);
+
+  const token = Cookies.get("token");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      nama: "Dr. Ahmad Santoso",
-      email: "ahmad@hospital.com",
-      role: "verifikator",
-      ruangan: "-",
-    },
-    {
-      id: 2,
-      nama: "Siti Nurhaliza",
-      email: "siti@hospital.com",
-      role: "perawat",
-      ruangan: "IGD",
-    },
-    {
-      id: 3,
-      nama: "Budi Prasetyo",
-      email: "budi@hospital.com",
-      role: "perawat",
-      ruangan: "Bedah",
-    },
-    {
-      id: 4,
-      nama: "Dr. Maya Sari",
-      email: "maya@hospital.com",
-      role: "verifikator",
-      ruangan: "-",
-    },
-    {
-      id: 5,
-      nama: "Rina Wati",
-      email: "rina@hospital.com",
-      role: "perawat",
-      ruangan: "Kandungan",
-    },
-    {
-      id: 6,
-      nama: "Agus Setiawan",
-      email: "agus@hospital.com",
-      role: "kepalaruangan",
-      ruangan: "ICU",
-    },
-    {
-      id: 7,
-      nama: "Dewi Lestari",
-      email: "dewi@hospital.com",
-      role: "chiefnursing",
-      ruangan: "-",
-    },
-    {
-      id: 8,
-      nama: "Admin System",
-      email: "admin@hospital.com",
-      role: "admin",
-      ruangan: "System",
-    },
-  ]);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Gagal mengambil data users");
+
+      const data = await res.json();
+      console.log("Users dari API:", data);
+      setUsers(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const fetchRuangan = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal mengambil data ruangan");
+
+        const data = await res.json();
+        console.log("Data ruangan:", data);
+        setRuanganList(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) fetchRuangan();
+  }, [token]);
+
+  const handleSubmit = async () => {
+    try {
+      const body = {
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+        id_ruangan: newUser.unitKerja, // pastikan sesuai dengan id dari API ruangan
+        nama: newUser.nama,
+        ...(newUser.role !== "perawat" && { no_telp: newUser.telepon }), // hanya kirim kalau bukan perawat
+      };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal register");
+
+      const data = await res.json();
+      console.log("Register sukses:", data);
+
+      // ✅ Refresh tabel dengan fetch ulang
+      await fetchUsers();
+
+      // reset form
+      setShowCreateModal(false);
+      setNewUser({
+        nama: "",
+        role: "",
+        unitKerja: "",
+        email: "",
+        telepon: "",
+        password: "",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<{ id: number; nama: string; email: string; role: string; ruangan: string } | null>(null);
+  const [userToDelete, setUserToDelete] = useState<{
+    id: number;
+    nama: string;
+    email: string;
+    role: string;
+    ruangan: string;
+  } | null>(null);
   const [filterRole, setFilterRole] = useState("");
   const [newUser, setNewUser] = useState({
     nama: "",
@@ -89,16 +144,19 @@ export default function DashboardSuperAdmin() {
     : users;
 
   // Handle delete user
-  const handleDeleteUser = (user: { id: number; nama: string; email: string; role: string; ruangan: string }) => {
+  const handleDeleteUser = (user: {
+    id: number;
+    nama: string;
+    email: string;
+    role: string;
+    ruangan: string;
+  }) => {
     setUserToDelete(user);
     setShowDeleteModal(true);
   };
 
   const confirmDeleteUser = () => {
     if (userToDelete) {
-      setUsers(users.filter((u) => u.id !== userToDelete.id));
-      setShowDeleteModal(false);
-      setUserToDelete(null);
     }
   };
 
@@ -232,10 +290,10 @@ export default function DashboardSuperAdmin() {
                   >
                     <option value="">Semua Role</option>
                     <option value="perawat">Perawat</option>
-                    <option value="kepalaruangan">Kepala Ruangan</option>
-                    <option value="chief-nursing">Chief Nursing</option>
+                    <option value="kepala_ruangan">Kepala Ruangan</option>
+                    <option value="chief_nursing">Chief Nursing</option>
                     <option value="verifikator">Verifikator</option>
-                    <option value="admin">Admin</option>
+                    <option value="super_admin">Admin</option>
                   </select>
                 </div>
               </div>
@@ -272,79 +330,106 @@ export default function DashboardSuperAdmin() {
 
                 {/* Table Body */}
                 <div className="divide-y divide-gray-200">
-                  {filteredUsers.map((user, index) => (
-                    <div
-                      key={user.id}
-                      className={`grid grid-cols-5 gap-6 px-6 py-4 ${
-                        index % 2 === 0 ? "bg-[#B9D9DD]" : "bg-white"
-                      }`}
-                    >
-                      <div className="text-center text-gray-800 font-medium">
-                        {user.nama}
-                      </div>
-                      <div className="text-center text-gray-600">
-                        {user.email}
-                      </div>
-                      <div className="text-center text-gray-600">
-                        {user.role}
-                      </div>
-                      <div className="text-center text-gray-600">
-                        {user.ruangan}
-                      </div>
-                      <div className="text-center">
-                        <div className="flex justify-center space-x-2">
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                          >
-                            Hapus
-                          </button>
+                  {filteredUsers.map((user, index) => {
+                    // Mapping role agar lebih readable
+                    const roleLabel: Record<string, string> = {
+                      super_admin: "Super Admin",
+                      verifikator: "Verifikator",
+                      perawat: "Perawat",
+                      kepala_ruangan: "Kepala Ruangan",
+                      chief_nursing: "Chief Nursing",
+                      admin: "Admin",
+                    };
+
+                    return (
+                      <div
+                        key={user.id_user}
+                        className={`grid grid-cols-5 gap-6 px-6 py-4 ${
+                          index % 2 === 0 ? "bg-[#B9D9DD]" : "bg-white"
+                        }`}
+                      >
+                        <div className="text-center text-gray-800 font-medium">
+                          {user.nama}
+                        </div>
+                        <div className="text-center text-gray-600">
+                          {user.email}
+                        </div>
+                        <div className="text-center text-gray-600 no-underline">
+                          {roleLabel[user.role] || user.role}
+                        </div>
+                        <div className="text-center text-gray-600">
+                          {user.nama_ruangan}
+                        </div>
+                        <div className="text-center">
+                          <div className="flex justify-center space-x-2">
+                            {/* <button
+                          onClick={showDeleteModal}
+                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                        >
+                          Hapus
+                        </button> */}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Mobile Cards - Visible on Mobile */}
               <div className="md:hidden space-y-4 p-4">
-                {filteredUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-semibold text-gray-800 text-lg">
-                            {user.nama}
-                          </h4>
-                          <p className="text-gray-600 text-sm">{user.email}</p>
+                {filteredUsers.map((user) => {
+                  const roleLabel: Record<string, string> = {
+                    super_admin: "Super Admin",
+                    verifikator: "Verifikator",
+                    perawat: "Perawat",
+                    kepala_ruangan: "Kepala Ruangan",
+                    chief_nursing: "Chief Nursing",
+                    admin: "Admin",
+                  };
+
+                  return (
+                    <div
+                      key={user.id_user}
+                      className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-semibold text-gray-800 text-lg">
+                              {user.nama}
+                            </h4>
+                            <p className="text-gray-600 text-sm">
+                              {user.email}
+                            </p>
+                          </div>
+                          {/* <button
+              onClick={showDeleteModal}
+              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+            >
+              Hapus
+            </button> */}
                         </div>
-                        <button
-                          onClick={() => handleDeleteUser(user)}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Role:
-                          </span>
-                          <p className="text-gray-600">{user.role}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Ruangan:
-                          </span>
-                          <p className="text-gray-600">{user.ruangan}</p>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Role:
+                            </span>
+                            <p className="text-gray-600 no-underline">
+                              {roleLabel[user.role] || user.role}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Ruangan:
+                            </span>
+                            <p className="text-gray-600">{user.nama_ruangan}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -422,20 +507,23 @@ export default function DashboardSuperAdmin() {
 
                 <div>
                   <label className="block text-[#0E364A] font-medium mb-2">
-                    Unit Kerja / Ruangan :
+                    Unit Kerja :
                   </label>
                   <select
                     value={newUser.unitKerja}
                     onChange={(e) =>
                       setNewUser({ ...newUser, unitKerja: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md 
+               focus:outline-none focus:ring-2 focus:ring-[#0B7A95] 
+               text-black bg-white"
                   >
-                    <option value="">Pilih Unit Kerja</option>
-                    <option value="ICU">ICU</option>
-                    <option value="IGD">IGD</option>
-                    <option value="Bedah">Bedah</option>
-                    <option value="Anak">Anak</option>
+                    <option value="">-- Pilih Ruangan --</option>
+                    {ruanganList.map((ruang) => (
+                      <option key={ruang.id_ruangan} value={ruang.id_ruangan}>
+                        {ruang.nama_ruangan}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -453,19 +541,21 @@ export default function DashboardSuperAdmin() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[#0E364A] font-medium mb-2">
-                    No. Telepon :
-                  </label>
-                  <input
-                    type="tel"
-                    value={newUser.telepon}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, telepon: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
-                  />
-                </div>
+                {newUser.role !== "perawat" && (
+                  <div>
+                    <label className="block text-[#0E364A] font-medium mb-2">
+                      No. Telepon :
+                    </label>
+                    <input
+                      type="tel"
+                      value={newUser.telepon}
+                      onChange={(e) =>
+                        setNewUser({ ...newUser, telepon: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[#0E364A] font-medium mb-2">
@@ -487,18 +577,7 @@ export default function DashboardSuperAdmin() {
             <div className="p-6 border-t border-gray-200">
               <div className="flex justify-center">
                 <button
-                  onClick={() => {
-                    // Handle submit logic here
-                    setShowCreateModal(false);
-                    setNewUser({
-                      nama: "",
-                      role: "",
-                      unitKerja: "",
-                      email: "",
-                      telepon: "",
-                      password: "",
-                    });
-                  }}
+                  onClick={handleSubmit}
                   className="bg-[#0E364A] text-white px-8 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
                 >
                   Submit

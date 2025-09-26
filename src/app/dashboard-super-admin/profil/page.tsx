@@ -1,71 +1,141 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Cookies from 'js-cookie';
 
 export default function ProfilSuperAdmin() {
   const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [userData] = useState({
-    nama: 'Administrator Utama',
-    noStr: '12345678901234567890',
-    nip: '198501012010012001',
-    unitKerja: 'Sistem Administrasi',
-    jabatan: 'Super Administrator',
-    email: 'admin@safenurse.com'
-  });
-
+  // State untuk modal & form
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
     email: '',
     oldPassword: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Password visibility states
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    const token = Cookies.get('token'); // ambil JWT
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/super_admin/GWVb7Bu48vpsxMj_5PzUI`, // 🔥 ganti sesuai endpoint backend kamu
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error('Gagal ambil data superadmin');
+        }
+
+        const data = await res.json();
+        console.log('API response:', data);
+        setUserData(data);
+      } catch (error) {
+        console.error('Error fetch superadmin:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [router]);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.email,
+      email: userData?.email || '',
       oldPassword: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
     setShowEditModal(true);
   };
 
   const handleCloseModal = () => {
     setShowEditModal(false);
-    setEditForm({ email: '', oldPassword: '', password: '', confirmPassword: '' });
+    setEditForm({
+      email: '',
+      oldPassword: '',
+      password: '',
+      confirmPassword: '',
+    });
   };
 
-  const handleSubmitEdit = (e: React.FormEvent) => {
+  const handleSubmitEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (editForm.password !== editForm.confirmPassword) {
       alert('Password dan konfirmasi password tidak cocok!');
       return;
     }
-    // Handle form submission here
-    console.log('Form submitted:', editForm);
-    setShowEditModal(false);
+
+    try {
+      const token = Cookies.get('token');
+      if (!token) {
+        alert('Token tidak ada, silakan login ulang.');
+        return;
+      }
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/forgot_password/change_password`, // 🔥 endpoint ganti sesuai kebutuhan
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: editForm.oldPassword,
+            newPassword: editForm.password,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Gagal mengubah password');
+      }
+
+      const result = await res.json();
+      console.log('Password updated:', result);
+      alert('Password berhasil diubah!');
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error change password:', error);
+      alert('Terjadi kesalahan saat mengubah password');
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setEditForm(prev => ({ ...prev, [field]: value }));
+    setEditForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleLogout = () => {
-    window.location.href = '/login';
+    Cookies.remove('token'); // hapus token
+    router.push('/login'); // redirect
   };
 
   return (
@@ -253,8 +323,8 @@ export default function ProfilSuperAdmin() {
                     <div className="w-24 h-24 bg-[#4A9B8E] rounded-full flex items-center justify-center mb-4">
                       <i className="fas fa-user-shield text-3xl text-white"></i>
                     </div>
-                    <h2 className="text-lg font-bold text-gray-800 text-center mb-1">Nama Lengkap</h2>
-                    <p className="text-gray-600 text-center text-sm">{userData.email}</p>
+                    <h2 className="text-lg font-bold text-gray-800 text-center mb-1">Admin</h2>
+                    <p className="text-gray-600 text-center text-sm">{userData?.email}</p>
                   </div>
                   
                   {/* Right Box - General Information */}
@@ -273,7 +343,7 @@ export default function ProfilSuperAdmin() {
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
                         <label className="text-sm text-gray-600">Email</label>
-                        <p className="text-gray-800">{userData.email}</p>
+                        <p className="text-gray-800">{userData?.email}</p>
                       </div>
                       <div>
                         <label className="text-sm text-gray-600">Password</label>

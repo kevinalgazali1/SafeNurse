@@ -29,7 +29,9 @@ export function middleware(req: NextRequest) {
 
     // Mapping role ke prefix folder
     const roleToPrefix: Record<string, string[]> = {
-      super_admin: ["dashboard-superadmin"],
+      super_admin: ["dashboard-superadmin",
+        "dashboard-super-admin"
+      ],
       perawat: [
         "dashboard-perawat",
         "profile-perawat",

@@ -1,32 +1,67 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+
+interface Ruangan {
+  id_ruangan: string;
+  nama_ruangan: string;
+}
 
 export default function RuanganSuperAdmin() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [ruangan, setRuangan] = useState<{ id: number; nama: string }[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<{
+    id: number;
+    nama: string;
+  } | null>(null);
+  const [newRoom, setNewRoom] = useState({ nama: "" });
+
+  const token = Cookies.get("token");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const [ruangan, setRuangan] = useState([
-    { id: 1, nama: "IGD" },
-    { id: 2, nama: "ICU" },
-    { id: 3, nama: "Rawat Inap A" },
-    { id: 4, nama: "Rawat Inap B" },
-    { id: 5, nama: "Kamar Operasi" },
-    { id: 6, nama: "Laboratorium" },
-  ]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState<{ id: number; nama: string } | null>(null);
-  const [newRoom, setNewRoom] = useState({
-    nama: "",
-  });
+  // 🔹 Fetch ruangan dari API
+  const fetchRuangan = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  // Handle delete room
+      if (!res.ok) throw new Error("Gagal mengambil data ruangan");
+
+      const resData = await res.json();
+      console.log("RAW DATA:", resData);
+
+      // mapping ke struktur { id, nama }
+      const mapped = resData.map((r: Ruangan) => ({
+        id: r.id_ruangan, // string
+        nama: r.nama_ruangan, // string
+      }));
+
+      setRuangan(mapped);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRuangan();
+  }, []);
+
+  // 🔹 Handle delete room
   const handleDeleteRoom = (room: { id: number; nama: string }) => {
     setRoomToDelete(room);
     setShowDeleteModal(true);
@@ -160,9 +195,8 @@ export default function RuanganSuperAdmin() {
 
             {/* Rooms Table */}
             <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
-              {/* Desktop Table - Hidden on Mobile */}
+              {/* Desktop Table */}
               <div className="hidden md:block">
-                {/* Table Header */}
                 <div className="bg-[#0E364A] px-6 py-4">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="text-center">
@@ -176,7 +210,6 @@ export default function RuanganSuperAdmin() {
                   </div>
                 </div>
 
-                {/* Table Body */}
                 <div className="divide-y divide-gray-200">
                   {ruangan.map((room, index) => (
                     <div
@@ -189,21 +222,19 @@ export default function RuanganSuperAdmin() {
                         {room.nama}
                       </div>
                       <div className="text-center">
-                        <div className="flex justify-center space-x-2">
-                          <button
-                            onClick={() => handleDeleteRoom(room)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                          >
-                            Hapus
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleDeleteRoom(room)}
+                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                        >
+                          Hapus
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Mobile Cards - Visible on Mobile */}
+              {/* Mobile Cards */}
               <div className="md:hidden space-y-4 p-4">
                 {ruangan.map((room) => (
                   <div
@@ -274,20 +305,37 @@ export default function RuanganSuperAdmin() {
 
             <div className="mt-6 flex justify-center">
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (newRoom.nama) {
-                    const newId = Math.max(...ruangan.map((r) => r.id)) + 1;
-                    setRuangan([
-                      ...ruangan,
-                      {
-                        id: newId,
-                        nama: newRoom.nama,
-                      },
-                    ]);
-                    setShowCreateModal(false);
-                    setNewRoom({
-                      nama: "",
-                    });
+                    try {
+                      const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan/register-ruangan`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify({
+                            nama_ruangan: newRoom.nama,
+                          }),
+                        }
+                      );
+
+                      if (!res.ok) throw new Error("Gagal menambahkan ruangan");
+                      const resData = await res.json();
+                      console.log("ROOM CREATED:", resData);
+
+                      // langsung tambah ke state FE biar muncul tanpa reload
+                      await fetchRuangan();
+
+                      // reset modal & input
+                      setShowCreateModal(false);
+                      setNewRoom({ nama: "" });
+                    } catch (err) {
+                      console.error(err);
+                      alert("Gagal menambah ruangan");
+                    }
                   }
                 }}
                 className="bg-[#0E364A] text-white px-8 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
