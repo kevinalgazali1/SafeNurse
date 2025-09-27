@@ -433,41 +433,41 @@ export default function LaporanMasukKepalaRuangan() {
     }
   };
 
-  const handleKirimCatatan = async () => {
-    if (!selectedReport) return;
+  // const handleKirimCatatan = async () => {
+  //   if (!selectedReport) return;
 
-    const reportId = selectedReport.id;
+  //   const reportId = selectedReport.id;
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan }),
-        }
-      );
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ catatan }),
+  //       }
+  //     );
 
-      if (!res.ok) {
-        throw new Error("Gagal mengirim catatan");
-      }
+  //     if (!res.ok) {
+  //       throw new Error("Gagal mengirim catatan");
+  //     }
 
-      const data = await res.json();
-      console.log("Catatan berhasil dikirim:", data);
+  //     const data = await res.json();
+  //     console.log("Catatan berhasil dikirim:", data);
 
-      // reset input catatan setelah berhasil
-      setCatatan("");
-      handleCloseModal();
+  //     // reset input catatan setelah berhasil
+  //     setCatatan("");
+  //     handleCloseModal();
 
-      // kalau mau refresh data laporan
-      // await fetchReportDetail(selectedReport.kodeLaporan);
-    } catch (error) {
-      console.error("Error saat kirim catatan:", error);
-    }
-  };
+  //     // kalau mau refresh data laporan
+  //     // await fetchReportDetail(selectedReport.kodeLaporan);
+  //   } catch (error) {
+  //     console.error("Error saat kirim catatan:", error);
+  //   }
+  // };
 
   const formatTanggal = (tanggal: string) => {
     if (!tanggal || tanggal === "-") return "-";
@@ -1240,30 +1240,6 @@ export default function LaporanMasukKepalaRuangan() {
                       className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full sm:w-auto"
                     >
                       Riwayat
-                    </button>
-                  </div>
-
-                  {/* Catatan */}
-                  <div>
-                    <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                      Catatan :
-                    </label>
-                    <textarea
-                      value={catatan}
-                      onChange={(e) => setCatatan(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm"
-                      rows={3}
-                      placeholder="Tambahkan catatan..."
-                    />
-                  </div>
-
-                  {/* Kirim Catatan Button */}
-                  <div className="flex justify-center pt-4">
-                    <button
-                      onClick={handleKirimCatatan}
-                      className="bg-[#0B7A95] text-white px-6 sm:px-8 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                    >
-                      Kirim Catatan
                     </button>
                   </div>
                 </div>

@@ -189,7 +189,7 @@ export default function LaporanMasukChiefNursingPage() {
         unitYangMelaporkan: r.unit_yang_melaporkan || "-",
         lokasiKejadian: r.lokasi_insiden || "-",
         tanggalInsiden: r.tgl_insiden || "-",
-        yangDilaporkan: "-",
+        yangDilaporkan: r.yang_dilaporkan || "-",
         kronologi: r.kronologi || "-",
         tindakanAwal: r.tindakan_awal || "-",
         tindakanOleh: r.tindakan_oleh || "-",
@@ -1113,30 +1113,6 @@ export default function LaporanMasukChiefNursingPage() {
                   className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full sm:w-auto"
                 >
                   Riwayat
-                </button>
-              </div>
-
-              {/* Catatan */}
-              <div>
-                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                  Catatan :
-                </label>
-                <textarea
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm"
-                  rows={3}
-                  placeholder="Tambahkan catatan..."
-                />
-              </div>
-
-              {/* Kirim Catatan Button */}
-              <div className="flex justify-center pt-4">
-                <button
-                  onClick={handleKirimCatatan}
-                  className="bg-[#0B7A95] text-white px-6 sm:px-8 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                >
-                  Kirim Catatan
                 </button>
               </div>
             </div>

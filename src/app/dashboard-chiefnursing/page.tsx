@@ -402,8 +402,8 @@ export default function DashboardChiefNursing() {
         unitYangMelaporkan: r.unit_yang_melaporkan,
         lokasiKejadian: r.lokasi_insiden,
         tanggalInsiden: r.tgl_insiden,
-        yangDilaporkan: "a",
-        tindakLanjut: "b",
+        yangDilaporkan: r.yang_dilaporkan,
+        tindakLanjut: r.tindak_lanjut,
         judulInsiden: r.judul_insiden,
         kronologi: r.kronologi,
         tindakanAwal: r.tindakan_awal,
@@ -495,8 +495,8 @@ export default function DashboardChiefNursing() {
         unitYangMelaporkan: r.unit_yang_melaporkan,
         lokasiKejadian: r.lokasi_insiden,
         tanggalInsiden: r.tgl_insiden,
-        yangDilaporkan: "a",
-        tindakLanjut: "b",
+        yangDilaporkan: r.yang_dilaporkan,
+        tindakLanjut: r.tindak_lanjut,
         judulInsiden: r.judul_insiden,
         kronologi: r.kronologi,
         tindakanAwal: r.tindakan_awal,
@@ -1435,27 +1435,6 @@ export default function DashboardChiefNursing() {
                     </button>
                   </div>
 
-                  {/* Catatan Section */}
-                  <div className="mt-6 border-t border-white/20 pt-6">
-                    <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                      Catatan :
-                    </label>
-                    <textarea
-                      value={catatan}
-                      onChange={(e) => setCatatan(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
-                      rows={4}
-                      placeholder="Masukkan catatan..."
-                    />
-                    <div className="mt-3 flex justify-center">
-                      <button
-                        onClick={handleKirimCatatan}
-                        className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                      >
-                        Kirim Catatan
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
