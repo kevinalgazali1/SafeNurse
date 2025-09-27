@@ -432,8 +432,11 @@ export default function TambahLaporanPage() {
             // Kirim laporan ke backend
             const submitLaporan = async () => {
               setIsSubmittingReport(true);
-              addMessage("bot", "Sedang memproses laporan Anda, mohon tunggu...");
-              
+              addMessage(
+                "bot",
+                "Sedang memproses laporan Anda, mohon tunggu..."
+              );
+
               try {
                 const res = await fetch(
                   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/generate`,
@@ -1265,10 +1268,13 @@ export default function TambahLaporanPage() {
                           year: "numeric",
                         }) +
                         " " +
-                        selectedDateTime.toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        });
+                        selectedDateTime
+                          .toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false, // supaya format 24 jam
+                          })
+                          .replace(/\./g, ":"); // ganti titik jadi :;
                       handleQuickResponse(formattedDateTime);
                       setSelectedIncidentDate("");
                     }
@@ -1409,10 +1415,13 @@ export default function TambahLaporanPage() {
                           year: "numeric",
                         }) +
                         " " +
-                        selectedDateTime.toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        });
+                        selectedDateTime
+                          .toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false, // supaya format 24 jam
+                          })
+                          .replace(/\./g, ":"); // ganti titik jadi :;
 
                       // Update data
                       const updatedData = { ...reportData };
@@ -1873,30 +1882,30 @@ export default function TambahLaporanPage() {
               </span>
             </button>
 
-          <div className="flex items-center space-x-1">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={30}
-            height={30}
-            className="object-contain"
-          />
+            <div className="flex items-center space-x-1">
+              {/* Logo SafeNurse */}
+              <Image
+                src="/logosafenurse.png"
+                alt="Logo SafeNurse"
+                width={30}
+                height={30}
+                className="object-contain"
+              />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={30}
-            height={30}
-            className="object-contain"
-          />
+              {/* Logo Unhas */}
+              <Image
+                src="/logounhas.png"
+                alt="Logo Unhas"
+                width={30}
+                height={30}
+                className="object-contain"
+              />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+              <h1 className="text-white text-xl font-bold">
+                Safe
+                <span className="font-bold text-[#0B7A95]">Nurse</span>
+              </h1>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -2085,7 +2094,7 @@ export default function TambahLaporanPage() {
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Loading indicator when bot is processing */}
                 {isProcessingResponse && (
                   <div className="flex justify-start items-start">
@@ -2095,16 +2104,27 @@ export default function TambahLaporanPage() {
                     <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-800">
                       <div className="flex items-center space-x-2">
                         <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          <div
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          ></div>
                         </div>
-                        <span className="text-sm text-gray-500">Bot sedang mengetik...</span>
+                        <span className="text-sm text-gray-500">
+                          Bot sedang mengetik...
+                        </span>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
 
@@ -2142,26 +2162,33 @@ export default function TambahLaporanPage() {
                               : "Ketik pesan Anda..."
                           }
                           disabled={
-                            isProcessingResponse || isSubmittingReport || currentStep === "greeting"
+                            isProcessingResponse ||
+                            isSubmittingReport ||
+                            currentStep === "greeting"
                           }
                           rows={1}
-                          style={{ resize: 'none' }}
+                          style={{ resize: "none" }}
                           className={`w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black overflow-hidden ${
-                            isProcessingResponse || isSubmittingReport || currentStep === "greeting"
+                            isProcessingResponse ||
+                            isSubmittingReport ||
+                            currentStep === "greeting"
                               ? "bg-gray-100 cursor-not-allowed"
                               : ""
                           }`}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                            target.style.height = "auto";
+                            target.style.height =
+                              Math.min(target.scrollHeight, 120) + "px";
                           }}
                         />
                       </div>
 
                       <button
                         onClick={startVoiceRecognition}
-                        disabled={currentStep === "greeting" || isSubmittingReport}
+                        disabled={
+                          currentStep === "greeting" || isSubmittingReport
+                        }
                         className={`p-2 rounded-full transition-all duration-200 ${
                           currentStep === "greeting" || isSubmittingReport
                             ? "bg-gray-300 text-gray-400 cursor-not-allowed"
@@ -2189,10 +2216,14 @@ export default function TambahLaporanPage() {
                       <button
                         onClick={handleSendMessage}
                         disabled={
-                          isProcessingResponse || isSubmittingReport || currentStep === "greeting"
+                          isProcessingResponse ||
+                          isSubmittingReport ||
+                          currentStep === "greeting"
                         }
                         className={`p-2 rounded-full transition-colors ${
-                          isProcessingResponse || isSubmittingReport || currentStep === "greeting"
+                          isProcessingResponse ||
+                          isSubmittingReport ||
+                          currentStep === "greeting"
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
                         }`}
@@ -2238,27 +2269,25 @@ export default function TambahLaporanPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}
