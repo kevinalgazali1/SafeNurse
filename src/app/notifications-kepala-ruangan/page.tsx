@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import { toast, Toaster } from "react-hot-toast";
 
 export default function NotificationsKepalaRuanganPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,13 +114,13 @@ export default function NotificationsKepalaRuanganPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDeleteNotification = async (notificationId: string) => {
+  const handleDeleteNotification = async (id_notifikasi: string) => {
     const token = Cookies.get("token");
     if (!token) return;
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/${notificationId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/delete/${id_notifikasi}`,
         {
           method: "DELETE",
           headers: {
@@ -129,14 +130,23 @@ export default function NotificationsKepalaRuanganPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal menghapus notifikasi");
+      if (res.ok) {
+        await fetchNotifications();
+        setShowDeleteModal(false);
+        setSelectedNotificationId(null);
 
-      // Refresh notifications after delete
-      fetchNotifications();
-      setShowDeleteModal(false);
-      setSelectedNotificationId(null);
+        // ✅ Tambahin toast sukses
+        toast.success("Notifikasi berhasil dihapus!");
+      } else {
+        const errMsg = await res.text();
+        console.error("Gagal menghapus notifikasi:", errMsg);
+
+        // ⚠️ Toast error
+        toast.error("Gagal menghapus notifikasi!");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting notification:", err);
+      toast.error("Terjadi kesalahan saat menghapus notifikasi!");
     }
   };
 
@@ -146,7 +156,7 @@ export default function NotificationsKepalaRuanganPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/delete-all`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/delete`,
         {
           method: "DELETE",
           headers: {
@@ -156,13 +166,19 @@ export default function NotificationsKepalaRuanganPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal menghapus semua notifikasi");
+      if (res.ok) {
+        // ✅ Refetch data biar sinkron
+        await fetchNotifications();
 
-      // Refresh notifications after delete all
-      fetchNotifications();
-      setShowDeleteAllModal(false);
+        setShowDeleteAllModal(false);
+        setCurrentPage(1);
+        toast.success("Semua notifikasi berhasil dihapus!");
+      } else {
+        toast.error("Gagal menghapus semua notifikasi!");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting all notifications:", err);
+      toast.error("Terjadi kesalahan saat menghapus semua notifikasi!");
     }
   };
 
@@ -802,6 +818,27 @@ export default function NotificationsKepalaRuanganPage() {
           <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+          },
+          success: {
+            style: {
+              background: "#10B981",
+            },
+          },
+          error: {
+            style: {
+              background: "#EF4444",
+            },
+          },
+        }}
+      />
 
       {/* Delete Single Notification Modal */}
       {showDeleteModal && (
