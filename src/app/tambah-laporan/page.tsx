@@ -290,11 +290,15 @@ export default function TambahLaporanPage() {
                 "Terjadi kesalahan saat validasi kronologi. Coba lagi ya."
               );
               setCurrentStep("kronologi"); // tetap di step kronologi
+            } finally {
+              // Pastikan loading dihilangkan setelah API selesai
+              setIsProcessingResponse(false);
             }
           };
 
           validateChronology();
-          break;
+          // Jangan set false di sini karena API masih berjalan
+          return; // Return early untuk skip setIsProcessingResponse(false) di bawah
 
         case "tindakanSegera":
           updatedData.tindakanSegera = response;
@@ -408,11 +412,15 @@ export default function TambahLaporanPage() {
                 "bot",
                 "Terjadi kesalahan saat generate ringkasan laporan."
               );
+            } finally {
+              // Pastikan loading dihilangkan setelah API selesai
+              setIsProcessingResponse(false);
             }
           };
 
           cleanAndGenerateSummary();
-          break;
+          // Jangan set false di sini karena API masih berjalan
+          return; // Return early untuk skip setIsProcessingResponse(false) di bawah
 
         case "konfirmasi":
           if (
@@ -479,10 +487,14 @@ export default function TambahLaporanPage() {
                 );
               } finally {
                 setIsSubmittingReport(false);
+                // Pastikan loading dihilangkan setelah API selesai
+                setIsProcessingResponse(false);
               }
             };
 
             submitLaporan();
+            // Jangan set false di sini karena API masih berjalan
+            return; // Return early untuk skip setIsProcessingResponse(false) di bawah
           } else if (
             response.toLowerCase().includes("belum") ||
             response.toLowerCase().includes("tidak") ||
@@ -2071,6 +2083,26 @@ export default function TambahLaporanPage() {
                     </div>
                   </div>
                 ))}
+                
+                {/* Loading indicator when bot is processing */}
+                {isProcessingResponse && (
+                  <div className="flex justify-start items-start">
+                    <div className="w-8 h-8 bg-[#0B7A95] rounded-full flex items-center justify-center mr-2 mt-1 flex-shrink-0">
+                      <i className="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-800">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                        <span className="text-sm text-gray-500">Bot sedang mengetik...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div ref={messagesEndRef} />
               </div>
 
