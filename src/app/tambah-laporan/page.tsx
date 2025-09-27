@@ -452,6 +452,7 @@ export default function TambahLaporanPage() {
                       unit_yang_melaporkan: reportData.unitPelapor,
                       lokasi_insiden: reportData.lokasiInsiden,
                       tgl_insiden: reportData.tglKejadian,
+                      yang_dilaporkan: reportData.yangDilaporkan,
                       judul_insiden: reportData.judulInsiden,
                       kronologi: reportData.kronologi,
                       tindakan_awal: reportData.tindakanSegera,
