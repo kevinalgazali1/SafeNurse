@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import Image from 'next/image';
+import Image from "next/image";
 import { toast, Toaster } from "react-hot-toast";
 
 interface Report {
@@ -117,7 +117,10 @@ export default function LaporanMasukVerifikator() {
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [reportCount, setReportCount] = useState(0);
+
   // State untuk modal validasi
   const [showValidasiModal, setShowValidasiModal] = useState(false);
   const [alasanValidasi, setAlasanValidasi] = useState("");
@@ -304,11 +307,12 @@ export default function LaporanMasukVerifikator() {
   const token = Cookies.get("token");
 
   // === Ambil data ringkas laporan masuk ===
-  const fetchReports = async () => {
+  const fetchReports = async (onlyCount = false) => {
     if (!token) {
       setIsLoading(false);
       return;
     }
+
     try {
       setIsLoading(true);
       const res = await fetch(
@@ -321,21 +325,33 @@ export default function LaporanMasukVerifikator() {
           },
         }
       );
+
       if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+
       const resData = await res.json();
-      console.log(resData);
 
-      const mappedReports = resData.data.map((r: any) => ({
-        id: r.kode_laporan,
-        kodeLaporan: r.kode_laporan,
-        judulInsiden: r.judul_insiden,
-        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
-        tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-      }));
-
-      setReports(mappedReports);
+      if (onlyCount) {
+        // ✅ Kalau cuma mau jumlah
+        const count = resData.data?.length || 0;
+        setReportCount(count);
+        return count;
+      } else {
+        // ✅ Kalau mau list laporan
+        const mappedReports = resData.data.map((r: any) => ({
+          id: r.kode_laporan,
+          kodeLaporan: r.kode_laporan,
+          judulInsiden: r.judul_insiden,
+          namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+          tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
+        }));
+        setReports(mappedReports);
+        setReportCount(mappedReports.length);
+        return mappedReports;
+      }
     } catch (err) {
       console.error(err);
+      setReportCount(0);
+      if (!onlyCount) setReports([]);
     } finally {
       setIsLoading(false);
     }
@@ -424,6 +440,56 @@ export default function LaporanMasukVerifikator() {
     fetchReports();
   }, []);
 
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // hitung jumlah notifikasi baru
+      setNewNotificationCount(resData.notifikasi_baru?.length || 0);
+
+      // gabungkan notifikasi baru & lama
+      const allNotifications = [
+        ...(resData.notifikasi_baru || []),
+        ...(resData.notifikasi_lama || []),
+      ];
+
+      const mappedNotifications = allNotifications.map((n: any) => ({
+        id: n.id_notifikasi,
+        title: n.message,
+        time: n.waktu,
+        isRead: n.status === "sudah_dibaca",
+      }));
+
+      setNotifications(mappedNotifications);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedReport(null);
@@ -446,7 +512,7 @@ export default function LaporanMasukVerifikator() {
 
   const handleKonfirmasiValidasi = async () => {
     if (!selectedReport) return;
-    
+
     // Validasi alasan wajib diisi
     if (!alasanValidasi.trim()) {
       toast.error("Alasan validasi wajib diisi!");
@@ -587,41 +653,41 @@ export default function LaporanMasukVerifikator() {
     }
   };
 
-  const handleKirimCatatan = async () => {
-    if (!selectedReport) return;
+  // const handleKirimCatatan = async () => {
+  //   if (!selectedReport) return;
 
-    const reportId = selectedReport.id;
+  //   const reportId = selectedReport.id;
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan }),
-        }
-      );
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ catatan }),
+  //       }
+  //     );
 
-      if (!res.ok) {
-        throw new Error("Gagal mengirim catatan");
-      }
+  //     if (!res.ok) {
+  //       throw new Error("Gagal mengirim catatan");
+  //     }
 
-      const data = await res.json();
-      console.log("Catatan berhasil dikirim:", data);
+  //     const data = await res.json();
+  //     console.log("Catatan berhasil dikirim:", data);
 
-      // reset input catatan setelah berhasil
-      setCatatan("");
-      handleCloseModal();
+  //     // reset input catatan setelah berhasil
+  //     setCatatan("");
+  //     handleCloseModal();
 
-      // kalau mau refresh data laporan
-      // await fetchReportDetail(selectedReport.kodeLaporan);
-    } catch (error) {
-      console.error("Error saat kirim catatan:", error);
-    }
-  };
+  //     // kalau mau refresh data laporan
+  //     // await fetchReportDetail(selectedReport.kodeLaporan);
+  //   } catch (error) {
+  //     console.error("Error saat kirim catatan:", error);
+  //   }
+  // };
 
   const formatTanggal = (tanggal: string) => {
     if (!tanggal || tanggal === "-") return "-";
@@ -682,29 +748,29 @@ export default function LaporanMasukVerifikator() {
             <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+                  {/* Logo SafeNurse */}
+                  <Image
+                    src="/logosafenurse.png"
+                    alt="Logo SafeNurse"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+                  {/* Logo Unhas */}
+                  <Image
+                    src="/logounhas.png"
+                    alt="Logo Unhas"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+                  <h1 className="text-white text-xl font-bold">
+                    Safe
+                    <span className="font-bold text-[#0B7A95]">Nurse</span>
+                  </h1>
+                </div>
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-6">
@@ -740,16 +806,25 @@ export default function LaporanMasukVerifikator() {
                     <div className="relative">
                       <i className="fas fa-bell text-lg mb-1"></i>
                       {/* Notification Count Badge */}
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                        3
-                      </span>
+                      {newNotificationCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {newNotificationCount}
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs">Notifikasi</span>
                   </button>
 
                   {/* Laporan Masuk - Active */}
                   <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
-                    <i className="fas fa-envelope text-lg mb-1"></i>
+                    <div className="relative">
+                      <i className="fas fa-envelope text-lg mb-1"></i>
+                      {reportCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {reportCount}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs">Laporan Masuk</span>
                   </button>
 
@@ -814,16 +889,25 @@ export default function LaporanMasukVerifikator() {
                       <div className="relative">
                         <i className="fas fa-bell text-lg mr-3"></i>
                         {/* Notification Count Badge */}
-                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          3
-                        </span>
+                        {newNotificationCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {newNotificationCount}
+                          </span>
+                        )}
                       </div>
                       <span>Notifikasi</span>
                     </button>
 
                     {/* Laporan Masuk - Active */}
                     <button className="flex items-center text-[#0B7A95] transition-colors p-2 rounded">
-                      <i className="fas fa-envelope text-lg mr-3"></i>
+                      <div className="relative">
+                        <i className="fas fa-envelope text-lg mb-1"></i>
+                        {reportCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {reportCount}
+                          </span>
+                        )}
+                      </div>
                       <span>Laporan Masuk</span>
                     </button>
 
@@ -1412,8 +1496,8 @@ export default function LaporanMasukVerifikator() {
                         onClick={handleKirimRevisi}
                         className={`px-6 py-2 rounded-lg transition-colors font-medium text-sm ${
                           !catatanRevisi.trim()
-                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                            : 'bg-[#0B7A95] text-white hover:bg-[#0a6b85]'
+                            ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                            : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
                         }`}
                         disabled={!catatanRevisi.trim()}
                       >
@@ -1694,7 +1778,7 @@ export default function LaporanMasukVerifikator() {
               </div>
             )}
           </div>
-          
+
           {/* Modal Validasi Laporan */}
           {showValidasiModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
@@ -1742,36 +1826,34 @@ export default function LaporanMasukVerifikator() {
               </div>
             </div>
           )}
-          
+
           {/* Sticky Footer */}
           <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
             <div className="text-center space-y-1">
               <p className="text-sm font-medium">
                 Copyright 2025 © SafeNurse All Rights reserved.
               </p>
-              <p className="text-xs text-white/80">
-                Universitas Hasanuddin
-              </p>
+              <p className="text-xs text-white/80">Universitas Hasanuddin</p>
             </div>
           </footer>
         </>
       )}
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}

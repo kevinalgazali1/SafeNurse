@@ -122,7 +122,9 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           {/* Status di atas kanan */}
           <div className="flex justify-end items-center space-x-2 mb-2">
             <span
-              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}
+              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(
+                report.status
+              )}`}
             >
               {report.status}
             </span>
@@ -161,7 +163,11 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Grading:</span>
-              <span className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+              <span
+                className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(
+                  report.grading
+                )}`}
+              >
                 {report.grading}
               </span>
             </div>
@@ -169,7 +175,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
               <span className="font-medium text-gray-600">Kode Laporan:</span>
               <span className="text-gray-800">{report.kodeLaporan}</span>
             </div>
-              <div className="flex justify-between">
+            <div className="flex justify-between">
               <span className="font-medium text-gray-600">Kode Laporan:</span>
               <span className="text-gray-800">{report.tindakLanjut}</span>
             </div>
@@ -197,12 +203,9 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
                 {report.catatanVerifikator}
               </p>
             </div>
-           
           </div>
         </div>
       )}
-      
-     
     </div>
   );
 }
@@ -222,7 +225,9 @@ export default function DashboardChiefNursing() {
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [reportCount, setReportCount] = useState(0);
+
   // State untuk modal validasi
   const [showValidasiModal, setShowValidasiModal] = useState(false);
   const [alasanValidasi, setAlasanValidasi] = useState("");
@@ -468,6 +473,68 @@ export default function DashboardChiefNursing() {
     };
   }, []);
 
+  const fetchReportCount = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/laporanMasuk`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+
+      const resData = await res.json();
+      setReportCount(resData.data?.length || 0);
+    } catch (err) {
+      console.error(err);
+      setReportCount(0);
+    }
+  };
+
+  fetchReportCount();
+
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const fetchReports = async () => {
     if (!token) {
       setIsLoading(false);
@@ -661,7 +728,7 @@ export default function DashboardChiefNursing() {
 
   const handleKonfirmasiValidasi = async () => {
     if (!selectedReport) return;
-    
+
     // Validasi alasan wajib diisi
     if (!alasanValidasi.trim()) {
       toast.error("Alasan validasi wajib diisi!");
@@ -905,30 +972,30 @@ export default function DashboardChiefNursing() {
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
-           <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+          <div className="flex items-center space-x-3">
+            {/* Logo SafeNurse */}
+            <Image
+              src="/logosafenurse.png"
+              alt="Logo SafeNurse"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+            {/* Logo Unhas */}
+            <Image
+              src="/logounhas.png"
+              alt="Logo Unhas"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+            <h1 className="text-white text-xl font-bold">
+              Safe
+              <span className="font-bold text-[#0B7A95]">Nurse</span>
+            </h1>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -957,9 +1024,11 @@ export default function DashboardChiefNursing() {
               <div className="relative">
                 <i className="fas fa-bell text-lg mb-1"></i>
                 {/* Notification Count Badge */}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  3
-                </span>
+                {newNotificationCount > 0 && (
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {newNotificationCount}
+                  </span>
+                )}
               </div>
               <span className="text-xs">Notifikasi</span>
             </button>
@@ -971,7 +1040,14 @@ export default function DashboardChiefNursing() {
                 (window.location.href = "/laporan-masuk-verifikator")
               }
             >
-              <i className="fas fa-envelope text-lg mb-1"></i>
+              <div className="relative">
+                <i className="fas fa-envelope text-lg mb-1"></i>
+                {reportCount > 0 && (
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {reportCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs">Laporan Masuk</span>
             </button>
 
@@ -1029,9 +1105,11 @@ export default function DashboardChiefNursing() {
                 <div className="relative">
                   <i className="fas fa-bell text-lg mr-3"></i>
                   {/* Notification Count Badge */}
-                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    3
-                  </span>
+                  {newNotificationCount > 0 && (
+                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {newNotificationCount}
+                    </span>
+                  )}
                 </div>
                 <span>Notifikasi</span>
               </button>
@@ -1043,7 +1121,14 @@ export default function DashboardChiefNursing() {
                   (window.location.href = "/laporan-masuk-verifikator")
                 }
               >
-                <i className="fas fa-envelope text-lg mr-3"></i>
+                <div className="relative">
+                  <i className="fas fa-envelope text-lg mb-1"></i>
+                  {reportCount > 0 && (
+                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {reportCount}
+                    </span>
+                  )}
+                </div>
                 <span>Laporan Masuk</span>
               </button>
 
@@ -1129,18 +1214,28 @@ export default function DashboardChiefNursing() {
                       } hover:bg-blue-50 transition-colors`}
                     >
                       <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
-                        {new Date(report.tanggalWaktuPelaporan).toLocaleDateString("id-ID")}
+                        {new Date(
+                          report.tanggalWaktuPelaporan
+                        ).toLocaleDateString("id-ID")}
                       </div>
                       <div className="text-gray-600 text-center">
                         {report.kategori}
                       </div>
                       <div className="text-center">
-                        <span className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}>
+                        <span
+                          className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(
+                            report.status
+                          )}`}
+                        >
                           {report.status}
                         </span>
                       </div>
                       <div className="text-center">
-                        <span className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                        <span
+                          className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(
+                            report.grading
+                          )}`}
+                        >
                           {report.grading}
                         </span>
                       </div>
@@ -1199,7 +1294,9 @@ export default function DashboardChiefNursing() {
             {filteredReports.length > reportsPerPage && (
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Menampilkan {startIndex + 1} - {Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                  Menampilkan {startIndex + 1} -{" "}
+                  {Math.min(endIndex, filteredReports.length)} dari{" "}
+                  {filteredReports.length} laporan
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -1209,27 +1306,37 @@ export default function DashboardChiefNursing() {
                   >
                     Sebelumnya
                   </button>
-                  
+
                   {/* Page Numbers - Show max 3 pages */}
                   <div className="flex items-center gap-1">
                     {(() => {
                       const maxVisiblePages = 3;
-                      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                      
+                      let startPage = Math.max(
+                        1,
+                        currentPage - Math.floor(maxVisiblePages / 2)
+                      );
+                      const endPage = Math.min(
+                        totalPages,
+                        startPage + maxVisiblePages - 1
+                      );
+
                       // Adjust start page if we're near the end
                       if (endPage - startPage + 1 < maxVisiblePages) {
                         startPage = Math.max(1, endPage - maxVisiblePages + 1);
                       }
-                      
+
                       const pages = [];
-                      
+
                       // Left navigation arrow for previous set of pages
                       if (startPage > 1) {
                         pages.push(
                           <button
                             key="prev-set"
-                            onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                            onClick={() =>
+                              handlePageChange(
+                                Math.max(1, startPage - maxVisiblePages)
+                              )
+                            }
                             className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                             title="Halaman sebelumnya"
                           >
@@ -1237,7 +1344,7 @@ export default function DashboardChiefNursing() {
                           </button>
                         );
                       }
-                      
+
                       // Page numbers
                       for (let i = startPage; i <= endPage; i++) {
                         pages.push(
@@ -1246,21 +1353,25 @@ export default function DashboardChiefNursing() {
                             onClick={() => handlePageChange(i)}
                             className={`px-3 py-1 text-sm border rounded-md ${
                               currentPage === i
-                                ? 'bg-blue-500 text-white border-blue-500'
-                                : 'border-gray-300 hover:bg-gray-50'
+                                ? "bg-blue-500 text-white border-blue-500"
+                                : "border-gray-300 hover:bg-gray-50"
                             }`}
                           >
                             {i}
                           </button>
                         );
                       }
-                      
+
                       // Right navigation arrow for next set of pages
                       if (endPage < totalPages) {
                         pages.push(
                           <button
                             key="next-set"
-                            onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                            onClick={() =>
+                              handlePageChange(
+                                Math.min(totalPages, endPage + 1)
+                              )
+                            }
                             className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                             title="Halaman selanjutnya"
                           >
@@ -1268,11 +1379,11 @@ export default function DashboardChiefNursing() {
                           </button>
                         );
                       }
-                      
+
                       return pages;
                     })()}
                   </div>
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -1645,7 +1756,6 @@ export default function DashboardChiefNursing() {
                   Riwayat
                 </button>
               </div>
-
             </div>
           </div>
         </div>
@@ -1773,7 +1883,7 @@ export default function DashboardChiefNursing() {
                       ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                       : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
                   }`}
-                  disabled={ !catatanRevisi.trim()}
+                  disabled={!catatanRevisi.trim()}
                 >
                   Kirim Revisi
                 </button>
@@ -2051,80 +2161,78 @@ export default function DashboardChiefNursing() {
       )}
 
       {/* Modal Validasi Laporan */}
-       {showValidasiModal && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-           <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
-             {/* Header Modal */}
-             <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
-               <div className="flex items-center space-x-2 sm:space-x-3">
-                 <div className="bg-white p-1.5 sm:p-2 rounded-lg">
-                   <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
-                 </div>
-                 <h2 className="text-white font-bold text-sm sm:text-lg">
-                   Validasi Laporan
-                 </h2>
-               </div>
-               <button
-                 onClick={handleCloseValidasiModal}
-                 className="text-white hover:text-gray-200 transition-colors"
-               >
-                 <i className="fas fa-times text-lg sm:text-xl"></i>
-               </button>
-             </div>
+      {showValidasiModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                  <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
+                </div>
+                <h2 className="text-white font-bold text-sm sm:text-lg">
+                  Validasi Laporan
+                </h2>
+              </div>
+              <button
+                onClick={handleCloseValidasiModal}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
+            </div>
 
-             {/* Content Modal */}
-             <div className="p-4 sm:p-6 space-y-4">
-               <p className="text-[#2C3E50] font-medium text-sm">
-                 Jelaskan alasan kamu memvalidasi laporan ini:
-               </p>
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-4">
+              <p className="text-[#2C3E50] font-medium text-sm">
+                Jelaskan alasan kamu memvalidasi laporan ini:
+              </p>
 
-               <textarea
-                 value={alasanValidasi}
-                 onChange={(e) => setAlasanValidasi(e.target.value)}
-                 placeholder="Masukkan alasan validasi..."
-                 className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
-                 rows={4}
-               />
+              <textarea
+                value={alasanValidasi}
+                onChange={(e) => setAlasanValidasi(e.target.value)}
+                placeholder="Masukkan alasan validasi..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                rows={4}
+              />
 
-               <button
-                 onClick={handleKonfirmasiValidasi}
-                 disabled={!alasanValidasi.trim()}
-                 className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-               >
-                 Validasi
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
+              <button
+                onClick={handleKonfirmasiValidasi}
+                disabled={!alasanValidasi.trim()}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Validasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-       {/* Sticky Footer */}
+      {/* Sticky Footer */}
       <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
         <div className="text-center space-y-1">
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}

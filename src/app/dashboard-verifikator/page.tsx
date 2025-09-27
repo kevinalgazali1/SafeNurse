@@ -60,6 +60,10 @@ export default function DashboardVerifikatorPage() {
   const [filteredData, setFilteredData] = useState<Insiden[]>([]);
   const [laporanData, setLaporanData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [reportCount, setReportCount] = useState(0);
+
+  const token = Cookies.get("token");
 
   // CSS Keyframes untuk animasi
   useEffect(() => {
@@ -245,6 +249,68 @@ export default function DashboardVerifikatorPage() {
     };
 
     fetchData();
+  }, []);
+
+  const fetchReportCount = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/laporanMasuk`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+
+      const resData = await res.json();
+      setReportCount(resData.data?.length || 0);
+    } catch (err) {
+      console.error(err);
+      setReportCount(0);
+    }
+  };
+
+  fetchReportCount();
+
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
   }, []);
 
   const handleFilter = () => {
@@ -467,9 +533,11 @@ export default function DashboardVerifikatorPage() {
                     <div className="relative">
                       <i className="fas fa-bell text-lg mb-1"></i>
                       {/* Notification Count Badge */}
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                        3
-                      </span>
+                      {newNotificationCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {newNotificationCount}
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs">Notifikasi</span>
                   </button>
@@ -481,7 +549,14 @@ export default function DashboardVerifikatorPage() {
                       (window.location.href = "/laporan-masuk-verifikator")
                     }
                   >
-                    <i className="fas fa-envelope text-lg mb-1"></i>
+                    <div className="relative">
+                      <i className="fas fa-envelope text-lg mb-1"></i>
+                      {reportCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {reportCount}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs">Laporan Masuk</span>
                   </button>
 
@@ -541,9 +616,11 @@ export default function DashboardVerifikatorPage() {
                       <div className="relative">
                         <i className="fas fa-bell text-lg mr-3"></i>
                         {/* Notification Count Badge */}
-                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          3
-                        </span>
+                        {newNotificationCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {newNotificationCount}
+                          </span>
+                        )}
                       </div>
                       <span>Notifikasi</span>
                     </button>
@@ -555,7 +632,14 @@ export default function DashboardVerifikatorPage() {
                         (window.location.href = "/laporan-masuk-verifikator")
                       }
                     >
-                      <i className="fas fa-envelope text-lg mr-3"></i>
+                      <div className="relative">
+                        <i className="fas fa-envelope text-lg mb-1"></i>
+                        {reportCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {reportCount}
+                          </span>
+                        )}
+                      </div>
                       <span>Laporan Masuk</span>
                     </button>
 

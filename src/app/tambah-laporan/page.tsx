@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -8,9 +9,7 @@ import { toast, Toaster } from "react-hot-toast";
 // Extend Window interface for SpeechRecognition
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webkitSpeechRecognition: any;
   }
 }
@@ -141,6 +140,91 @@ export default function TambahLaporanPage() {
     setIsProcessingResponse(true);
     setTimeout(() => {
       const updatedData = { ...reportData };
+      // Helper reusable
+      const cleanAndGenerateSummary = async (updatedData: any) => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/clean`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                nama_pasien: updatedData.namaPasien,
+                no_rm: updatedData.noRM,
+                umur: updatedData.umur,
+                jenis_kelamin: updatedData.jenisKelamin,
+                tgl_msk_rs: updatedData.tglMasukRS,
+                unit_yang_melaporkan: updatedData.unitPelapor,
+                lokasi_insiden: updatedData.lokasiInsiden,
+                tgl_insiden: updatedData.tglKejadian,
+                yang_dilaporkan: updatedData.yangDilaporkan,
+                judul_insiden: updatedData.judulInsiden,
+                kronologi: updatedData.kronologi,
+                tindakan_awal: updatedData.tindakanSegera,
+                tindakan_oleh: updatedData.tindakanOleh,
+                dampak: updatedData.dampakInsiden,
+                probabilitas: updatedData.frekuensiKejadian,
+              }),
+            }
+          );
+
+          const result = await res.json();
+
+          if (res.ok && result.data) {
+            const clean = result.data;
+
+            const updatedWithKategori = {
+              ...updatedData,
+              kategori: clean.kategori,
+            };
+            setReportData(updatedWithKategori);
+            saveToLocalStorage(updatedWithKategori);
+
+            const summary =
+              `**Ringkasan Laporan Insiden (Versi Bersih)**\n\n` +
+              `**Data Pasien**\n` +
+              `1. Nama Pasien : ${clean.nama_pasien}\n` +
+              `2. No. RM : ${clean.no_rm}\n` +
+              `3. Umur : ${clean.umur}\n` +
+              `4. Jenis Kelamin : ${clean.jenis_kelamin}\n` +
+              `5. Tanggal Masuk RS : ${clean.tgl_msk_rs}\n\n` +
+              `**Rincian Kejadian**\n` +
+              `1. Unit Pelapor : ${clean.unit_yang_melaporkan}\n` +
+              `2. Lokasi Insiden : ${clean.lokasi_insiden}\n` +
+              `3. Tanggal/Jam Kejadian : ${clean.tgl_insiden}\n` +
+              `4. Yang Dilaporkan : ${clean.yang_dilaporkan}\n` +
+              `5. Judul Insiden : ${clean.judul_insiden}\n` +
+              `6. Kronologi : ${clean.kronologi}\n` +
+              `7. Tindakan Segera : ${clean.tindakan_awal}\n` +
+              `8. Tindakan Oleh : ${clean.tindakan_oleh}\n` +
+              `9. Dampak Insiden : ${clean.dampak}\n` +
+              `10. Frekuensi Kejadian : ${clean.probabilitas}\n`;
+
+            addMessage("bot", summary);
+
+            setTimeout(() => {
+              addMessage("bot", "Apakah laporan sudah sesuai?");
+              setCurrentStep("konfirmasi");
+            }, 2000);
+          } else {
+            addMessage(
+              "bot",
+              result.message || "Gagal membersihkan data laporan."
+            );
+          }
+        } catch (err) {
+          console.error("Error generate summary:", err);
+          addMessage(
+            "bot",
+            "Terjadi kesalahan saat generate ringkasan laporan."
+          );
+        } finally {
+          setIsProcessingResponse(false);
+        }
+      };
 
       switch (currentStep) {
         case "greeting":
@@ -331,96 +415,8 @@ export default function TambahLaporanPage() {
           updatedData.frekuensiKejadian = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
+          cleanAndGenerateSummary(updatedData);
 
-          const cleanAndGenerateSummary = async () => {
-            try {
-              const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/clean`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    nama_pasien: updatedData.namaPasien,
-                    no_rm: updatedData.noRM,
-                    umur: updatedData.umur,
-                    jenis_kelamin: updatedData.jenisKelamin,
-                    tgl_msk_rs: updatedData.tglMasukRS,
-                    unit_yang_melaporkan: updatedData.unitPelapor,
-                    lokasi_insiden: updatedData.lokasiInsiden,
-                    tgl_insiden: updatedData.tglKejadian,
-                    yang_dilaporkan: updatedData.yangDilaporkan,
-                    judul_insiden: updatedData.judulInsiden,
-                    kronologi: updatedData.kronologi,
-                    tindakan_awal: updatedData.tindakanSegera,
-                    tindakan_oleh: updatedData.tindakanOleh,
-                    dampak: updatedData.dampakInsiden,
-                    probabilitas: updatedData.frekuensiKejadian,
-                  }),
-                }
-              );
-
-              const result = await res.json();
-
-              if (res.ok && result.data) {
-                const clean = result.data;
-
-                // Simpan kategori ke reportData
-                const updatedWithKategori = {
-                  ...updatedData,
-                  kategori: clean.kategori,
-                };
-                setReportData(updatedWithKategori);
-                saveToLocalStorage(updatedWithKategori);
-
-                const summary =
-                  `**Ringkasan Laporan Insiden (Versi Bersih)**\n\n` +
-                  `**Data Pasien**\n` +
-                  `1. Nama Pasien : ${clean.nama_pasien}\n` +
-                  `2. No. RM : ${clean.no_rm}\n` +
-                  `3. Umur : ${clean.umur}\n` +
-                  `4. Jenis Kelamin : ${clean.jenis_kelamin}\n` +
-                  `5. Tanggal Masuk RS : ${clean.tgl_msk_rs}\n\n` +
-                  `**Rincian Kejadian**\n` +
-                  `1. Unit Pelapor : ${clean.unit_yang_melaporkan}\n` +
-                  `2. Lokasi Insiden : ${clean.lokasi_insiden}\n` +
-                  `3. Tanggal/Jam Kejadian : ${clean.tgl_insiden}\n` +
-                  `4. Yang Dilaporkan : ${clean.yang_dilaporkan}\n` +
-                  `5. Judul Insiden : ${clean.judul_insiden}\n` +
-                  `6. Kronologi : ${clean.kronologi}\n` +
-                  `7. Tindakan Segera : ${clean.tindakan_awal}\n` +
-                  `8. Tindakan Oleh : ${clean.tindakan_oleh}\n` +
-                  `9. Dampak Insiden : ${clean.dampak}\n` +
-                  `10. Frekuensi Kejadian : ${clean.probabilitas}\n`;
-
-                addMessage("bot", summary);
-
-                setTimeout(() => {
-                  addMessage("bot", "Apakah laporan sudah sesuai?");
-                  setCurrentStep("konfirmasi");
-                }, 2000);
-              } else {
-                addMessage(
-                  "bot",
-                  result.message || "Gagal membersihkan data laporan."
-                );
-              }
-            } catch (err) {
-              console.error("Error generate summary:", err);
-              addMessage(
-                "bot",
-                "Terjadi kesalahan saat generate ringkasan laporan."
-              );
-            } finally {
-              // Pastikan loading dihilangkan setelah API selesai
-              setIsProcessingResponse(false);
-            }
-          };
-
-          cleanAndGenerateSummary();
-          // Jangan set false di sini karena API masih berjalan
           return; // Return early untuk skip setIsProcessingResponse(false) di bawah
 
         case "konfirmasi":
@@ -615,37 +611,22 @@ export default function TambahLaporanPage() {
           updatedData.namaPasien = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditNama = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditNama);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editNoRM":
           updatedData.noRM = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditNoRM = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditNoRM);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editUmur":
           updatedData.umur = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditUmur = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditUmur);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editJenisKelamin":
           // Tidak langsung memproses response, karena akan menggunakan sistem tombol opsi
@@ -662,93 +643,94 @@ export default function TambahLaporanPage() {
           updatedData.unitPelapor = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditUnit = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditUnit);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editLokasiInsiden":
           updatedData.lokasiInsiden = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditLokasi = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditLokasi);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
-
-        case "editTglKejadian":
-          // Tidak langsung memproses response, karena akan menggunakan sistem kalender dan jam
-          // Response akan diproses melalui tombol konfirmasi di UI
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editYangDilaporkan":
           updatedData.yangDilaporkan = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditYangDilaporkan =
-            generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditYangDilaporkan);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editJudulInsiden":
           updatedData.judulInsiden = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditJudul = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditJudul);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editKronologi":
           updatedData.kronologi = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditKronologi = generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditKronologi);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+
+          const validateEditedChronology = async () => {
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/validateChronology`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ chronology: response }),
+                }
+              );
+
+              const data = await res.json();
+
+              if (data.is_lengkap) {
+                // ✅ setelah valid → bersihkan via API clean
+                cleanAndGenerateSummary(updatedData);
+              } else {
+                // ⚠️ Kalau tidak lengkap → kasih evaluasi
+                addMessage(
+                  "bot",
+                  `Kronologi edit belum lengkap. Evaluasi:\n\n${data.evaluasi}`
+                );
+                addMessage(
+                  "bot",
+                  "Silakan masukkan kronologi ulang dengan lebih lengkap."
+                );
+                setCurrentStep("editKronologi");
+              }
+            } catch (error) {
+              console.error("Error validate edited chronology:", error);
+              addMessage(
+                "bot",
+                "Terjadi kesalahan saat validasi kronologi edit. Coba lagi ya."
+              );
+              setCurrentStep("editKronologi");
+            } finally {
+              setIsProcessingResponse(false);
+            }
+          };
+
+          validateEditedChronology();
+          return;
 
         case "editTindakanSegera":
           updatedData.tindakanSegera = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditTindakanSegera =
-            generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditTindakanSegera);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editTindakanOleh":
           updatedData.tindakanOleh = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          const summaryAfterEditTindakanOleh =
-            generateReportSummary(updatedData);
-          addMessage("bot", summaryAfterEditTindakanOleh);
-          setTimeout(() => {
-            addMessage("bot", "Apakah laporan sudah sesuai?");
-            setCurrentStep("konfirmasi");
-          }, 2000);
-          break;
+          cleanAndGenerateSummary(updatedData);
+          return;
 
         case "editDampakInsiden":
           // Tidak langsung memproses response, karena akan menggunakan sistem tombol opsi
