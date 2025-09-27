@@ -351,6 +351,7 @@ export default function TambahLaporanPage() {
                     unit_yang_melaporkan: updatedData.unitPelapor,
                     lokasi_insiden: updatedData.lokasiInsiden,
                     tgl_insiden: updatedData.tglKejadian,
+                    yang_dilaporkan: updatedData.yangDilaporkan,
                     judul_insiden: updatedData.judulInsiden,
                     kronologi: updatedData.kronologi,
                     tindakan_awal: updatedData.tindakanSegera,
@@ -386,7 +387,7 @@ export default function TambahLaporanPage() {
                   `1. Unit Pelapor : ${clean.unit_yang_melaporkan}\n` +
                   `2. Lokasi Insiden : ${clean.lokasi_insiden}\n` +
                   `3. Tanggal/Jam Kejadian : ${clean.tgl_insiden}\n` +
-                  `4. Yang Dilaporkan : ${updatedData.yangDilaporkan}\n` +
+                  `4. Yang Dilaporkan : ${clean.yang_dilaporkan}\n` +
                   `5. Judul Insiden : ${clean.judul_insiden}\n` +
                   `6. Kronologi : ${clean.kronologi}\n` +
                   `7. Tindakan Segera : ${clean.tindakan_awal}\n` +
