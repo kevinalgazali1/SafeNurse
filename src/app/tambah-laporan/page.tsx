@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import { toast, Toaster } from "react-hot-toast";
 
 // Extend Window interface for SpeechRecognition
 declare global {
@@ -70,6 +71,7 @@ export default function TambahLaporanPage() {
   const [isListening, setIsListening] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedIncidentDate, setSelectedIncidentDate] = useState("");
 
@@ -420,6 +422,9 @@ export default function TambahLaporanPage() {
           ) {
             // Kirim laporan ke backend
             const submitLaporan = async () => {
+              setIsSubmittingReport(true);
+              addMessage("bot", "Sedang memproses laporan Anda, mohon tunggu...");
+              
               try {
                 const res = await fetch(
                   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/generate`,
@@ -472,6 +477,8 @@ export default function TambahLaporanPage() {
                   "bot",
                   "Terjadi kesalahan saat mengirim laporan. Silakan coba lagi."
                 );
+              } finally {
+                setIsSubmittingReport(false);
               }
             };
 
@@ -789,7 +796,7 @@ export default function TambahLaporanPage() {
 
       recognition.start();
     } else {
-      alert("Browser Anda tidak mendukung speech recognition");
+      toast.error("Browser Anda tidak mendukung speech recognition");
     }
   };
 
@@ -1852,10 +1859,30 @@ export default function TambahLaporanPage() {
               </span>
             </button>
 
-            <h1 className="text-white text-xl font-bold">
-              Safe
-              <span className="font-bold text-[#0B7A95]">Nurse</span>
-            </h1>
+          <div className="flex items-center space-x-1">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={30}
+            height={30}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={30}
+            height={30}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -2066,34 +2093,43 @@ export default function TambahLaporanPage() {
                   <div className="p-4 border-t border-gray-200">
                     <div className="flex items-center space-x-2">
                       <div className="flex-1 relative">
-                        <input
-                          type="text"
+                        <textarea
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
-                          onKeyPress={(e) =>
-                            e.key === "Enter" && handleSendMessage()
-                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                          }}
                           placeholder={
                             currentStep === "greeting"
                               ? "Silakan pilih Ya atau Tidak"
                               : "Ketik pesan Anda..."
                           }
                           disabled={
-                            isProcessingResponse || currentStep === "greeting"
+                            isProcessingResponse || isSubmittingReport || currentStep === "greeting"
                           }
-                          className={`w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black ${
-                            isProcessingResponse || currentStep === "greeting"
+                          rows={1}
+                          style={{ resize: 'none' }}
+                          className={`w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black overflow-hidden ${
+                            isProcessingResponse || isSubmittingReport || currentStep === "greeting"
                               ? "bg-gray-100 cursor-not-allowed"
                               : ""
                           }`}
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                          }}
                         />
                       </div>
 
                       <button
                         onClick={startVoiceRecognition}
-                        disabled={currentStep === "greeting"}
+                        disabled={currentStep === "greeting" || isSubmittingReport}
                         className={`p-2 rounded-full transition-all duration-200 ${
-                          currentStep === "greeting"
+                          currentStep === "greeting" || isSubmittingReport
                             ? "bg-gray-300 text-gray-400 cursor-not-allowed"
                             : isListening
                             ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50"
@@ -2102,6 +2138,8 @@ export default function TambahLaporanPage() {
                         title={
                           currentStep === "greeting"
                             ? "Silakan pilih Ya atau Tidak"
+                            : isSubmittingReport
+                            ? "Sedang memproses laporan..."
                             : isListening
                             ? "Klik untuk berhenti merekam"
                             : "Rekam Suara"
@@ -2117,20 +2155,26 @@ export default function TambahLaporanPage() {
                       <button
                         onClick={handleSendMessage}
                         disabled={
-                          isProcessingResponse || currentStep === "greeting"
+                          isProcessingResponse || isSubmittingReport || currentStep === "greeting"
                         }
                         className={`p-2 rounded-full transition-colors ${
-                          isProcessingResponse || currentStep === "greeting"
+                          isProcessingResponse || isSubmittingReport || currentStep === "greeting"
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
                         }`}
                         title={
                           currentStep === "greeting"
                             ? "Silakan pilih Ya atau Tidak"
+                            : isSubmittingReport
+                            ? "Sedang memproses laporan..."
                             : "Kirim Pesan"
                         }
                       >
-                        <i className="fas fa-paper-plane"></i>
+                        {isSubmittingReport ? (
+                          <i className="fas fa-spinner fa-spin"></i>
+                        ) : (
+                          <i className="fas fa-paper-plane"></i>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -2153,6 +2197,38 @@ export default function TambahLaporanPage() {
           </div>
         </div>
       </main>
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

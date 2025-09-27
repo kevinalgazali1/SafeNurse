@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Cookies from 'js-cookie';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function ProfilSuperAdmin() {
   const router = useRouter();
@@ -89,14 +90,14 @@ export default function ProfilSuperAdmin() {
     e.preventDefault();
 
     if (editForm.password !== editForm.confirmPassword) {
-      alert('Password dan konfirmasi password tidak cocok!');
+      toast.error('Password dan konfirmasi password tidak cocok!');
       return;
     }
 
     try {
       const token = Cookies.get('token');
       if (!token) {
-        alert('Token tidak ada, silakan login ulang.');
+        toast.error('Token tidak ada, silakan login ulang.');
         return;
       }
 
@@ -121,11 +122,11 @@ export default function ProfilSuperAdmin() {
 
       const result = await res.json();
       console.log('Password updated:', result);
-      alert('Password berhasil diubah!');
+      toast.success('Password berhasil diubah!');
       handleCloseModal();
     } catch (error) {
       console.error('Error change password:', error);
-      alert('Terjadi kesalahan saat mengubah password');
+      toast.error('Terjadi kesalahan saat mengubah password');
     }
   };
 
@@ -212,13 +213,74 @@ export default function ProfilSuperAdmin() {
         }
       `}</style>
       <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
+      
+      {/* Loading Screen */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-[#d9f0f6] z-50 flex items-center justify-center">
+          <div className="text-center">
+            {/* Loading Spinner */}
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
+            </div>
+
+            {/* Loading Text */}
+            <div className="space-y-2">
+              <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
+                Memuat Data Profil...
+              </h3>
+              <p className="text-[#0B7A95]/70 text-sm">Mohon tunggu sebentar</p>
+            </div>
+
+            {/* Loading Dots Animation */}
+            <div className="flex justify-center space-x-1 mt-4">
+              <div
+                className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      {!isLoading && (
+        <>
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
+         <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
           <h1 className="text-white text-xl font-bold">
             Safe
             <span className="font-bold text-[#0B7A95]">Nurse</span>
           </h1>
+        </div>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -489,7 +551,41 @@ export default function ProfilSuperAdmin() {
           </div>
         </div>
       )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+        </>
+      )}
       </div>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </>
   );
 }

@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import Image from 'next/image';
+import { toast, Toaster } from "react-hot-toast";
 
 interface Report {
   id: string;
@@ -96,6 +98,8 @@ export default function LaporanMasukChiefNursingPage() {
   const [catatan, setCatatan] = useState("");
   const [showRevisiModal, setShowRevisiModal] = useState(false);
   const [showRiwayatModal, setShowRiwayatModal] = useState(false);
+  const [showValidasiModal, setShowValidasiModal] = useState(false);
+  const [alasanValidasi, setAlasanValidasi] = useState("");
   const [selectedKategori, setSelectedKategori] = useState("");
   const [selectedGrading, setSelectedGrading] = useState("");
   const [catatanRevisi, setCatatanRevisi] = useState("");
@@ -226,38 +230,71 @@ export default function LaporanMasukChiefNursingPage() {
     setShowRiwayatModal(false);
   };
 
-  const handleValidasi = async () => {
-    if (!selectedReport) return;
-    const reportId = selectedReport.id; // contoh: LAP-20250918-4342
+  const handleCloseValidasiModal = () => {
+    setShowValidasiModal(false);
+    setAlasanValidasi("");
+  };
+
+  const handleValidasi = () => {
+    setShowValidasiModal(true);
+  };
+
+  const handleKonfirmasiValidasi = async () => {
+    if (!selectedReport || !alasanValidasi.trim()) return;
+    
+    const reportId = selectedReport.id;
 
     try {
-      const res = await fetch(
+      // Kirim catatan validasi terlebih dahulu
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            catatan: `Alasan Validasi: ${alasanValidasi}`,
+          }),
+        }
+      );
+
+      if (!catatanRes.ok) {
+        const errData = await catatanRes.json();
+        throw new Error(errData.message || "Gagal mengirim catatan validasi");
+      }
+
+      // Lalu approve laporan
+      const approveRes = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/approve/${reportId}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // pastikan token valid
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
 
-      if (!res.ok) {
-        const errData = await res.json();
+      if (!approveRes.ok) {
+        const errData = await approveRes.json();
         throw new Error(errData.message || "Gagal memvalidasi laporan");
       }
 
-      const data = await res.json();
+      const data = await approveRes.json();
       console.log("✅ Validasi berhasil:", data);
 
-      // Refresh data laporan biar status ter-update
+      // Refresh data laporan
       await fetchReports();
 
+      // Tutup modal dan reset form
+      handleCloseValidasiModal();
       handleCloseModal();
-      alert("Laporan berhasil divalidasi!");
+      toast.success("Laporan berhasil divalidasi!");
     } catch (err: any) {
       console.error("❌ Error validasi:", err.message);
-      alert(err.message || "Terjadi kesalahan saat validasi laporan");
+      toast.error(err.message || "Terjadi kesalahan saat validasi laporan");
     }
   };
 
@@ -280,8 +317,15 @@ export default function LaporanMasukChiefNursingPage() {
   const handleKirimRevisi = async () => {
     if (!selectedReport) return;
 
+    // Validasi catatan wajib diisi
+    if (!catatanRevisi.trim()) {
+      toast.error("Catatan wajib diisi sebelum mengirim revisi!");
+      return;
+    }
+
     const reportId = selectedReport.id; // sekarang pasti string (LAP-xxxx)
     try {
+      // Kirim revisi laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/revisi/${reportId}`,
         {
@@ -300,6 +344,23 @@ export default function LaporanMasukChiefNursingPage() {
 
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
+      // Kirim catatan revisi
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            catatan: catatanRevisi,
+          }),
+        }
+      );
+
+      if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
+
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
 
@@ -311,10 +372,10 @@ export default function LaporanMasukChiefNursingPage() {
       handleCloseModal();
 
       // Notifikasi sederhana
-      alert("Revisi berhasil dikirim!");
+      toast.success("Revisi dan catatan berhasil dikirim!");
     } catch (err) {
       console.error(err);
-      alert("Gagal mengirim revisi. Silakan coba lagi.");
+      toast.error("Gagal mengirim revisi. Silakan coba lagi.");
     }
   };
 
@@ -575,10 +636,30 @@ export default function LaporanMasukChiefNursingPage() {
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-white text-lg sm:text-xl font-bold">
+            <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
             Safe
             <span className="font-bold text-[#0B7A95]">Nurse</span>
           </h1>
+        </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -1161,39 +1242,33 @@ export default function LaporanMasukChiefNursingPage() {
                 />
               </div>
 
-              {/* Tombol Kirim Revisi */}
-              <div className="flex justify-center mb-6">
-                <button
-                  onClick={handleKirimRevisi}
-                  className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                  disabled={!tindakanAwal.trim()}
-                >
-                  Kirim Revisi
-                </button>
-              </div>
-
               {/* Catatan */}
               <div className="mb-6">
                 <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                  Catatan :
+                  Catatan <span className="text-red-500">*</span> :
                 </label>
                 <textarea
                   value={catatanRevisi}
                   onChange={(e) => setCatatanRevisi(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                   rows={3}
-                  placeholder="Tambahkan catatan revisi..."
+                  placeholder="Catatan wajib diisi sebelum mengirim revisi..."
+                  required
                 />
               </div>
 
-              {/* Action Button */}
+              {/* Tombol Kirim Revisi */}
               <div className="flex justify-center">
                 <button
-                  onClick={handleKirimCatatan}
-                  className="bg-[#2C3E50] text-white px-8 py-2 rounded-lg hover:bg-[#34495e] transition-colors font-medium text-sm"
-                  disabled={!selectedKategori || !selectedGrading}
+                  onClick={handleKirimRevisi}
+                  className={`px-6 py-2 rounded-lg transition-colors font-medium text-sm ${
+                    !catatanRevisi.trim()
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-[#0B7A95] text-white hover:bg-[#0a6b85]'
+                  }`}
+                  disabled={!catatanRevisi.trim()}
                 >
-                  Kirim Catatan
+                  Kirim Revisi
                 </button>
               </div>
             </div>
@@ -1467,9 +1542,107 @@ export default function LaporanMasukChiefNursingPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Validasi Laporan */}
+      {showValidasiModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl w-full max-w-md animate-scale-in overflow-hidden">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-bold text-white">
+                Validasi Laporan
+              </h3>
+              <button
+                onClick={handleCloseValidasiModal}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
+            </div>
+
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              {/* Icon dan Pesan */}
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center mr-3 sm:mr-4">
+                  <i className="fas fa-check-circle text-green-600 text-lg sm:text-xl"></i>
+                </div>
+                <div>
+                  <p className="text-[#2C3E50] text-sm sm:text-base font-medium">
+                    Berikan alasan validasi untuk laporan ini:
+                  </p>
+                </div>
+              </div>
+
+              {/* Textarea Alasan Validasi */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                  Alasan Validasi <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={alasanValidasi}
+                  onChange={(e) => setAlasanValidasi(e.target.value)}
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
+                  rows={4}
+                  placeholder="Masukkan alasan validasi..."
+                />
+              </div>
+
+              {/* Tombol Aksi */}
+              <div className="flex flex-col space-y-2 pt-2">
+                <button
+                  onClick={handleKonfirmasiValidasi}
+                  disabled={!alasanValidasi.trim()}
+                  className="w-full bg-[#28a745] text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-[#218838] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+                >
+                  Validasi
+                </button>
+                <button
+                  onClick={handleCloseValidasiModal}
+                  className="w-full bg-gray-500 text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm sm:text-base"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
         </>
       )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </>
   );
 }

@@ -54,10 +54,30 @@ export default function ProfilePage() {
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
       <header className="flex justify-between items-center bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
-        <h1 className="text-white text-xl font-bold">
-          Safe
-          <span className="font-bold text-[#0B7A95]">Nurse</span>
-        </h1>
+         <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
         
         {/* Navigation Items */}
         <div className="flex items-center space-x-6">

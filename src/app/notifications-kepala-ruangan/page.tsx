@@ -102,10 +102,30 @@ export default function NotificationsKepalaRuanganPage() {
           {/* Header/Navbar */}
           <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
             <div className="flex justify-between items-center">
-              <h1 className="text-white text-xl font-bold">
-                Safe
-                <span className="font-bold text-[#0B7A95]">Nurse</span>
-              </h1>
+               <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-6">
@@ -489,6 +509,18 @@ export default function NotificationsKepalaRuanganPage() {
           `}</style>
         </>
       )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

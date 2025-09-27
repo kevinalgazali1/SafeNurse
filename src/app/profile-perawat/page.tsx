@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
@@ -92,14 +93,14 @@ export default function ProfilePage() {
     e.preventDefault();
 
     if (editForm.password !== editForm.confirmPassword) {
-      alert("Password dan konfirmasi password tidak cocok!");
+      toast.error("Password dan konfirmasi password tidak cocok!");
       return;
     }
 
     try {
       const token = Cookies.get("token");
       if (!token) {
-        alert("Token tidak ada, silakan login ulang.");
+        toast.error("Token tidak ada, silakan login ulang.");
         return;
       }
 
@@ -125,13 +126,13 @@ export default function ProfilePage() {
       const result = await res.json();
       console.log("Password updated:", result);
 
-      alert("Password berhasil diubah!");
+      toast.success("Password berhasil diubah!");
 
       // ✅ Tutup modal otomatis
       handleCloseModal();
     } catch (error) {
       console.error("Error change password:", error);
-      alert("Terjadi kesalahan saat mengubah password");
+      toast.error("Terjadi kesalahan saat mengubah password");
     }
   };
 
@@ -315,10 +316,30 @@ export default function ProfilePage() {
           {/* Header/Navbar */}
           <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
             <div className="flex justify-between items-center">
-              <h1 className="text-white text-xl font-bold">
-                Safe
-                <span className="font-bold text-[#0B7A95]">Nurse</span>
-              </h1>
+              <div className="flex items-center space-x-3">
+                {/* Logo SafeNurse */}
+                <Image
+                  src="/logosafenurse.png"
+                  alt="Logo SafeNurse"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+
+                {/* Logo Unhas */}
+                <Image
+                  src="/logounhas.png"
+                  alt="Logo Unhas"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+
+                <h1 className="text-white text-xl font-bold">
+                  Safe
+                  <span className="font-bold text-[#0B7A95]">Nurse</span>
+                </h1>
+              </div>
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-6">
@@ -713,7 +734,7 @@ export default function ProfilePage() {
                     try {
                       const token = Cookies.get("token");
                       if (!token) {
-                        alert("Token tidak ada, silakan login ulang.");
+                        toast.error("Token tidak ada, silakan login ulang.");
                         return;
                       }
 
@@ -742,11 +763,11 @@ export default function ProfilePage() {
                         nama_perawat: profileForm.nama,
                       }));
 
-                      alert("Profile berhasil diupdate!");
+                      toast.success("Profile berhasil diupdate!");
                       setShowChangeProfileModal(false);
                     } catch (err) {
                       console.error("Error update profile:", err);
-                      alert("Terjadi kesalahan saat update profile");
+                      toast.error("Terjadi kesalahan saat update profile");
                     }
                   }}
                 >
@@ -782,6 +803,36 @@ export default function ProfilePage() {
           )}
         </>
       )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
+        </div>
+      </footer>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

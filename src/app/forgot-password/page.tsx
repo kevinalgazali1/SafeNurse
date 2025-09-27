@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { toast, Toaster } from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -30,16 +31,16 @@ const handleSubmit = async (e: React.FormEvent) => {
     console.log("Forgot password response:", data);
 
     if (!res.ok) {
-      alert(data.message || "Gagal mengirim email reset password!");
+      toast.error(data.message || "Gagal mengirim email reset password!");
       return;
     }
 
-    alert("Token reset password sudah dikirim ke email Anda!");
+    toast.success("Token reset password sudah dikirim ke email Anda!");
     // kalau mau redirect ke halaman reset password:
     window.location.href = "/reset-password";
   } catch (err) {
     console.error("Error forgot password:", err);
-    alert("Terjadi kesalahan. Coba lagi nanti.");
+    toast.error("Terjadi kesalahan. Coba lagi nanti.");
   }
 };
 
@@ -48,10 +49,30 @@ const handleSubmit = async (e: React.FormEvent) => {
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
       <header className={`flex justify-between items-center bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-        <h1 className="text-white text-xl font-bold">
-          Safe
-          <span className="font-bold text-[#0B7A95]">Nurse</span>
-        </h1>
+         <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
         
         {/* Login Button */}
         <button 
@@ -163,6 +184,18 @@ const handleSubmit = async (e: React.FormEvent) => {
         </section>
       </main>
 
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+
       <style jsx>{`
         @media (max-width: 768px) {
           #right-side {
@@ -174,6 +207,26 @@ const handleSubmit = async (e: React.FormEvent) => {
           }
         }
       `}</style>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

@@ -43,6 +43,40 @@ interface MobileReportCardProps {
   onDetailClick: (report: Report) => void;
 }
 
+// Fungsi untuk menentukan warna background Status Laporan
+const getStatusLaporanColor = (status: string) => {
+  switch (status) {
+    case "laporan disetujui chief nursing":
+      return "bg-blue-500 text-white shadow-md";
+    case "diteruskan ke verifikator":
+      return "bg-orange-500 text-white shadow-md";
+    case "laporan ditolak validator":
+      return "bg-red-500 text-white shadow-md";
+    case "laporan disetujui verifikator":
+      return "bg-green-500 text-white shadow-md";
+    case "diteruskan ke validator":
+      return "bg-yellow-500 text-white shadow-md";
+    default:
+      return "bg-gray-500 text-white shadow-md";
+  }
+};
+
+// Fungsi untuk menentukan warna background Grading
+const getGradingColor = (grading: string) => {
+  switch (grading) {
+    case "merah":
+      return "bg-red-500 text-white shadow-md";
+    case "kuning":
+      return "bg-yellow-500 text-white shadow-md";
+    case "hijau":
+      return "bg-green-500 text-white shadow-md";
+    case "biru":
+      return "bg-blue-500 text-white shadow-md";
+    default:
+      return "bg-gray-500 text-white shadow-md";
+  }
+};
+
 function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -56,11 +90,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           {/* Status di atas kanan */}
           <div className="flex justify-end items-center space-x-2 mb-2">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                report.status === "Selesai"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
+              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}
             >
               {report.status}
             </span>
@@ -98,7 +128,9 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Grading:</span>
-              <span className="text-gray-800">{report.grading}</span>
+              <span className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                {report.grading}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Kode Laporan:</span>
@@ -394,10 +426,30 @@ export default function DashboardPerawatPage() {
           {/* Header/Navbar */}
           <header className="bg-[#B9D9DD] rounded-xl mx-6 mt-6">
             <div className="flex justify-between items-center px-6 py-3">
-              <h1 className="text-white text-xl font-bold animate-textGlow">
-                Safe
-                <span className="font-bold text-[#0B7A95]">Nurse</span>
-              </h1>
+            <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
 
               {/* Desktop Navigation Items */}
               <div className="hidden md:flex items-center space-x-6">
@@ -590,11 +642,15 @@ export default function DashboardPerawatPage() {
                           <div className="text-gray-600 text-center">
                             {report.kategori}
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.status}
+                          <div className="text-center">
+                            <span className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}>
+                              {report.status}
+                            </span>
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.grading}
+                          <div className="text-center">
+                            <span className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                              {report.grading}
+                            </span>
                           </div>
                           <div className="text-gray-600 text-center">
                             {report.catatanKepalaRuangan || "-"}
@@ -914,6 +970,18 @@ export default function DashboardPerawatPage() {
           )}
         </>
       )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import { toast, Toaster } from "react-hot-toast";
 
 interface Report {
   id: string;
@@ -34,6 +35,7 @@ interface Report {
   probablitas: string;
   rekomendasiTindakan: string;
   tanggalWaktuPelaporan: string;
+  tindakLanjut:string;
 
   // tambahan
   historyAksi: {
@@ -58,6 +60,40 @@ interface MobileReportCardProps {
   onDetailClick: (report: Report) => void;
 }
 
+// Fungsi untuk menentukan warna background Status Laporan
+const getStatusLaporanColor = (status: string) => {
+  switch (status) {
+    case "laporan disetujui chief nursing":
+      return "bg-blue-500 text-white shadow-md";
+    case "diteruskan ke verifikator":
+      return "bg-orange-500 text-white shadow-md";
+    case "laporan ditolak validator":
+      return "bg-red-500 text-white shadow-md";
+    case "laporan disetujui verifikator":
+      return "bg-green-500 text-white shadow-md";
+    case "diteruskan ke validator":
+      return "bg-yellow-500 text-white shadow-md";
+    default:
+      return "bg-gray-500 text-white shadow-md";
+  }
+};
+
+// Fungsi untuk menentukan warna background Grading
+const getGradingColor = (grading: string) => {
+  switch (grading) {
+    case "merah":
+      return "bg-red-500 text-white shadow-md";
+    case "kuning":
+      return "bg-yellow-500 text-white shadow-md";
+    case "hijau":
+      return "bg-green-500 text-white shadow-md";
+    case "biru":
+      return "bg-blue-500 text-white shadow-md";
+    default:
+      return "bg-gray-500 text-white shadow-md";
+  }
+};
+
 function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -72,11 +108,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           {/* Status di atas kanan */}
           <div className="flex justify-end items-center space-x-2 mb-2">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                report.status === "Selesai"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
+              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}
             >
               {report.status}
             </span>
@@ -115,11 +147,17 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Grading:</span>
-              <span className="text-gray-800">{report.grading}</span>
+              <span className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                {report.grading}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Kode Laporan:</span>
               <span className="text-gray-800">{report.kodeLaporan}</span>
+            </div>
+             <div className="flex justify-between">
+              <span className="font-medium text-gray-600">Kode Laporan:</span>
+              <span className="text-gray-800">{report.tindakLanjut}</span>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
@@ -145,6 +183,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
                 {report.catatanVerifikator || "Belum ada catatan"}
               </p>
             </div>
+          
           </div>
         </div>
       )}
@@ -160,6 +199,10 @@ export default function DashboardChiefNursing() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State untuk modal validasi
+  const [showValidasiModal, setShowValidasiModal] = useState(false);
+  const [alasanValidasi, setAlasanValidasi] = useState("");
 
   // CSS Keyframes untuk animasi
   useEffect(() => {
@@ -349,6 +392,7 @@ export default function DashboardChiefNursing() {
         lokasiKejadian: r.lokasi_insiden,
         tanggalInsiden: r.tgl_insiden,
         yangDilaporkan: "a",
+        tindakLanjut: "b",
         judulInsiden: r.judul_insiden,
         kronologi: r.kronologi,
         tindakanAwal: r.tindakan_awal,
@@ -427,6 +471,7 @@ export default function DashboardChiefNursing() {
         lokasiKejadian: r.lokasi_insiden,
         tanggalInsiden: r.tgl_insiden,
         yangDilaporkan: "a",
+        tindakLanjut: "b",
         judulInsiden: r.judul_insiden,
         kronologi: r.kronologi,
         tindakanAwal: r.tindakan_awal,
@@ -464,9 +509,36 @@ export default function DashboardChiefNursing() {
 
   const handleValidasi = async () => {
     if (!selectedReport) return;
+    // Buka modal validasi
+    setShowValidasiModal(true);
+  };
+
+  const handleKonfirmasiValidasi = async () => {
+    if (!selectedReport || !alasanValidasi.trim()) return;
     const reportId = selectedReport.id; // contoh: LAP-20250918-4342
 
     try {
+      // Kirim catatan validasi terlebih dahulu
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            catatan: alasanValidasi,
+          }),
+        }
+      );
+
+      if (!catatanRes.ok) {
+        const errData = await catatanRes.json();
+        throw new Error(errData.message || "Gagal mengirim catatan validasi");
+      }
+
+      // Lakukan approve laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/approve/${reportId}`,
         {
@@ -489,12 +561,19 @@ export default function DashboardChiefNursing() {
       // Refresh data laporan biar status ter-update
       await fetchReports();
 
+      // Tutup modal dan reset form
+      handleCloseValidasiModal();
       handleCloseModal();
-      alert("Laporan berhasil divalidasi!");
+      toast.success("Laporan berhasil divalidasi!");
     } catch (err: any) {
       console.error("❌ Error validasi:", err.message);
-      alert(err.message || "Terjadi kesalahan saat validasi laporan");
+      toast.error(err.message || "Terjadi kesalahan saat validasi laporan");
     }
+  };
+
+  const handleCloseValidasiModal = () => {
+    setShowValidasiModal(false);
+    setAlasanValidasi("");
   };
 
   const handleRevisi = () => {
@@ -521,8 +600,15 @@ export default function DashboardChiefNursing() {
   const handleKirimRevisi = async () => {
     if (!selectedReport) return;
 
+    // Validasi catatan wajib diisi
+    if (!catatanRevisi.trim()) {
+      toast.error("Catatan wajib diisi sebelum mengirim revisi!");
+      return;
+    }
+
     const reportId = selectedReport.id; // sekarang pasti string (LAP-xxxx)
     try {
+      // Kirim revisi laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/revisi/${reportId}`,
         {
@@ -541,6 +627,23 @@ export default function DashboardChiefNursing() {
 
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
+      // Kirim catatan revisi
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ catatan: catatanRevisi }),
+        }
+      );
+
+      if (!catatanRes.ok) {
+        throw new Error("Gagal mengirim catatan revisi");
+      }
+
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
 
@@ -552,10 +655,10 @@ export default function DashboardChiefNursing() {
       handleCloseModal();
 
       // Notifikasi sederhana
-      alert("Revisi berhasil dikirim!");
+      toast.success("Revisi dan catatan berhasil dikirim!");
     } catch (err) {
       console.error(err);
-      alert("Gagal mengirim revisi. Silakan coba lagi.");
+      toast.error("Gagal mengirim revisi. Silakan coba lagi.");
     }
   };
 
@@ -572,7 +675,7 @@ export default function DashboardChiefNursing() {
 
   const handleKonfirmasiTolak = async () => {
     if (!selectedReport || !alasanTolak.trim()) {
-      alert("Mohon isi alasan penolakan terlebih dahulu");
+      toast.error("Mohon isi alasan penolakan terlebih dahulu");
       return;
     }
 
@@ -624,13 +727,13 @@ export default function DashboardChiefNursing() {
       handleCloseModal();
 
       // Notifikasi berhasil
-      alert("Laporan berhasil ditolak dengan alasan yang diberikan!");
+      toast.success("Laporan berhasil ditolak dengan alasan yang diberikan!");
 
       // Refresh data laporan
       await fetchReports();
     } catch (error) {
       console.error("Error saat menolak laporan:", error);
-      alert("Gagal menolak laporan. Silakan coba lagi.");
+      toast.error("Gagal menolak laporan. Silakan coba lagi.");
     }
   };
 
@@ -728,10 +831,30 @@ export default function DashboardChiefNursing() {
           {/* Header/Navbar */}
           <header className="bg-[#B9D9DD] rounded-xl mx-6 mt-6">
             <div className="flex justify-between items-center px-6 py-3">
-              <h1 className="text-white text-xl font-bold animate-textGlow">
-                Safe
-                <span className="font-bold text-[#0B7A95]">Nurse</span>
-              </h1>
+           <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
 
               {/* Desktop Navigation Items */}
               <div className="hidden md:flex items-center space-x-6">
@@ -893,7 +1016,7 @@ export default function DashboardChiefNursing() {
                 <div className="hidden lg:block bg-white rounded-lg overflow-hidden shadow-lg animate-tableSlideUp hover-lift animate-glow">
                   {/* Table Header */}
                   <div className="bg-[#0B7A95] text-white animate-fadeInRight">
-                    <div className="grid grid-cols-9 gap-2 px-4 py-3 text-sm font-medium">
+                    <div className="grid grid-cols-10 gap-2 px-4 py-3 text-sm font-medium">
                       <div className="text-center animate-bounceSubtle stagger-1">
                         Tanggal Laporan
                       </div>
@@ -919,6 +1042,9 @@ export default function DashboardChiefNursing() {
                         Kode Laporan
                       </div>
                       <div className="text-center animate-bounceSubtle stagger-4">
+                        Tindak Lanjut
+                      </div>
+                      <div className="text-center animate-bounceSubtle stagger-5">
                         Detail
                       </div>
                     </div>
@@ -930,7 +1056,7 @@ export default function DashboardChiefNursing() {
                       filteredReports.map((report, index) => (
                         <div
                           key={report.kodeLaporan}
-                          className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm ${
+                          className={`grid grid-cols-10 gap-2 px-4 py-3 text-sm ${
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           } hover:bg-blue-50 transition-colors animate-fadeInUp hover-lift`}
                           style={{ animationDelay: `${index * 0.1}s` }}
@@ -941,11 +1067,15 @@ export default function DashboardChiefNursing() {
                           <div className="text-gray-600 text-center">
                             {report.kategori}
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.status}
+                          <div className="text-center">
+                            <span className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}>
+                              {report.status}
+                            </span>
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.grading}
+                          <div className="text-center">
+                            <span className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                              {report.grading}
+                            </span>
                           </div>
                           <div className="text-gray-600 text-center">
                             {report.catatanKepalaRuangan || "-"}
@@ -958,6 +1088,9 @@ export default function DashboardChiefNursing() {
                           </div>
                           <div className="text-gray-600 text-center">
                             {report.kodeLaporan}
+                          </div>
+                          <div className="text-gray-600 text-center">
+                            {report.tindakLanjut || "-"}
                           </div>
                           <div className="text-center">
                             <button
@@ -1406,39 +1539,29 @@ export default function DashboardChiefNursing() {
                     />
                   </div>
 
-                  {/* Tombol Kirim Revisi */}
-                  <div className="flex justify-center mb-6">
-                    <button
-                      onClick={handleKirimRevisi}
-                      className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                      disabled={!tindakanAwal.trim()}
-                    >
-                      Kirim Revisi
-                    </button>
-                  </div>
-
                   {/* Catatan */}
                   <div className="mb-6">
                     <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                      Catatan :
+                      Catatan <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={catatanRevisi}
                       onChange={(e) => setCatatanRevisi(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                       rows={3}
-                      placeholder="Tambahkan catatan revisi..."
+                      placeholder="Tambahkan catatan revisi (wajib diisi)..."
+                      required
                     />
                   </div>
 
-                  {/* Action Button */}
+                  {/* Tombol Kirim Revisi */}
                   <div className="flex justify-center">
                     <button
-                      onClick={handleKirimCatatan}
-                      className="bg-[#2C3E50] text-white px-8 py-2 rounded-lg hover:bg-[#34495e] transition-colors font-medium text-sm"
-                      disabled={!selectedKategori || !selectedGrading}
+                      onClick={handleKirimRevisi}
+                      className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      disabled={!catatanRevisi.trim()}
                     >
-                      Kirim Catatan
+                      Kirim Revisi
                     </button>
                   </div>
                 </div>
@@ -1763,6 +1886,85 @@ export default function DashboardChiefNursing() {
           )}
         </>
       )}
+
+      {/* Modal Validasi */}
+      {showValidasiModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                  <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
+                </div>
+                <h2 className="text-white font-bold text-sm sm:text-lg">
+                  Validasi Laporan
+                </h2>
+              </div>
+              <button
+                onClick={handleCloseValidasiModal}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
+            </div>
+
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-4">
+              <p className="text-[#2C3E50] font-medium text-sm">
+                Jelaskan alasan kamu memvalidasi laporan ini:
+              </p>
+
+              <textarea
+                value={alasanValidasi}
+                onChange={(e) => setAlasanValidasi(e.target.value)}
+                placeholder="Masukkan alasan validasi..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                rows={4}
+              />
+
+              <button
+                onClick={handleKonfirmasiValidasi}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Validasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

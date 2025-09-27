@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function VideoTutorialPage() {
+  const [isLoading, setIsLoading] = useState(true);
   const [videos] = useState([
     {
       id: 1,
@@ -67,18 +68,86 @@ export default function VideoTutorialPage() {
     }
   ]);
 
+  // Simulate loading data from backend
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2 seconds loading time
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleVideoClick = (url: string) => {
     window.open(url, '_blank');
   };
+
+  // Loading Screen
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-[#d9f0f6] z-50 flex items-center justify-center">
+        <div className="text-center">
+          {/* Loading Spinner */}
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-[#B9D9DD] border-t-[#0B7A95] rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#0B7A95] rounded-full animate-ping mx-auto"></div>
+          </div>
+
+          {/* Loading Text */}
+          <div className="space-y-2">
+            <h3 className="text-[#0B7A95] text-lg font-semibold animate-pulse">
+              Memuat Video Tutorial...
+            </h3>
+            <p className="text-[#0B7A95]/70 text-sm">Mohon tunggu sebentar</p>
+          </div>
+
+          {/* Loading Dots Animation */}
+          <div className="flex justify-center space-x-1 mt-4">
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-[#0B7A95] rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header/Navbar */}
       <header className="flex justify-between items-center bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
-        <h1 className="text-white text-xl font-bold">
-          Safe
-          <span className="font-bold text-[#0B7A95]">Nurse</span>
-        </h1>
+       <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
         
         {/* Navigation Items */}
         <div className="flex items-center space-x-6">

@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import Image from 'next/image';
+import { toast, Toaster } from "react-hot-toast";
 
 interface Report {
   id: string;
@@ -115,6 +117,10 @@ export default function LaporanMasukVerifikator() {
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State untuk modal validasi
+  const [showValidasiModal, setShowValidasiModal] = useState(false);
+  const [alasanValidasi, setAlasanValidasi] = useState("");
 
   // CSS Keyframes untuk animasi
   useEffect(() => {
@@ -428,17 +434,35 @@ export default function LaporanMasukVerifikator() {
     setShowRiwayatModal(false);
   };
 
-  const handleValidasi = async () => {
+  const handleValidasi = () => {
+    setShowValidasiModal(true);
+    setAlasanValidasi("");
+  };
+
+  const handleCloseValidasiModal = () => {
+    setShowValidasiModal(false);
+    setAlasanValidasi("");
+  };
+
+  const handleKonfirmasiValidasi = async () => {
     if (!selectedReport) return;
-    const reportId = selectedReport.id; // contoh: LAP-20250918-4342
+    
+    // Validasi alasan wajib diisi
+    if (!alasanValidasi.trim()) {
+      toast.error("Alasan validasi wajib diisi!");
+      return;
+    }
+
+    const reportId = selectedReport.id;
 
     try {
+      // Kirim validasi laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/approve/${reportId}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // pastikan token valid
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -449,17 +473,36 @@ export default function LaporanMasukVerifikator() {
         throw new Error(errData.message || "Gagal memvalidasi laporan");
       }
 
-      const data = await res.json();
-      console.log("✅ Validasi berhasil:", data);
+      // Kirim alasan validasi sebagai catatan
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            catatan: alasanValidasi,
+          }),
+        }
+      );
 
-      // Refresh data laporan biar status ter-update
+      if (!catatanRes.ok) {
+        console.warn("Gagal mengirim alasan validasi, tapi validasi berhasil");
+      }
+
+      console.log("✅ Validasi berhasil");
+
+      // Refresh data laporan
       await fetchReports();
 
       handleCloseModal();
-      alert("Laporan berhasil divalidasi!");
+      handleCloseValidasiModal();
+      toast.success("Laporan berhasil divalidasi dengan alasan!");
     } catch (err: any) {
       console.error("❌ Error validasi:", err.message);
-      alert(err.message || "Terjadi kesalahan saat validasi laporan");
+      toast.error(err.message || "Terjadi kesalahan saat validasi laporan");
     }
   };
 
@@ -482,8 +525,15 @@ export default function LaporanMasukVerifikator() {
   const handleKirimRevisi = async () => {
     if (!selectedReport) return;
 
+    // Validasi catatan wajib diisi
+    if (!catatanRevisi.trim()) {
+      toast.error("Catatan wajib diisi sebelum mengirim revisi!");
+      return;
+    }
+
     const reportId = selectedReport.id; // sekarang pasti string (LAP-xxxx)
     try {
+      // Kirim revisi laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/revisi/${reportId}`,
         {
@@ -502,6 +552,23 @@ export default function LaporanMasukVerifikator() {
 
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
+      // Kirim catatan revisi
+      const catatanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            catatan: catatanRevisi,
+          }),
+        }
+      );
+
+      if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
+
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
 
@@ -513,10 +580,10 @@ export default function LaporanMasukVerifikator() {
       handleCloseModal();
 
       // Notifikasi sederhana
-      alert("Revisi berhasil dikirim!");
+      toast.success("Revisi dan catatan berhasil dikirim!");
     } catch (err) {
       console.error(err);
-      alert("Gagal mengirim revisi. Silakan coba lagi.");
+      toast.error("Gagal mengirim revisi. Silakan coba lagi.");
     }
   };
 
@@ -614,10 +681,30 @@ export default function LaporanMasukVerifikator() {
             {/* Header/Navbar */}
             <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-white text-lg sm:text-xl font-bold">
-                  Safe
-                  <span className="font-bold text-[#0B7A95]">Nurse</span>
-                </h1>
+                <div className="flex items-center space-x-3">
+          {/* Logo SafeNurse */}
+          <Image
+            src="/logosafenurse.png"
+            alt="Logo SafeNurse"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          {/* Logo Unhas */}
+          <Image
+            src="/logounhas.png"
+            alt="Logo Unhas"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+
+          <h1 className="text-white text-xl font-bold">
+            Safe
+            <span className="font-bold text-[#0B7A95]">Nurse</span>
+          </h1>
+        </div>
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-6">
@@ -1328,39 +1415,33 @@ export default function LaporanMasukVerifikator() {
                       />
                     </div>
 
-                    {/* Tombol Kirim Revisi */}
-                    <div className="flex justify-center mb-6">
-                      <button
-                        onClick={handleKirimRevisi}
-                        className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#0a6b85] transition-colors font-medium text-sm"
-                        disabled={!tindakanAwal.trim()}
-                      >
-                        Kirim Revisi
-                      </button>
-                    </div>
-
                     {/* Catatan */}
                     <div className="mb-6">
                       <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                        Catatan :
+                        Catatan <span className="text-red-500">*</span> :
                       </label>
                       <textarea
                         value={catatanRevisi}
                         onChange={(e) => setCatatanRevisi(e.target.value)}
                         className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                         rows={3}
-                        placeholder="Tambahkan catatan revisi..."
+                        placeholder="Catatan wajib diisi sebelum mengirim revisi..."
+                        required
                       />
                     </div>
 
-                    {/* Action Button */}
+                    {/* Tombol Kirim Revisi */}
                     <div className="flex justify-center">
                       <button
-                        onClick={handleKirimCatatan}
-                        className="bg-[#2C3E50] text-white px-8 py-2 rounded-lg hover:bg-[#34495e] transition-colors font-medium text-sm"
-                        disabled={!selectedKategori || !selectedGrading}
+                        onClick={handleKirimRevisi}
+                        className={`px-6 py-2 rounded-lg transition-colors font-medium text-sm ${
+                          !catatanRevisi.trim()
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-[#0B7A95] text-white hover:bg-[#0a6b85]'
+                        }`}
+                        disabled={!catatanRevisi.trim()}
                       >
-                        Kirim Catatan
+                        Kirim Revisi
                       </button>
                     </div>
                   </div>
@@ -1637,8 +1718,88 @@ export default function LaporanMasukVerifikator() {
               </div>
             )}
           </div>
+          
+          {/* Modal Validasi Laporan */}
+          {showValidasiModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+                {/* Header Modal */}
+                <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                      <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
+                    </div>
+                    <h2 className="text-white font-bold text-sm sm:text-lg">
+                      Validasi Laporan
+                    </h2>
+                  </div>
+                  <button
+                    onClick={handleCloseValidasiModal}
+                    className="text-white hover:text-gray-200 transition-colors"
+                  >
+                    <i className="fas fa-times text-lg sm:text-xl"></i>
+                  </button>
+                </div>
+
+                {/* Content Modal */}
+                <div className="p-4 sm:p-6 space-y-4">
+                  <p className="text-[#2C3E50] font-medium text-sm">
+                    Jelaskan alasan kamu memvalidasi laporan ini:
+                  </p>
+
+                  <textarea
+                    value={alasanValidasi}
+                    onChange={(e) => setAlasanValidasi(e.target.value)}
+                    placeholder="Masukkan alasan validasi..."
+                    className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                    rows={4}
+                  />
+
+                  <button
+                    onClick={handleKonfirmasiValidasi}
+                    disabled={!alasanValidasi.trim()}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Validasi
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Sticky Footer */}
+          <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium">
+                Copyright 2025 © SafeNurse All Rights reserved.
+              </p>
+              <p className="text-xs text-white/80">
+                Universitas Hasanuddin
+              </p>
+            </div>
+          </footer>
         </>
       )}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </>
   );
 }

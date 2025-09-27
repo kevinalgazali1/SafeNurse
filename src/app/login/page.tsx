@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
+import { toast, Toaster } from "react-hot-toast";
 
 interface JwtPayload {
   role: string;
@@ -31,12 +32,13 @@ export default function LoginPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
+          credentials: "include",
         }
       );
 
       const data = await res.json();
       if (!res.ok) {
-        alert(data.message || "Login gagal!");
+        toast.error(data.message || "Login gagal!");
         return;
       }
 
@@ -58,11 +60,11 @@ export default function LoginPage() {
       } else if (decoded.role === "verifikator") {
         window.location.href = "/dashboard-verifikator";
       } else {
-        alert("Role tidak dikenali!");
+        toast.error("Role tidak dikenali!");
       }
     } catch (err) {
       console.error("Login error:", err);
-      alert("Terjadi kesalahan server.");
+      toast.error("Terjadi kesalahan server.");
     }
   };
 
@@ -256,6 +258,18 @@ export default function LoginPage() {
         </section>
       </main>
 
+      {/* Sticky Footer */}
+      <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium">
+            Copyright 2025 © SafeNurse All Rights reserved.
+          </p>
+          <p className="text-xs text-white/80">
+            Universitas Hasanuddin
+          </p>
+        </div>
+      </footer>
+
       <style jsx>{`
         @media (max-width: 768px) {
           #right-side {
@@ -267,6 +281,26 @@ export default function LoginPage() {
           }
         }
       `}</style>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </div>
   );
 }
