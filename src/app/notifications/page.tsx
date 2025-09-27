@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 export default function NotificationsPage() {
-  const [notifications] = useState([
+  const [notifications, setNotifications] = useState([
     {
       id: 1,
       title: "Laporan Anda mengenai pasien A/N Budi Santoso telah berhasil dikirim dan sedang menunggu verifikasi dari supervisor.",
@@ -36,6 +36,37 @@ export default function NotificationsPage() {
       isRead: false
     }
   ]);
+
+  // State untuk modal delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<number | null>(null);
+
+  // Fungsi untuk handle delete single notification
+  const handleDeleteNotification = () => {
+    if (selectedNotificationId) {
+      setNotifications(prev => prev.filter(notif => notif.id !== selectedNotificationId));
+      closeDeleteModal();
+    }
+  };
+
+  // Fungsi untuk handle delete all notifications
+  const handleDeleteAllNotifications = () => {
+    setNotifications([]);
+    setShowDeleteAllModal(false);
+  };
+
+  // Fungsi untuk membuka modal delete
+  const openDeleteModal = (id: number) => {
+    setSelectedNotificationId(id);
+    setShowDeleteModal(true);
+  };
+
+  // Fungsi untuk menutup modal delete
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedNotificationId(null);
+  };
 
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
@@ -120,9 +151,22 @@ export default function NotificationsPage() {
           {/* Content Container */}
           <div className="relative z-10">
             {/* Page Title */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-[#0B7A95] mb-2">Notifikasi</h2>
-              <p className="text-gray-600">Daftar notifikasi terbaru untuk Anda</p>
+            <div className="mb-8 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-[#0B7A95] mb-2">Notifikasi</h2>
+                <p className="text-gray-600">Daftar notifikasi terbaru untuk Anda</p>
+              </div>
+              
+              {/* Delete All Button */}
+              {notifications.length > 0 && (
+                <button
+                  onClick={() => setShowDeleteAllModal(true)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                >
+                  <i className="fas fa-trash text-sm"></i>
+                  <span className="hidden sm:inline">Delete All</span>
+                </button>
+              )}
             </div>
 
             {/* Notifications List */}
@@ -150,12 +194,21 @@ export default function NotificationsPage() {
                       </p>
                     </div>
                     
-                    {/* Unread Indicator */}
-                    {!notification.isRead && (
-                      <div className="flex-shrink-0">
+                    <div className="flex items-center space-x-2">
+                      {/* Unread Indicator */}
+                      {!notification.isRead && (
                         <div className="w-3 h-3 bg-[#0B7A95] rounded-full"></div>
-                      </div>
-                    )}
+                      )}
+                      
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => openDeleteModal(notification.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 group"
+                        title="Hapus notifikasi"
+                      >
+                        <i className="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -174,6 +227,72 @@ export default function NotificationsPage() {
           </div>
         </div>
       </main>
+
+      {/* Delete Single Notification Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-trash text-red-500 text-2xl"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Hapus Notifikasi
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Apakah Anda yakin ingin menghapus notifikasi ini? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={closeDeleteModal}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleDeleteNotification}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Notifications Modal */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-trash text-red-500 text-2xl"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Hapus Semua Notifikasi
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Apakah Anda yakin ingin menghapus semua notifikasi? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteAllModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleDeleteAllNotifications}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Hapus Semua
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

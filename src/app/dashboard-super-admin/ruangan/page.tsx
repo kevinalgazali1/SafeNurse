@@ -415,15 +415,22 @@ export default function RuanganSuperAdmin() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
+          <div className="bg-[#B9D9DD] rounded-lg w-full max-w-md p-6 relative">
+            <button
+              onClick={cancelDeleteRoom}
+              className="absolute top-4 right-4 text-[#0E364A] hover:text-gray-800 text-xl"
+            >
+              ×
+            </button>
+            
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                 <i className="fas fa-exclamation-triangle text-red-600 text-xl"></i>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-[#0E364A] mb-2">
                 Konfirmasi Hapus Ruangan
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-[#0E364A] mb-6">
                 Apakah Anda yakin ingin menghapus ruangan{" "}
                 <strong>{roomToDelete?.nama}</strong>? Tindakan ini tidak dapat
                 dibatalkan.
@@ -438,7 +445,7 @@ export default function RuanganSuperAdmin() {
               </button>
               <button
                 onClick={confirmDeleteRoom}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                className="flex-1 bg-[#0E364A] text-white px-4 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
               >
                 Hapus
               </button>

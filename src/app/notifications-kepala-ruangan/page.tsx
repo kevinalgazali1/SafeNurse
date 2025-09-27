@@ -9,6 +9,11 @@ export default function NotificationsKepalaRuanganPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const notificationsPerPage = 10;
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -18,6 +23,7 @@ export default function NotificationsKepalaRuanganPage() {
     const token = Cookies.get("token");
     if (!token) return;
 
+    setIsLoading(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
@@ -59,6 +65,81 @@ export default function NotificationsKepalaRuanganPage() {
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  // Pagination logic
+  const totalPages = Math.ceil(notifications.length / notificationsPerPage);
+  const startIndex = (currentPage - 1) * notificationsPerPage;
+  const endIndex = startIndex + notificationsPerPage;
+  const currentNotifications = notifications.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteNotification = async (notificationId: string) => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/${notificationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal menghapus notifikasi");
+
+      // Refresh notifications after delete
+      fetchNotifications();
+      setShowDeleteModal(false);
+      setSelectedNotificationId(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteAllNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/delete-all`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal menghapus semua notifikasi");
+
+      // Refresh notifications after delete all
+      fetchNotifications();
+      setShowDeleteAllModal(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const openDeleteModal = (notificationId: string) => {
+    setSelectedNotificationId(notificationId);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedNotificationId(null);
+  };
 
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col animate-fade-in">
@@ -258,13 +339,26 @@ export default function NotificationsKepalaRuanganPage() {
               />
 
               <div className="relative z-10">
-                <div className="mb-6 sm:mb-8 animate-fade-in-up">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#0B7A95] mb-2 animate-text-glow">
-                    Notifikasi
-                  </h2>
-                  <p className="text-gray-600 text-sm sm:text-base animate-fade-in-right">
-                    Daftar notifikasi terbaru untuk Anda
-                  </p>
+                <div className="mb-6 sm:mb-8 animate-fade-in-up flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#0B7A95] mb-2 animate-text-glow">
+                      Notifikasi
+                    </h2>
+                    <p className="text-gray-600 text-sm sm:text-base animate-fade-in-right">
+                      Daftar notifikasi terbaru untuk Anda
+                    </p>
+                  </div>
+                  
+                  {/* Delete All Button */}
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => setShowDeleteAllModal(true)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
+                    >
+                      <i className="fas fa-trash text-sm"></i>
+                      <span className="hidden sm:inline">Hapus Semua</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-3 sm:space-y-4">
@@ -281,7 +375,7 @@ export default function NotificationsKepalaRuanganPage() {
                       </p>
                     </div>
                   ) : (
-                    notifications.map((notification, index) => (
+                    currentNotifications.map((notification, index) => (
                       <div
                         key={notification.id}
                         className={`bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1 animate-fade-in-up`}
@@ -303,19 +397,136 @@ export default function NotificationsKepalaRuanganPage() {
                             </p>
                           </div>
 
-                          {!notification.isRead && (
-                            <div className="flex-shrink-0">
-                              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#0B7A95] rounded-full animate-pulse-gentle"></div>
-                            </div>
-                          )}
+                          {/* Delete Button */}
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteModal(notification.id);
+                              }}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-300 transform hover:scale-110"
+                              title="Hapus notifikasi"
+                            >
+                              <i className="fas fa-trash text-sm"></i>
+                            </button>
+
+                            {!notification.isRead && (
+                              <div className="flex-shrink-0">
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#0B7A95] rounded-full animate-pulse-gentle"></div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))
                   )}
-                </div>
               </div>
+
+              {/* Pagination */}
+              {notifications.length > 0 && totalPages > 1 && (
+                <div className="mt-8 flex justify-center items-center space-x-2 animate-fade-in-up">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                    }`}
+                  >
+                    <i className="fas fa-chevron-left mr-1"></i>
+                    Sebelumnya
+                  </button>
+
+                  {/* Page Numbers - Show max 3 pages */}
+                  <div className="flex space-x-1">
+                    {(() => {
+                      const maxVisiblePages = 3;
+                      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                      
+                      // Adjust start page if we're near the end
+                      if (endPage - startPage + 1 < maxVisiblePages) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                      }
+                      
+                      const pages = [];
+                      
+                      // Left navigation arrow for previous set of pages
+                      if (startPage > 1) {
+                        pages.push(
+                          <button
+                            key="prev-set"
+                            onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                            className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                            title="Halaman sebelumnya"
+                          >
+                            ‹
+                          </button>
+                        );
+                      }
+                      
+                      // Page numbers
+                      for (let i = startPage; i <= endPage; i++) {
+                        pages.push(
+                          <button
+                            key={i}
+                            onClick={() => handlePageChange(i)}
+                            className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
+                              currentPage === i
+                                ? 'bg-[#0B7A95] text-white shadow-lg transform scale-110'
+                                : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                            }`}
+                          >
+                            {i}
+                          </button>
+                        );
+                      }
+                      
+                      // Right navigation arrow for next set of pages
+                      if (endPage < totalPages) {
+                        pages.push(
+                          <button
+                            key="next-set"
+                            onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                            className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                            title="Halaman selanjutnya"
+                          >
+                            ›
+                          </button>
+                        );
+                      }
+                      
+                      return pages;
+                    })()}
+                  </div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                    }`}
+                  >
+                    Selanjutnya
+                    <i className="fas fa-chevron-right ml-1"></i>
+                  </button>
+                </div>
+              )}
+
+              {/* Pagination Info */}
+              {notifications.length > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-600 animate-fade-in-delayed">
+                  Menampilkan {startIndex + 1}-{Math.min(endIndex, notifications.length)} dari {notifications.length} notifikasi
+                </div>
+              )}
             </div>
-          </main>
+          </div>
+        </main>
 
           <style jsx>{`
             @keyframes fade-in {
@@ -521,6 +732,100 @@ export default function NotificationsKepalaRuanganPage() {
           </p>
         </div>
       </footer>
+
+      {/* Delete Single Notification Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                  <i className="fas fa-trash text-[#6B8CAE] text-sm sm:text-lg"></i>
+                </div>
+                <h2 className="text-white font-bold text-sm sm:text-lg">
+                  Konfirmasi Hapus
+                </h2>
+              </div>
+              <button
+                onClick={closeDeleteModal}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
+            </div>
+
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-4">
+              <p className="text-[#2C3E50] text-sm sm:text-base text-center">
+                Apakah Anda yakin ingin menghapus notifikasi ini?
+              </p>
+              
+              <div className="flex space-x-3 justify-center">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => selectedNotificationId && handleDeleteNotification(selectedNotificationId)}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Notifications Modal */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                  <i className="fas fa-trash text-[#6B8CAE] text-sm sm:text-lg"></i>
+                </div>
+                <h2 className="text-white font-bold text-sm sm:text-lg">
+                  Konfirmasi Hapus Semua
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowDeleteAllModal(false)}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
+            </div>
+
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-4">
+              <p className="text-[#2C3E50] text-sm sm:text-base text-center">
+                Apakah Anda yakin ingin menghapus semua notifikasi? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              
+              <div className="flex space-x-3 justify-center">
+                <button
+                  onClick={() => setShowDeleteAllModal(false)}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleDeleteAllNotifications}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Hapus Semua
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

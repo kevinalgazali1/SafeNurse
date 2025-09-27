@@ -1,10 +1,13 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+"use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import toast, { Toaster } from "react-hot-toast";
 
 interface User {
   id_user: string;
@@ -125,6 +128,7 @@ export default function DashboardSuperAdmin() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{
     id: number;
     nama: string;
@@ -132,6 +136,12 @@ export default function DashboardSuperAdmin() {
     role: string;
     ruangan: string;
   } | null>(null);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState({
+    nama: "",
+    nama_ruangan: "",
+    id_ruangan: "",
+  });
   const [filterRole, setFilterRole] = useState("");
   const [newUser, setNewUser] = useState({
     nama: "",
@@ -147,26 +157,110 @@ export default function DashboardSuperAdmin() {
     ? users.filter((user) => user.role === filterRole)
     : users;
 
+  // Handle edit user
+  const handleEditUser = (user: User) => {
+    setUserToEdit(user);
+    setEditUser({
+      nama: user.nama,
+      nama_ruangan: user.nama_ruangan,
+      id_ruangan: "", // Will be set based on nama_ruangan
+    });
+    
+    // Find the ruangan ID based on nama_ruangan
+    const ruangan = ruanganList.find(r => r.nama_ruangan === user.nama_ruangan);
+    if (ruangan) {
+      setEditUser(prev => ({ ...prev, id_ruangan: ruangan.id_ruangan }));
+    }
+    
+    setShowEditModal(true);
+  };
+
   // Handle delete user
-  const handleDeleteUser = (user: {
-    id: number;
-    nama: string;
-    email: string;
-    role: string;
-    ruangan: string;
-  }) => {
-    setUserToDelete(user);
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete({
+      id: parseInt(user.id_user),
+      nama: user.nama,
+      email: user.email,
+      role: user.role,
+      ruangan: user.nama_ruangan,
+    });
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteUser = () => {
+  const confirmDeleteUser = async () => {
     if (userToDelete) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/users/${userToDelete.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal menghapus user");
+
+        // Refresh data
+        await fetchUsers();
+        
+        // Close modal
+        setShowDeleteModal(false);
+        setUserToDelete(null);
+        
+        toast.success("User berhasil dihapus");
+      } catch (err) {
+        console.error("Error deleting user:", err);
+        toast.error("Gagal menghapus user");
+      }
     }
   };
 
   const cancelDeleteUser = () => {
     setShowDeleteModal(false);
     setUserToDelete(null);
+  };
+
+  // Handle edit submit
+  const handleEditSubmit = async () => {
+    if (userToEdit) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/users/${userToEdit.id_user}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              nama: editUser.nama,
+              id_ruangan: editUser.id_ruangan,
+            }),
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal mengupdate user");
+
+        // Refresh data
+        await fetchUsers();
+        
+        // Close modal
+        setShowEditModal(false);
+        setUserToEdit(null);
+        setEditUser({
+          nama: "",
+          nama_ruangan: "",
+          id_ruangan: "",
+        });
+        
+        toast.success("User berhasil diupdate");
+      } catch (err) {
+        console.error("Error updating user:", err);
+        toast.error("Gagal mengupdate user");
+      }
+    }
   };
 
   return (
@@ -425,12 +519,20 @@ export default function DashboardSuperAdmin() {
                         </div>
                         <div className="text-center">
                           <div className="flex justify-center space-x-2">
-                            {/* <button
-                          onClick={showDeleteModal}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                        >
-                          Hapus
-                        </button> */}
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                            >
+                              <i className="fas fa-edit mr-1"></i>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                            >
+                              <i className="fas fa-trash mr-1"></i>
+                              Hapus
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -466,12 +568,20 @@ export default function DashboardSuperAdmin() {
                               {user.email}
                             </p>
                           </div>
-                          {/* <button
-              onClick={showDeleteModal}
-              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-            >
-              Hapus
-            </button> */}
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition-colors"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
@@ -651,18 +761,110 @@ export default function DashboardSuperAdmin() {
         </div>
       )}
 
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#B9D9DD] rounded-lg w-full max-w-md max-h-[90vh] relative flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <i className="fas fa-arrow-left mr-2"></i>
+                <span>Back</span>
+              </button>
+              <h2 className="text-xl font-semibold text-[#0E364A]">
+                Edit User
+              </h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-600 hover:text-gray-800 text-xl w-8 h-8 flex items-center justify-center"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[#0E364A] font-medium mb-2">
+                    Nama :
+                  </label>
+                  <input
+                    type="text"
+                    value={editUser.nama}
+                    onChange={(e) =>
+                      setEditUser({ ...editUser, nama: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#0E364A] font-medium mb-2">
+                    Ruangan :
+                  </label>
+                  <select
+                    value={editUser.id_ruangan}
+                    onChange={(e) => {
+                      const selectedRuangan = ruanganList.find(r => r.id_ruangan === e.target.value);
+                      setEditUser({ 
+                        ...editUser, 
+                        id_ruangan: e.target.value,
+                        nama_ruangan: selectedRuangan ? selectedRuangan.nama_ruangan : ""
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md 
+               focus:outline-none focus:ring-2 focus:ring-[#0B7A95] 
+               text-black bg-white"
+                  >
+                    <option value="">-- Pilih Ruangan --</option>
+                    {ruanganList.map((ruang) => (
+                      <option key={ruang.id_ruangan} value={ruang.id_ruangan}>
+                        {ruang.nama_ruangan}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200">
+              <div className="flex justify-center">
+                <button
+                  onClick={handleEditSubmit}
+                  className="bg-[#0E364A] text-white px-8 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
+          <div className="bg-[#B9D9DD] rounded-lg w-full max-w-md p-6 relative">
+            <button
+              onClick={cancelDeleteUser}
+              className="absolute top-4 right-4 text-[#0E364A] hover:text-gray-800 text-xl"
+            >
+              ×
+            </button>
+            
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                 <i className="fas fa-exclamation-triangle text-red-600 text-xl"></i>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-[#0E364A] mb-2">
                 Konfirmasi Hapus User
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-[#0E364A] mb-6">
                 Apakah Anda yakin ingin menghapus user{" "}
                 <strong>{userToDelete?.nama}</strong>? Tindakan ini tidak dapat
                 dibatalkan.
@@ -677,7 +879,7 @@ export default function DashboardSuperAdmin() {
               </button>
               <button
                 onClick={confirmDeleteUser}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                className="flex-1 bg-[#0E364A] text-white px-4 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
               >
                 Hapus
               </button>
@@ -697,6 +899,28 @@ export default function DashboardSuperAdmin() {
           </p>
         </div>
       </footer>
+      
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
         </>
       )}
     </div>

@@ -176,6 +176,8 @@ export default function DashboardPerawatPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const reportsPerPage = 10;
 
   const token = Cookies.get("token");
 
@@ -356,7 +358,21 @@ export default function DashboardPerawatPage() {
     } else {
       setFilteredReports(reports);
     }
+    // Reset ke halaman pertama setiap kali filter berubah
+    setCurrentPage(1);
   }, [selectedDate, reports]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+  const startIndex = (currentPage - 1) * reportsPerPage;
+  const endIndex = startIndex + reportsPerPage;
+  const currentReports = filteredReports.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const handleAddReport = () => router.push("/tambah-laporan");
@@ -628,8 +644,8 @@ export default function DashboardPerawatPage() {
 
                   {/* Table Body */}
                   <div className="divide-y divide-gray-200">
-                    {filteredReports.length > 0 ? (
-                      filteredReports.map((report, index) => (
+                    {currentReports.length > 0 ? (
+                      currentReports.map((report, index) => (
                         <div
                           key={report.kodeLaporan}
                           className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm ${
@@ -684,7 +700,7 @@ export default function DashboardPerawatPage() {
 
                 {/* Mobile Card Layout - Visible on Mobile */}
                 <div className="lg:hidden space-y-4 animate-fadeInDelayed">
-                  {reports.map((report, index) => (
+                  {currentReports.map((report, index) => (
                     <div
                       key={report.id}
                       className={`animate-fadeInUp stagger-${index % 3}`}
@@ -696,6 +712,106 @@ export default function DashboardPerawatPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* Pagination */}
+                {filteredReports.length > reportsPerPage && (
+                  <div className="mt-8 flex flex-col items-center space-y-4">
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-600">
+                      Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                    </div>
+                    
+                    {/* Pagination Controls */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === 1
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-[#0E364A] text-white hover:bg-[#1a4a5c]'
+                        }`}
+                      >
+                        Sebelumnya
+                      </button>
+                      
+                      {/* Page Numbers - Show max 3 pages */}
+                      <div className="flex items-center space-x-1">
+                        {(() => {
+                          const maxVisiblePages = 3;
+                          let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                          let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                          
+                          // Adjust start page if we're near the end
+                          if (endPage - startPage + 1 < maxVisiblePages) {
+                            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                          }
+                          
+                          const pages = [];
+                          
+                          // Left navigation arrow for previous set of pages
+                          if (startPage > 1) {
+                            pages.push(
+                              <button
+                                key="prev-set"
+                                onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                                className="px-2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                                title="Halaman sebelumnya"
+                              >
+                                ‹
+                              </button>
+                            );
+                          }
+                          
+                          // Page numbers
+                          for (let i = startPage; i <= endPage; i++) {
+                            pages.push(
+                              <button
+                                key={i}
+                                onClick={() => handlePageChange(i)}
+                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                  currentPage === i
+                                    ? 'bg-[#0E364A] text-white'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                              >
+                                {i}
+                              </button>
+                            );
+                          }
+                          
+                          // Right navigation arrow for next set of pages
+                          if (endPage < totalPages) {
+                            pages.push(
+                              <button
+                                key="next-set"
+                                onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                                className="px-2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                                title="Halaman selanjutnya"
+                              >
+                                ›
+                              </button>
+                            );
+                          }
+                          
+                          return pages;
+                        })()}
+                      </div>
+                      
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === totalPages
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-[#0E364A] text-white hover:bg-[#1a4a5c]'
+                        }`}
+                      >
+                        Selanjutnya
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </main>
