@@ -4,8 +4,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import {

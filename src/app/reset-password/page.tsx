@@ -2,11 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
