@@ -26,13 +26,48 @@ export default function ProfilePage() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const token = Cookies.get("token"); // ambil JWT dari cookie
 
   useEffect(() => {
-    const token = Cookies.get("token"); // ambil JWT dari cookie
     if (!token) {
       window.location.href = "/login"; // kalau token ga ada → redirect
       return;
     }
+
+    const fetchNotifications = async () => {
+      const token = Cookies.get("token");
+      if (!token) return;
+
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+        const resData = await res.json();
+        console.log("Data notifikasi:", resData);
+
+        // Hitung hanya notifikasi baru
+        const countBaru = resData.notifikasi_baru?.length || 0;
+        setNewNotificationCount(countBaru);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNotifications();
 
     const fetchData = async () => {
       try {
@@ -362,9 +397,11 @@ export default function ProfilePage() {
                   <div className="relative">
                     <i className="fas fa-bell text-lg mb-1"></i>
                     {/* Notification Count Badge */}
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      3
-                    </span>
+                    {newNotificationCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {newNotificationCount}
+                      </span>
+                    )}
                   </div>
                   <span className="text-xs">Notifikasi</span>
                 </button>
@@ -417,7 +454,7 @@ export default function ProfilePage() {
 
                   {/* Notifikasi */}
                   <button
-                    className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2 relative"
+                    className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                     onClick={() =>
                       (window.location.href = "/notifications-perawat")
                     }
@@ -425,9 +462,11 @@ export default function ProfilePage() {
                     <div className="relative">
                       <i className="fas fa-bell text-lg mr-3"></i>
                       {/* Notification Count Badge */}
-                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                        3
-                      </span>
+                      {newNotificationCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {newNotificationCount}
+                        </span>
+                      )}
                     </div>
                     <span>Notifikasi</span>
                   </button>
@@ -813,22 +852,22 @@ export default function ProfilePage() {
           <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}

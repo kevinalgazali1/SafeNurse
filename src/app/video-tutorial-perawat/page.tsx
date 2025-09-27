@@ -2,14 +2,52 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Cookies from "js-cookie";
 
 export default function VideoTutorialPerawatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const token = Cookies.get("token");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const fetchNotifications = async () => {
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const [videos] = useState([
     {
@@ -131,30 +169,30 @@ export default function VideoTutorialPerawatPage() {
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
-           <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+          <div className="flex items-center space-x-3">
+            {/* Logo SafeNurse */}
+            <Image
+              src="/logosafenurse.png"
+              alt="Logo SafeNurse"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+            {/* Logo Unhas */}
+            <Image
+              src="/logounhas.png"
+              alt="Logo Unhas"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+            <h1 className="text-white text-xl font-bold">
+              Safe
+              <span className="font-bold text-[#0B7A95]">Nurse</span>
+            </h1>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -175,13 +213,14 @@ export default function VideoTutorialPerawatPage() {
               <div className="relative">
                 <i className="fas fa-bell text-lg mb-1"></i>
                 {/* Notification Count Badge */}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  3
-                </span>
+                {newNotificationCount > 0 && (
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {newNotificationCount}
+                  </span>
+                )}
               </div>
               <span className="text-xs">Notifikasi</span>
             </button>
-
             {/* Video Tutorial - Active */}
             <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
               <i className="fas fa-play-circle text-lg mb-1"></i>
@@ -234,9 +273,11 @@ export default function VideoTutorialPerawatPage() {
                 <div className="relative">
                   <i className="fas fa-bell text-lg mr-3"></i>
                   {/* Notification Count Badge */}
-                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    3
-                  </span>
+                  {newNotificationCount > 0 && (
+                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {newNotificationCount}
+                    </span>
+                  )}
                 </div>
                 <span>Notifikasi</span>
               </button>
@@ -304,7 +345,7 @@ export default function VideoTutorialPerawatPage() {
                     key={video.id}
                     className="flex-shrink-0 w-80 bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-3 animate-video-card"
                     style={{
-                      animationDelay: `${index * 0.15}s`
+                      animationDelay: `${index * 0.15}s`,
                     }}
                     onClick={() => handleVideoClick(video.url)}
                   >
@@ -350,7 +391,7 @@ export default function VideoTutorialPerawatPage() {
                     key={video.id}
                     className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 animate-video-card-mobile"
                     style={{
-                      animationDelay: `${index * 0.1}s`
+                      animationDelay: `${index * 0.1}s`,
                     }}
                     onClick={() => handleVideoClick(video.url)}
                   >
@@ -396,109 +437,212 @@ export default function VideoTutorialPerawatPage() {
       {/* Custom CSS Animations */}
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slide-down {
-          from { transform: translateY(-20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(-20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slide-up {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slide-in-right {
-          from { transform: translateX(30px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+          from {
+            transform: translateX(30px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes fade-in-up {
-          from { transform: translateY(10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(10px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes fade-in-right {
-          from { transform: translateX(10px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+          from {
+            transform: translateX(10px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes scale-in {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes video-card {
-          from { 
-            transform: translateY(30px) scale(0.9); 
-            opacity: 0; 
+          from {
+            transform: translateY(30px) scale(0.9);
+            opacity: 0;
           }
-          to { 
-            transform: translateY(0) scale(1); 
-            opacity: 1; 
+          to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
           }
         }
-        
+
         @keyframes video-card-mobile {
-          from { 
-            transform: translateY(20px) scale(0.95); 
-            opacity: 0; 
+          from {
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
           }
-          to { 
-            transform: translateY(0) scale(1); 
-            opacity: 1; 
+          to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
           }
         }
-        
+
         @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-3px);
+          }
         }
-        
+
         @keyframes pulse-gentle {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
         }
-        
+
         @keyframes glow {
-          0%, 100% { box-shadow: 0 0 5px rgba(11, 122, 149, 0.3); }
-          50% { box-shadow: 0 0 20px rgba(11, 122, 149, 0.6); }
+          0%,
+          100% {
+            box-shadow: 0 0 5px rgba(11, 122, 149, 0.3);
+          }
+          50% {
+            box-shadow: 0 0 20px rgba(11, 122, 149, 0.6);
+          }
         }
-        
+
         @keyframes text-glow {
-          0%, 100% { text-shadow: 0 0 5px rgba(11, 122, 149, 0.3); }
-          50% { text-shadow: 0 0 15px rgba(11, 122, 149, 0.6); }
+          0%,
+          100% {
+            text-shadow: 0 0 5px rgba(11, 122, 149, 0.3);
+          }
+          50% {
+            text-shadow: 0 0 15px rgba(11, 122, 149, 0.6);
+          }
         }
-        
+
         @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-5px); }
+          0%,
+          100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
         }
-        
+
         @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
-        
-        .animate-fade-in { animation: fade-in 0.8s ease-out; }
-        .animate-slide-down { animation: slide-down 0.6s ease-out; }
-        .animate-slide-up { animation: slide-up 0.8s ease-out; }
-        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out; }
-        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out; }
-        .animate-fade-in-right { animation: fade-in-right 0.6s ease-out; }
-        .animate-scale-in { animation: scale-in 0.8s ease-out; }
-        .animate-video-card { animation: video-card 0.8s ease-out; }
-        .animate-video-card-mobile { animation: video-card-mobile 0.6s ease-out; }
-        .animate-bounce-subtle { animation: bounce-subtle 2s infinite; }
-        .animate-pulse-gentle { animation: pulse-gentle 2s infinite; }
-        .animate-glow { animation: glow 2s infinite; }
-        .animate-text-glow { animation: text-glow 3s infinite; }
-        .animate-float { animation: float 6s infinite; }
-        .animate-spin-slow { animation: spin-slow 3s linear infinite; }
-        .animate-fade-in-delayed { animation: fade-in 1s ease-out 0.3s both; }
-        .animate-fade-in-delayed-2 { animation: fade-in 1s ease-out 0.6s both; }
+
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
+        }
+        .animate-slide-down {
+          animation: slide-down 0.6s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.8s ease-out;
+        }
+        .animate-slide-in-right {
+          animation: slide-in-right 0.8s ease-out;
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s ease-out;
+        }
+        .animate-fade-in-right {
+          animation: fade-in-right 0.6s ease-out;
+        }
+        .animate-scale-in {
+          animation: scale-in 0.8s ease-out;
+        }
+        .animate-video-card {
+          animation: video-card 0.8s ease-out;
+        }
+        .animate-video-card-mobile {
+          animation: video-card-mobile 0.6s ease-out;
+        }
+        .animate-bounce-subtle {
+          animation: bounce-subtle 2s infinite;
+        }
+        .animate-pulse-gentle {
+          animation: pulse-gentle 2s infinite;
+        }
+        .animate-glow {
+          animation: glow 2s infinite;
+        }
+        .animate-text-glow {
+          animation: text-glow 3s infinite;
+        }
+        .animate-float {
+          animation: float 6s infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 3s linear infinite;
+        }
+        .animate-fade-in-delayed {
+          animation: fade-in 1s ease-out 0.3s both;
+        }
+        .animate-fade-in-delayed-2 {
+          animation: fade-in 1s ease-out 0.6s both;
+        }
       `}</style>
 
       {/* Sticky Footer */}
@@ -507,9 +651,7 @@ export default function VideoTutorialPerawatPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
     </div>

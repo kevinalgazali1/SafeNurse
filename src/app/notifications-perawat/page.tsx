@@ -13,14 +13,17 @@ export default function NotificationsPerawatPage() {
   const notificationsPerPage = 10;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
-  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<
+    string | null
+  >(null);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const token = Cookies.get("token");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const fetchNotifications = async () => {
-    const token = Cookies.get("token");
     if (!token) return;
 
     setIsLoading(true);
@@ -41,7 +44,10 @@ export default function NotificationsPerawatPage() {
       const resData = await res.json();
       console.log("Data notifikasi:", resData);
 
-      // gabungkan notifikasi baru & lama biar jadi 1 list
+      // hitung jumlah notifikasi baru
+      setNewNotificationCount(resData.notifikasi_baru?.length || 0);
+
+      // gabungkan notifikasi baru & lama
       const allNotifications = [
         ...(resData.notifikasi_baru || []),
         ...(resData.notifikasi_lama || []),
@@ -50,7 +56,7 @@ export default function NotificationsPerawatPage() {
       const mappedNotifications = allNotifications.map((n: any) => ({
         id: n.id_notifikasi,
         title: n.message,
-        time: n.waktu, // pakai waktu yang sudah diformat dari backend
+        time: n.waktu,
         isRead: n.status === "sudah_dibaca",
       }));
 
@@ -75,7 +81,7 @@ export default function NotificationsPerawatPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDeleteNotification = async (notificationId: string) => {
@@ -183,30 +189,30 @@ export default function NotificationsPerawatPage() {
       {/* Header/Navbar */}
       <header className="bg-[#B9D9DD] rounded-xl px-6 py-3 mx-6 mt-6">
         <div className="flex justify-between items-center">
-         <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+          <div className="flex items-center space-x-3">
+            {/* Logo SafeNurse */}
+            <Image
+              src="/logosafenurse.png"
+              alt="Logo SafeNurse"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+            {/* Logo Unhas */}
+            <Image
+              src="/logounhas.png"
+              alt="Logo Unhas"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+            <h1 className="text-white text-xl font-bold">
+              Safe
+              <span className="font-bold text-[#0B7A95]">Nurse</span>
+            </h1>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -224,9 +230,11 @@ export default function NotificationsPerawatPage() {
               <div className="relative">
                 <i className="fas fa-bell text-lg mb-1"></i>
                 {/* Notification Count Badge */}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  3
-                </span>
+                {newNotificationCount > 0 && (
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {newNotificationCount}
+                  </span>
+                )}
               </div>
               <span className="text-xs">Notifikasi</span>
             </button>
@@ -281,9 +289,11 @@ export default function NotificationsPerawatPage() {
                 <div className="relative">
                   <i className="fas fa-bell text-lg mr-3"></i>
                   {/* Notification Count Badge */}
-                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    3
-                  </span>
+                  {newNotificationCount > 0 && (
+                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {newNotificationCount}
+                    </span>
+                  )}
                 </div>
                 <span>Notifikasi</span>
               </button>
@@ -338,7 +348,7 @@ export default function NotificationsPerawatPage() {
                   Daftar notifikasi terbaru untuk Anda
                 </p>
               </div>
-              
+
               {/* Delete All Button */}
               {notifications.length > 0 && (
                 <button
@@ -425,8 +435,8 @@ export default function NotificationsPerawatPage() {
                   disabled={currentPage === 1}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                   }`}
                 >
                   <i className="fas fa-chevron-left mr-1"></i>
@@ -437,22 +447,32 @@ export default function NotificationsPerawatPage() {
                 <div className="flex space-x-1">
                   {(() => {
                     const maxVisiblePages = 3;
-                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                    
+                    let startPage = Math.max(
+                      1,
+                      currentPage - Math.floor(maxVisiblePages / 2)
+                    );
+                    const endPage = Math.min(
+                      totalPages,
+                      startPage + maxVisiblePages - 1
+                    );
+
                     // Adjust start page if we're near the end
                     if (endPage - startPage + 1 < maxVisiblePages) {
                       startPage = Math.max(1, endPage - maxVisiblePages + 1);
                     }
-                    
+
                     const pages = [];
-                    
+
                     // Left navigation arrow for previous set of pages
                     if (startPage > 1) {
                       pages.push(
                         <button
                           key="prev-set"
-                          onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                          onClick={() =>
+                            handlePageChange(
+                              Math.max(1, startPage - maxVisiblePages)
+                            )
+                          }
                           className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                           title="Halaman sebelumnya"
                         >
@@ -460,7 +480,7 @@ export default function NotificationsPerawatPage() {
                         </button>
                       );
                     }
-                    
+
                     // Page numbers
                     for (let i = startPage; i <= endPage; i++) {
                       pages.push(
@@ -469,21 +489,23 @@ export default function NotificationsPerawatPage() {
                           onClick={() => handlePageChange(i)}
                           className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
                             currentPage === i
-                              ? 'bg-[#0B7A95] text-white shadow-lg transform scale-110'
-                              : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                              ? "bg-[#0B7A95] text-white shadow-lg transform scale-110"
+                              : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                           }`}
                         >
                           {i}
                         </button>
                       );
                     }
-                    
+
                     // Right navigation arrow for next set of pages
                     if (endPage < totalPages) {
                       pages.push(
                         <button
                           key="next-set"
-                          onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                          onClick={() =>
+                            handlePageChange(Math.min(totalPages, endPage + 1))
+                          }
                           className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                           title="Halaman selanjutnya"
                         >
@@ -491,7 +513,7 @@ export default function NotificationsPerawatPage() {
                         </button>
                       );
                     }
-                    
+
                     return pages;
                   })()}
                 </div>
@@ -502,8 +524,8 @@ export default function NotificationsPerawatPage() {
                   disabled={currentPage === totalPages}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105'
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                   }`}
                 >
                   Selanjutnya
@@ -515,7 +537,9 @@ export default function NotificationsPerawatPage() {
             {/* Pagination Info */}
             {!isLoading && notifications.length > 0 && (
               <div className="mt-4 text-center text-sm text-gray-600 animate-fade-in-delayed">
-                Menampilkan {startIndex + 1}-{Math.min(endIndex, notifications.length)} dari {notifications.length} notifikasi
+                Menampilkan {startIndex + 1}-
+                {Math.min(endIndex, notifications.length)} dari{" "}
+                {notifications.length} notifikasi
               </div>
             )}
           </div>
@@ -791,9 +815,7 @@ export default function NotificationsPerawatPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
 
@@ -824,7 +846,7 @@ export default function NotificationsPerawatPage() {
               <p className="text-[#2C3E50] text-sm sm:text-base text-center">
                 Apakah Anda yakin ingin menghapus notifikasi ini?
               </p>
-              
+
               <div className="flex space-x-3 justify-center">
                 <button
                   onClick={closeDeleteModal}
@@ -833,7 +855,10 @@ export default function NotificationsPerawatPage() {
                   Batal
                 </button>
                 <button
-                  onClick={() => selectedNotificationId && handleDeleteNotification(selectedNotificationId)}
+                  onClick={() =>
+                    selectedNotificationId &&
+                    handleDeleteNotification(selectedNotificationId)
+                  }
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   Hapus
@@ -869,9 +894,10 @@ export default function NotificationsPerawatPage() {
             {/* Content Modal */}
             <div className="p-4 sm:p-6 space-y-4">
               <p className="text-[#2C3E50] text-sm sm:text-base text-center">
-                Apakah Anda yakin ingin menghapus semua notifikasi? Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus semua notifikasi? Tindakan ini
+                tidak dapat dibatalkan.
               </p>
-              
+
               <div className="flex space-x-3 justify-center">
                 <button
                   onClick={() => setShowDeleteAllModal(false)}

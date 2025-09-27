@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import Image from 'next/image';
+import Image from "next/image";
 import { toast, Toaster } from "react-hot-toast";
 
 interface Report {
@@ -108,6 +108,8 @@ export default function LaporanMasukKepalaRuangan() {
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [reportCount, setReportCount] = useState(0);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -116,9 +118,14 @@ export default function LaporanMasukKepalaRuangan() {
   const token = Cookies.get("token");
 
   // === Ambil data ringkas laporan masuk ===
-  const fetchReports = async () => {
-    if (!token) return;
+  const fetchReports = async (onlyCount = false) => {
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setIsLoading(true);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/laporanMasuk`,
         {
@@ -129,26 +136,37 @@ export default function LaporanMasukKepalaRuangan() {
           },
         }
       );
+
       if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+
       const resData = await res.json();
-      console.log(resData);
 
-      const mappedReports = resData.data.map((r: any) => ({
-        id: r.kode_laporan,
-        kodeLaporan: r.kode_laporan,
-        judulInsiden: r.judul_insiden,
-        namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
-        tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-      }));
-
-      setReports(mappedReports);
+      if (onlyCount) {
+        // ✅ Kalau cuma mau jumlah
+        const count = resData.data?.length || 0;
+        setReportCount(count);
+        return count;
+      } else {
+        // ✅ Kalau mau list laporan
+        const mappedReports = resData.data.map((r: any) => ({
+          id: r.kode_laporan,
+          kodeLaporan: r.kode_laporan,
+          judulInsiden: r.judul_insiden,
+          namaPerawatYangMenangani: r.perawat?.nama_perawat || "-",
+          tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
+        }));
+        setReports(mappedReports);
+        setReportCount(mappedReports.length);
+        return mappedReports;
+      }
     } catch (err) {
       console.error(err);
+      setReportCount(0);
+      if (!onlyCount) setReports([]);
     } finally {
       setIsLoading(false);
     }
   };
-
   // === Ambil detail berdasarkan kode laporan ===
   const fetchReportDetail = async (id: string) => {
     if (!token) return;
@@ -215,6 +233,42 @@ export default function LaporanMasukKepalaRuangan() {
 
   useEffect(() => {
     fetchReports();
+  }, []);
+
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
   }, []);
 
   const handleCloseModal = () => {
@@ -293,7 +347,9 @@ export default function LaporanMasukKepalaRuangan() {
       handleCloseModal();
 
       // Notifikasi berhasil
-      toast.success("Laporan berhasil divalidasi dengan alasan yang diberikan!");
+      toast.success(
+        "Laporan berhasil divalidasi dengan alasan yang diberikan!"
+      );
 
       // Refresh data laporan
       await fetchReports();
@@ -748,29 +804,29 @@ export default function LaporanMasukKepalaRuangan() {
           <header className="bg-[#B9D9DD] rounded-xl px-4 sm:px-6 py-3 mx-4 sm:mx-6 mt-4 sm:mt-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+                {/* Logo SafeNurse */}
+                <Image
+                  src="/logosafenurse.png"
+                  alt="Logo SafeNurse"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+                {/* Logo Unhas */}
+                <Image
+                  src="/logounhas.png"
+                  alt="Logo Unhas"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+                <h1 className="text-white text-xl font-bold">
+                  Safe
+                  <span className="font-bold text-[#0B7A95]">Nurse</span>
+                </h1>
+              </div>
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-6">
@@ -786,27 +842,36 @@ export default function LaporanMasukKepalaRuangan() {
                 </button>
 
                 {/* Notifikasi */}
-                <button
-                  className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
-                  onClick={() =>
-                    (window.location.href = "/notifications-kepala-ruangan")
-                  }
-                >
-                  <div className="relative">
-                    <i className="fas fa-bell text-lg mb-1"></i>
-                    {/* Notification Count Badge */}
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      3
-                    </span>
-                  </div>
-                  <span className="text-xs">Notifikasi</span>
-                </button>
+                  <button
+                    className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
+                    onClick={() =>
+                      (window.location.href = "/notifications-kepala-ruangan")
+                    }
+                  >
+                    <div className="relative">
+                      <i className="fas fa-bell text-lg mb-1"></i>
+                      {/* Notification Count Badge */}
+                      {newNotificationCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {newNotificationCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs">Notifikasi</span>
+                  </button>
 
-                {/* Laporan Masuk - Active */}
-                <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
-                  <i className="fas fa-envelope text-lg mb-1"></i>
-                  <span className="text-xs">Laporan Masuk</span>
-                </button>
+                  {/* Laporan Masuk - Active */}
+                  <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
+                    <div className="relative">
+                      <i className="fas fa-envelope text-lg mb-1"></i>
+                      {reportCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {reportCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs">Laporan Masuk</span>
+                  </button>
 
                 {/* Manage Profil */}
                 <button
@@ -848,28 +913,37 @@ export default function LaporanMasukKepalaRuangan() {
                     <span>Riwayat</span>
                   </button>
 
-                  {/* Notifikasi */}
-                  <button
-                    className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
-                    onClick={() =>
-                      (window.location.href = "/notifications-kepala-ruangan")
-                    }
-                  >
-                    <div className="relative">
-                      <i className="fas fa-bell text-lg mr-3"></i>
-                      {/* Notification Count Badge */}
-                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                        3
-                      </span>
-                    </div>
-                    <span>Notifikasi</span>
-                  </button>
+                    {/* Notifikasi */}
+                    <button
+                      className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
+                      onClick={() =>
+                        (window.location.href = "/notifications-kepala-ruangan")
+                      }
+                    >
+                      <div className="relative">
+                        <i className="fas fa-bell text-lg mr-3"></i>
+                        {/* Notification Count Badge */}
+                        {newNotificationCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {newNotificationCount}
+                          </span>
+                        )}
+                      </div>
+                      <span>Notifikasi</span>
+                    </button>
 
-                  {/* Laporan Masuk - Active */}
-                  <button className="flex items-center text-[#0B7A95] transition-colors p-2 rounded">
-                    <i className="fas fa-envelope text-lg mr-3"></i>
-                    <span>Laporan Masuk</span>
-                  </button>
+                    {/* Laporan Masuk - Active */}
+                    <button className="flex items-center text-[#0B7A95] transition-colors p-2 rounded">
+                      <div className="relative">
+                        <i className="fas fa-envelope text-lg mb-1"></i>
+                        {reportCount > 0 && (
+                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {reportCount}
+                          </span>
+                        )}
+                      </div>
+                      <span>Laporan Masuk</span>
+                    </button>
 
                   {/* Manage Profil */}
                   <button
@@ -1749,27 +1823,25 @@ export default function LaporanMasukKepalaRuangan() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}
