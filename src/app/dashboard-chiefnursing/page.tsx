@@ -213,6 +213,8 @@ export default function DashboardChiefNursing() {
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [reportCount, setReportCount] = useState(0);
 
   // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -365,6 +367,68 @@ export default function DashboardChiefNursing() {
     };
   }, []);
 
+  const fetchReportCount = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/laporanMasuk`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil data laporan masuk");
+
+      const resData = await res.json();
+      setReportCount(resData.data?.length || 0);
+    } catch (err) {
+      console.error(err);
+      setReportCount(0);
+    }
+  };
+
+  fetchReportCount();
+
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const fetchReports = async () => {
     if (!token) {
       setIsLoading(false);
@@ -454,7 +518,7 @@ export default function DashboardChiefNursing() {
   // Fungsi untuk mengubah halaman
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -551,7 +615,7 @@ export default function DashboardChiefNursing() {
 
   const handleKonfirmasiValidasi = async () => {
     if (!selectedReport || !alasanValidasi.trim()) return;
-    
+
     const reportId = selectedReport.id;
 
     try {
@@ -825,9 +889,11 @@ export default function DashboardChiefNursing() {
                   <div className="relative">
                     <i className="fas fa-bell text-lg mb-1"></i>
                     {/* Notification Count Badge */}
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      3
-                    </span>
+                    {newNotificationCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {newNotificationCount}
+                      </span>
+                    )}
                   </div>
                   <span className="text-xs">Notifikasi</span>
                 </button>
@@ -839,7 +905,14 @@ export default function DashboardChiefNursing() {
                     (window.location.href = "/laporan-masuk-chiefnursing")
                   }
                 >
-                  <i className="fas fa-envelope text-lg mb-1"></i>
+                  <div className="relative">
+                    <i className="fas fa-envelope text-lg mb-1"></i>
+                    {reportCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {reportCount}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-xs">Laporan Masuk</span>
                 </button>
 
@@ -883,7 +956,7 @@ export default function DashboardChiefNursing() {
 
                 {/* Notifikasi */}
                 <button
-                  className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2 relative"
+                  className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                   onClick={() =>
                     (window.location.href = "/notifications-chiefnursing")
                   }
@@ -891,22 +964,31 @@ export default function DashboardChiefNursing() {
                   <div className="relative">
                     <i className="fas fa-bell text-lg mr-3"></i>
                     {/* Notification Count Badge */}
-                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      3
-                    </span>
+                    {newNotificationCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {newNotificationCount}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-sm">Notifikasi</span>
+                  <span>Notifikasi</span>
                 </button>
 
                 {/* Laporan Masuk */}
                 <button
-                  className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2"
+                  className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
                   onClick={() =>
                     (window.location.href = "/laporan-masuk-chiefnursing")
                   }
                 >
-                  <i className="fas fa-envelope text-lg mr-3"></i>
-                  <span className="text-sm">Laporan Masuk</span>
+                  <div className="relative">
+                    <i className="fas fa-envelope text-lg mb-1"></i>
+                    {reportCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {reportCount}
+                      </span>
+                    )}
+                  </div>
+                  <span>Laporan Masuk</span>
                 </button>
 
                 {/* Manage Profil */}
@@ -1072,7 +1154,9 @@ export default function DashboardChiefNursing() {
                 {filteredReports.length > reportsPerPage && (
                   <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200">
                     <div className="text-sm text-gray-700">
-                      Menampilkan {startIndex + 1} - {Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                      Menampilkan {startIndex + 1} -{" "}
+                      {Math.min(endIndex, filteredReports.length)} dari{" "}
+                      {filteredReports.length} laporan
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1082,27 +1166,40 @@ export default function DashboardChiefNursing() {
                       >
                         Sebelumnya
                       </button>
-                      
+
                       {/* Page Numbers - Show max 3 pages */}
                       <div className="flex items-center gap-1">
                         {(() => {
                           const maxVisiblePages = 3;
-                          let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                          const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                          
+                          let startPage = Math.max(
+                            1,
+                            currentPage - Math.floor(maxVisiblePages / 2)
+                          );
+                          const endPage = Math.min(
+                            totalPages,
+                            startPage + maxVisiblePages - 1
+                          );
+
                           // Adjust start page if we're near the end
                           if (endPage - startPage + 1 < maxVisiblePages) {
-                            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                            startPage = Math.max(
+                              1,
+                              endPage - maxVisiblePages + 1
+                            );
                           }
-                          
+
                           const pages = [];
-                          
+
                           // Left navigation arrow for previous set of pages
                           if (startPage > 1) {
                             pages.push(
                               <button
                                 key="prev-set"
-                                onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                                onClick={() =>
+                                  handlePageChange(
+                                    Math.max(1, startPage - maxVisiblePages)
+                                  )
+                                }
                                 className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                                 title="Halaman sebelumnya"
                               >
@@ -1110,7 +1207,7 @@ export default function DashboardChiefNursing() {
                               </button>
                             );
                           }
-                          
+
                           // Page numbers
                           for (let i = startPage; i <= endPage; i++) {
                             pages.push(
@@ -1119,21 +1216,25 @@ export default function DashboardChiefNursing() {
                                 onClick={() => handlePageChange(i)}
                                 className={`px-3 py-1 text-sm border rounded-md ${
                                   currentPage === i
-                                    ? 'bg-blue-500 text-white border-blue-500'
-                                    : 'border-gray-300 hover:bg-gray-50'
+                                    ? "bg-blue-500 text-white border-blue-500"
+                                    : "border-gray-300 hover:bg-gray-50"
                                 }`}
                               >
                                 {i}
                               </button>
                             );
                           }
-                          
+
                           // Right navigation arrow for next set of pages
                           if (endPage < totalPages) {
                             pages.push(
                               <button
                                 key="next-set"
-                                onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                                onClick={() =>
+                                  handlePageChange(
+                                    Math.min(totalPages, endPage + 1)
+                                  )
+                                }
                                 className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                                 title="Halaman selanjutnya"
                               >
@@ -1141,11 +1242,11 @@ export default function DashboardChiefNursing() {
                               </button>
                             );
                           }
-                          
+
                           return pages;
                         })()}
                       </div>
-                      
+
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -1434,7 +1535,6 @@ export default function DashboardChiefNursing() {
                       Riwayat
                     </button>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -1852,7 +1952,7 @@ export default function DashboardChiefNursing() {
                 Validasi Laporan
               </h3>
             </div>
-            
+
             {/* Content */}
             <div className="p-6">
               {/* Icon */}
@@ -1921,22 +2021,22 @@ export default function DashboardChiefNursing() {
           <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}

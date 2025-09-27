@@ -108,7 +108,6 @@ export default function LaporanMasukVerifikator() {
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [catatan, setCatatan] = useState("");
   const [showRevisiModal, setShowRevisiModal] = useState(false);
   const [showRiwayatModal, setShowRiwayatModal] = useState(false);
   const [selectedKategori, setSelectedKategori] = useState("");
@@ -117,7 +116,6 @@ export default function LaporanMasukVerifikator() {
   const [tindakanAwal, setTindakanAwal] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
 
@@ -462,23 +460,9 @@ export default function LaporanMasukVerifikator() {
       const resData = await res.json();
       console.log("Data notifikasi:", resData);
 
-      // hitung jumlah notifikasi baru
-      setNewNotificationCount(resData.notifikasi_baru?.length || 0);
-
-      // gabungkan notifikasi baru & lama
-      const allNotifications = [
-        ...(resData.notifikasi_baru || []),
-        ...(resData.notifikasi_lama || []),
-      ];
-
-      const mappedNotifications = allNotifications.map((n: any) => ({
-        id: n.id_notifikasi,
-        title: n.message,
-        time: n.waktu,
-        isRead: n.status === "sudah_dibaca",
-      }));
-
-      setNotifications(mappedNotifications);
+      // Hitung hanya notifikasi baru
+      const countBaru = resData.notifikasi_baru?.length || 0;
+      setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
     } finally {
@@ -493,7 +477,6 @@ export default function LaporanMasukVerifikator() {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedReport(null);
-    setCatatan("");
   };
 
   const handleCloseRiwayatModal = () => {
