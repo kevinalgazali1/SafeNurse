@@ -176,13 +176,30 @@ export default function TambahLaporanPage() {
           if (res.ok && result.data) {
             const clean = result.data;
 
-            const updatedWithKategori = {
-              ...updatedData,
+            // ✅ update state reportData dengan hasil clean
+            const updatedWithClean = {
+              namaPasien: clean.nama_pasien,
+              noRM: clean.no_rm,
+              umur: clean.umur,
+              jenisKelamin: clean.jenis_kelamin,
+              tglMasukRS: clean.tgl_msk_rs,
+              unitPelapor: clean.unit_yang_melaporkan,
+              lokasiInsiden: clean.lokasi_insiden,
+              tglKejadian: clean.tgl_insiden,
+              yangDilaporkan: clean.yang_dilaporkan,
+              judulInsiden: clean.judul_insiden,
+              kronologi: clean.kronologi,
+              tindakanSegera: clean.tindakan_awal,
+              tindakanOleh: clean.tindakan_oleh,
+              dampakInsiden: clean.dampak,
+              frekuensiKejadian: clean.probabilitas,
               kategori: clean.kategori,
             };
-            setReportData(updatedWithKategori);
-            saveToLocalStorage(updatedWithKategori);
 
+            setReportData(updatedWithClean);
+            saveToLocalStorage(updatedWithClean);
+
+            // tetap generate summary untuk user
             const summary =
               `**Ringkasan Laporan Insiden (Versi Bersih)**\n\n` +
               `**Data Pasien**\n` +
@@ -774,7 +791,6 @@ export default function TambahLaporanPage() {
         setIsListening(true);
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         // Append new transcript to existing input value instead of replacing
