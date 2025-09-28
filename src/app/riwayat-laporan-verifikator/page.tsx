@@ -747,6 +747,9 @@ export default function DashboardChiefNursing() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            catatan: alasanValidasi, // alasan penolakan
+          }),
         }
       );
 
@@ -756,23 +759,23 @@ export default function DashboardChiefNursing() {
       }
 
       // Kirim alasan validasi sebagai catatan
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            catatan: alasanValidasi,
-          }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       catatan: alasanValidasi,
+      //     }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) {
-        console.warn("Gagal mengirim alasan validasi, tapi validasi berhasil");
-      }
+      // if (!catatanRes.ok) {
+      //   console.warn("Gagal mengirim alasan validasi, tapi validasi berhasil");
+      // }
 
       console.log("✅ Validasi berhasil");
 
@@ -820,6 +823,7 @@ export default function DashboardChiefNursing() {
             kategori: selectedKategori,
             grading: selectedGrading,
             rekomendasi_tindakan: tindakanAwal,
+            catatan: catatanRevisi,
           }),
         }
       );
@@ -827,21 +831,21 @@ export default function DashboardChiefNursing() {
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
       // Kirim catatan revisi
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan: catatanRevisi }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     body: JSON.stringify({ catatan: catatanRevisi }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) {
-        throw new Error("Gagal mengirim catatan revisi");
-      }
+      // if (!catatanRes.ok) {
+      //   throw new Error("Gagal mengirim catatan revisi");
+      // }
 
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);

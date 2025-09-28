@@ -305,21 +305,21 @@ export default function LaporanMasukKepalaRuangan() {
 
     try {
       // Kirim catatan validasi
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan: `DIVALIDASI: ${alasanValidasi}` }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     body: JSON.stringify({ catatan: `DIVALIDASI: ${alasanValidasi}` }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) {
-        throw new Error("Gagal mengirim catatan validasi");
-      }
+      // if (!catatanRes.ok) {
+      //   throw new Error("Gagal mengirim catatan validasi");
+      // }
 
       // Proses validasi laporan
       const res = await fetch(
@@ -330,6 +330,9 @@ export default function LaporanMasukKepalaRuangan() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            catatan: alasanValidasi, // alasan penolakan
+          }),
         }
       );
 
@@ -399,6 +402,7 @@ export default function LaporanMasukKepalaRuangan() {
             kategori: selectedKategori,
             grading: selectedGrading,
             rekomendasi_tindakan: tindakanAwal,
+            catatan: catatanRevisi,
           }),
         }
       );
@@ -406,21 +410,21 @@ export default function LaporanMasukKepalaRuangan() {
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
       // Kirim catatan revisi
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan: catatanRevisi }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     body: JSON.stringify({ catatan: catatanRevisi }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) {
-        throw new Error("Gagal mengirim catatan revisi");
-      }
+      // if (!catatanRes.ok) {
+      //   throw new Error("Gagal mengirim catatan revisi");
+      // }
 
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
@@ -454,24 +458,43 @@ export default function LaporanMasukKepalaRuangan() {
 
     try {
       // Kirim catatan penolakan
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     body: JSON.stringify({ catatan: `DITOLAK: ${alasanTolak}` }),
+      //   }
+      // );
+
+      // if (!catatanRes.ok) {
+      //   throw new Error("Gagal mengirim catatan penolakan");
+      // }
+
+      // Proses penolakan laporan
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/reject/${reportId}`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ catatan: `DITOLAK: ${alasanTolak}` }),
+          body: JSON.stringify({
+            catatan: alasanTolak, // alasan penolakan
+          }),
         }
       );
 
-      if (!catatanRes.ok) {
-        throw new Error("Gagal mengirim catatan penolakan");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal menolak laporan");
       }
 
-      // Proses penolakan laporan (sesuai dengan logika handleTolak sebelumnya)
-      console.log("Tolak laporan:", selectedReport?.id, "Alasan:", alasanTolak);
+      console.log("✅ Tolak berhasil:", data);
 
       // Reset form dan tutup modal
       setAlasanTolak("");
@@ -842,36 +865,36 @@ export default function LaporanMasukKepalaRuangan() {
                 </button>
 
                 {/* Notifikasi */}
-                  <button
-                    className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
-                    onClick={() =>
-                      (window.location.href = "/notifications-kepala-ruangan")
-                    }
-                  >
-                    <div className="relative">
-                      <i className="fas fa-bell text-lg mb-1"></i>
-                      {/* Notification Count Badge */}
-                      {newNotificationCount > 0 && (
-                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {newNotificationCount}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs">Notifikasi</span>
-                  </button>
+                <button
+                  className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
+                  onClick={() =>
+                    (window.location.href = "/notifications-kepala-ruangan")
+                  }
+                >
+                  <div className="relative">
+                    <i className="fas fa-bell text-lg mb-1"></i>
+                    {/* Notification Count Badge */}
+                    {newNotificationCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {newNotificationCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs">Notifikasi</span>
+                </button>
 
-                  {/* Laporan Masuk - Active */}
-                  <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
-                    <div className="relative">
-                      <i className="fas fa-envelope text-lg mb-1"></i>
-                      {reportCount > 0 && (
-                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {reportCount}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs">Laporan Masuk</span>
-                  </button>
+                {/* Laporan Masuk - Active */}
+                <button className="flex flex-col items-center text-[#0B7A95] transition-colors">
+                  <div className="relative">
+                    <i className="fas fa-envelope text-lg mb-1"></i>
+                    {reportCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {reportCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs">Laporan Masuk</span>
+                </button>
 
                 {/* Manage Profil */}
                 <button
@@ -913,37 +936,37 @@ export default function LaporanMasukKepalaRuangan() {
                     <span>Riwayat</span>
                   </button>
 
-                    {/* Notifikasi */}
-                    <button
-                      className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
-                      onClick={() =>
-                        (window.location.href = "/notifications-kepala-ruangan")
-                      }
-                    >
-                      <div className="relative">
-                        <i className="fas fa-bell text-lg mr-3"></i>
-                        {/* Notification Count Badge */}
-                        {newNotificationCount > 0 && (
-                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                            {newNotificationCount}
-                          </span>
-                        )}
-                      </div>
-                      <span>Notifikasi</span>
-                    </button>
+                  {/* Notifikasi */}
+                  <button
+                    className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
+                    onClick={() =>
+                      (window.location.href = "/notifications-kepala-ruangan")
+                    }
+                  >
+                    <div className="relative">
+                      <i className="fas fa-bell text-lg mr-3"></i>
+                      {/* Notification Count Badge */}
+                      {newNotificationCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {newNotificationCount}
+                        </span>
+                      )}
+                    </div>
+                    <span>Notifikasi</span>
+                  </button>
 
-                    {/* Laporan Masuk - Active */}
-                    <button className="flex items-center text-[#0B7A95] transition-colors p-2 rounded">
-                      <div className="relative">
-                        <i className="fas fa-envelope text-lg mb-1"></i>
-                        {reportCount > 0 && (
-                          <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                            {reportCount}
-                          </span>
-                        )}
-                      </div>
-                      <span>Laporan Masuk</span>
-                    </button>
+                  {/* Laporan Masuk - Active */}
+                  <button className="flex items-center text-[#0B7A95] transition-colors p-2 rounded">
+                    <div className="relative">
+                      <i className="fas fa-envelope text-lg mb-1"></i>
+                      {reportCount > 0 && (
+                        <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {reportCount}
+                        </span>
+                      )}
+                    </div>
+                    <span>Laporan Masuk</span>
+                  </button>
 
                   {/* Manage Profil */}
                   <button

@@ -296,24 +296,24 @@ export default function LaporanMasukChiefNursingPage() {
 
     try {
       // Kirim catatan validasi terlebih dahulu
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            catatan: `Alasan Validasi: ${alasanValidasi}`,
-          }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       catatan: `Alasan Validasi: ${alasanValidasi}`,
+      //     }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) {
-        const errData = await catatanRes.json();
-        throw new Error(errData.message || "Gagal mengirim catatan validasi");
-      }
+      // if (!catatanRes.ok) {
+      //   const errData = await catatanRes.json();
+      //   throw new Error(errData.message || "Gagal mengirim catatan validasi");
+      // }
 
       // Lalu approve laporan
       const approveRes = await fetch(
@@ -324,6 +324,9 @@ export default function LaporanMasukChiefNursingPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            catatan: alasanValidasi, // alasan penolakan
+          }),
         }
       );
 
@@ -388,6 +391,7 @@ export default function LaporanMasukChiefNursingPage() {
             kategori: selectedKategori,
             grading: selectedGrading,
             rekomendasi_tindakan: tindakanAwal,
+            catatan: catatanRevisi,
           }),
         }
       );
@@ -395,21 +399,21 @@ export default function LaporanMasukChiefNursingPage() {
       if (!res.ok) throw new Error("Gagal mengirim revisi");
 
       // Kirim catatan revisi
-      const catatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            catatan: catatanRevisi,
-          }),
-        }
-      );
+      // const catatanRes = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       catatan: catatanRevisi,
+      //     }),
+      //   }
+      // );
 
-      if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
+      // if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
 
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
