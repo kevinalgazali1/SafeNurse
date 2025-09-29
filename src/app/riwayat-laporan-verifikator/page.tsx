@@ -235,6 +235,12 @@ export default function DashboardChiefNursing() {
   // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(10);
+  const [searchKodeLaporan, setSearchKodeLaporan] = useState("");
+
+  // State untuk filter
+  const [filterKategori, setFilterKategori] = useState("");
+  const [filterGrading, setFilterGrading] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   const token = Cookies.get("token");
 
@@ -604,16 +610,41 @@ export default function DashboardChiefNursing() {
     fetchReports();
   }, []);
 
-  // filter otomatis setiap kali selectedDate berubah
+  // filter otomatis setiap kali selectedDate, searchKodeLaporan, atau filter lainnya berubah
   useEffect(() => {
+    let filtered = reports;
+    
+    // Filter berdasarkan tanggal
     if (selectedDate) {
-      setFilteredReports(reports.filter((r) => r.tanggal === selectedDate));
-    } else {
-      setFilteredReports(reports);
+      filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
+    
+    // Filter berdasarkan kode laporan (case insensitive, bisa dari mana saja)
+    if (searchKodeLaporan.trim()) {
+      filtered = filtered.filter((r) => 
+        r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase())
+      );
+    }
+    
+    // Filter berdasarkan kategori
+    if (filterKategori) {
+      filtered = filtered.filter((r) => r.kategori === filterKategori);
+    }
+    
+    // Filter berdasarkan grading
+    if (filterGrading) {
+      filtered = filtered.filter((r) => r.grading === filterGrading);
+    }
+    
+    // Filter berdasarkan status
+    if (filterStatus) {
+      filtered = filtered.filter((r) => r.status === filterStatus);
+    }
+    
+    setFilteredReports(filtered);
     // Reset ke halaman pertama ketika filter berubah
     setCurrentPage(1);
-  }, [selectedDate, reports]);
+  }, [selectedDate, searchKodeLaporan, filterKategori, filterGrading, filterStatus, reports]);
 
   // Logika pagination
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -1169,22 +1200,73 @@ export default function DashboardChiefNursing() {
           {/* Content */}
           <div className="relative z-10">
             {/* Header section with date picker */}
-            <div className="flex justify-between items-center mb-6 animate-fadeInUp">
-              <div className="flex items-center space-x-4">
-                <button
-                  className="bg-[#0E364A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:brightness-110 transition animate-fadeInLeft hover-lift animate-pulseGentle"
-                  onClick={() => console.log("Pilih Bulan clicked")}
-                >
-                  Pilih Bulan
-                </button>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 animate-fadeInUp">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+                {/* Filter Section */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  {/* Filter Kategori */}
+                  <select
+                    value={filterKategori}
+                    onChange={(e) => setFilterKategori(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] bg-white text-black min-w-[140px]"
+                  >
+                    <option value="">Semua Kategori</option>
+                    <option value="KTD">KTD</option>
+                    <option value="KPC">KPC</option>
+                    <option value="KNC">KNC</option>
+                    <option value="KTC">KTC</option>
+                    <option value="Sentinel">Sentinel</option>
+                  </select>
+
+                  {/* Filter Grading */}
+                  <select
+                    value={filterGrading}
+                    onChange={(e) => setFilterGrading(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] bg-white text-black min-w-[140px]"
+                  >
+                    <option value="">Semua Grading</option>
+                    <option value="merah">Merah</option>
+                    <option value="kuning">Kuning</option>
+                    <option value="hijau">Hijau</option>
+                    <option value="biru">Biru</option>
+                  </select>
+
+                  {/* Filter Status */}
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] bg-white text-black min-w-[200px]"
+                  >
+                    <option value="">Semua Status</option>
+                    <option value="diteruskan ke validator">Diteruskan ke Validator</option>
+                    <option value="laporan ditolak validator">Laporan Ditolak Validator</option>
+                    <option value="diteruskan ke verifikator">Diteruskan ke Verifikator</option>
+                    <option value="laporan disetujui chiefnursing">Laporan Disetujui Chief Nursing</option>
+                    <option value="laporan disetujui verifikator">Laporan Disetujui Verifikator</option>
+                  </select>
+
+                  {/* Reset Button */}
+                  <button
+                    onClick={() => {
+                      setFilterKategori("");
+                      setFilterGrading("");
+                      setFilterStatus("");
+                    }}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors min-w-[80px]"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              
+              {/* Search Input for Kode Laporan */}
+              <div className="flex items-center space-x-2">
                 <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black animate-glow"
-                  style={{
-                    colorScheme: "light",
-                  }}
+                  type="text"
+                  placeholder="Cari kode laporan..."
+                  value={searchKodeLaporan}
+                  onChange={(e) => setSearchKodeLaporan(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm"
                 />
               </div>
             </div>
@@ -1391,7 +1473,7 @@ export default function DashboardChiefNursing() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 text-sm borderborder-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Selanjutnya
                   </button>

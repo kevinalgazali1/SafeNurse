@@ -178,7 +178,12 @@ export default function DashboardPerawatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 10;
-    const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  
+  // State untuk filter
+  const [filterKategori, setFilterKategori] = useState("");
+  const [filterGrading, setFilterGrading] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   
 
   const token = Cookies.get("token");
@@ -389,16 +394,34 @@ export default function DashboardPerawatPage() {
     fetchReports();
   }, []);
 
-  // filter otomatis setiap kali selectedDate berubah
+  // filter otomatis setiap kali selectedDate atau filter lainnya berubah
   useEffect(() => {
+    let filtered = reports;
+    
+    // Filter berdasarkan tanggal
     if (selectedDate) {
-      setFilteredReports(reports.filter((r) => r.tanggal === selectedDate));
-    } else {
-      setFilteredReports(reports);
+      filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
+    
+    // Filter berdasarkan kategori
+    if (filterKategori) {
+      filtered = filtered.filter((r) => r.kategori === filterKategori);
+    }
+    
+    // Filter berdasarkan grading
+    if (filterGrading) {
+      filtered = filtered.filter((r) => r.grading === filterGrading);
+    }
+    
+    // Filter berdasarkan status
+    if (filterStatus) {
+      filtered = filtered.filter((r) => r.status === filterStatus);
+    }
+    
+    setFilteredReports(filtered);
     // Reset ke halaman pertama setiap kali filter berubah
     setCurrentPage(1);
-  }, [selectedDate, reports]);
+  }, [selectedDate, filterKategori, filterGrading, filterStatus, reports]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -641,21 +664,91 @@ export default function DashboardPerawatPage() {
               {/* Content */}
               <div className="relative z-10">
                 {/* Header section with date picker and add button */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 animate-fadeInUp">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                    <button
-                      className="bg-[#0E364A] text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:brightness-110 transition w-full sm:w-auto animate-fadeInLeft hover-lift animate-pulseGentle"
-                      onClick={() => console.log("Pilih Bulan clicked")}
-                    >
-                      Pilih Bulan
-                    </button>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="bg-white border text-black border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] animate-glow"
-                      placeholder="Filter tanggal"
-                    />
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 animate-fadeInUp space-y-4 lg:space-y-0">
+                  {/* Filter Section - Kiri Atas */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+                    {/* Filter Kategori */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Kategori
+                      </label>
+                      <select
+                        value={filterKategori}
+                        onChange={(e) => setFilterKategori(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[120px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="KTD">KTD</option>
+                        <option value="KPC">KPC</option>
+                        <option value="KNC">KNC</option>
+                        <option value="KTC">KTC</option>
+                        <option value="Sentinel">Sentinel</option>
+                      </select>
+                    </div>
+
+                    {/* Filter Grading */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Grading
+                      </label>
+                      <select
+                        value={filterGrading}
+                        onChange={(e) => setFilterGrading(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[120px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="merah">Merah</option>
+                        <option value="kuning">Kuning</option>
+                        <option value="hijau">Hijau</option>
+                        <option value="biru">Biru</option>
+                      </select>
+                    </div>
+
+                    {/* Filter Status */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[180px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="diteruskan ke validator">
+                          Diteruskan ke Validator
+                        </option>
+                        <option value="laporan ditolak validator">
+                          Laporan Ditolak Validator
+                        </option>
+                        <option value="diteruskan ke verifikator">
+                          Diteruskan ke Verifikator
+                        </option>
+                        <option value="laporan disetujui chiefnursing">
+                          Laporan Disetujui Chief Nursing
+                        </option>
+                        <option value="laporan disetujui verifikator">
+                          Laporan Disetujui Verifikator
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Tombol Reset Filter */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-transparent mb-1">
+                        Reset
+                      </label>
+                      <button
+                        onClick={() => {
+                          setFilterKategori("");
+                          setFilterGrading("");
+                          setFilterStatus("");
+                        }}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-sm font-medium"
+                      >
+                        Reset Filter
+                      </button>
+                    </div>
                   </div>
 
                   <button

@@ -206,6 +206,12 @@ export default function DashboardChiefNursing() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
+  const [searchKodeLaporan, setSearchKodeLaporan] = useState("");
+
+  // State untuk filter
+  const [filterKategori, setFilterKategori] = useState("");
+  const [filterGrading, setFilterGrading] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -496,16 +502,41 @@ export default function DashboardChiefNursing() {
     fetchReports();
   }, []);
 
-  // filter otomatis setiap kali selectedDate berubah
+  // filter otomatis setiap kali selectedDate, searchKodeLaporan, atau filter lainnya berubah
   useEffect(() => {
+    let filtered = reports;
+    
+    // Filter berdasarkan tanggal
     if (selectedDate) {
-      setFilteredReports(reports.filter((r) => r.tanggal === selectedDate));
-    } else {
-      setFilteredReports(reports);
+      filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
+    
+    // Filter berdasarkan kode laporan (case insensitive, bisa dari awal, tengah, atau akhir)
+    if (searchKodeLaporan.trim()) {
+      filtered = filtered.filter((r) => 
+        r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase().trim())
+      );
+    }
+    
+    // Filter berdasarkan kategori
+    if (filterKategori) {
+      filtered = filtered.filter((r) => r.kategori === filterKategori);
+    }
+    
+    // Filter berdasarkan grading
+    if (filterGrading) {
+      filtered = filtered.filter((r) => r.grading === filterGrading);
+    }
+    
+    // Filter berdasarkan status
+    if (filterStatus) {
+      filtered = filtered.filter((r) => r.status === filterStatus);
+    }
+    
+    setFilteredReports(filtered);
     // Reset ke halaman pertama ketika filter berubah
     setCurrentPage(1);
-  }, [selectedDate, reports]);
+  }, [selectedDate, searchKodeLaporan, filterKategori, filterGrading, filterStatus, reports]);
 
   // Logika pagination
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -1100,23 +1131,111 @@ export default function DashboardChiefNursing() {
               {/* Content */}
               <div className="relative z-10">
                 {/* Header section with date picker */}
-                <div className="flex justify-between items-center mb-6 animate-fadeInUp">
-                  <div className="flex items-center space-x-4 animate-fadeInLeft">
-                    <button
-                      className="bg-[#0E364A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:brightness-110 transition hover-lift animate-pulseGentle"
-                      onClick={() => console.log("Pilih Bulan clicked")}
-                    >
-                      Pilih Bulan
-                    </button>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black hover-lift animate-glow"
-                      style={{
-                        colorScheme: "light",
-                      }}
-                    />
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 animate-fadeInUp space-y-4 lg:space-y-0">
+                  {/* Filter Section - Kiri Atas */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+                    {/* Filter Kategori */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Kategori
+                      </label>
+                      <select
+                        value={filterKategori}
+                        onChange={(e) => setFilterKategori(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[120px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="KTD">KTD</option>
+                        <option value="KPC">KPC</option>
+                        <option value="KNC">KNC</option>
+                        <option value="KTC">KTC</option>
+                        <option value="Sentinel">Sentinel</option>
+                      </select>
+                    </div>
+
+                    {/* Filter Grading */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Grading
+                      </label>
+                      <select
+                        value={filterGrading}
+                        onChange={(e) => setFilterGrading(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[120px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="merah">Merah</option>
+                        <option value="kuning">Kuning</option>
+                        <option value="hijau">Hijau</option>
+                        <option value="biru">Biru</option>
+                      </select>
+                    </div>
+
+                    {/* Filter Status */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm min-w-[180px]"
+                      >
+                        <option value="">Semua</option>
+                        <option value="diteruskan ke validator">
+                          Diteruskan ke Validator
+                        </option>
+                        <option value="laporan ditolak validator">
+                          Laporan Ditolak Validator
+                        </option>
+                        <option value="diteruskan ke verifikator">
+                          Diteruskan ke Verifikator
+                        </option>
+                        <option value="laporan disetujui chiefnursing">
+                          Laporan Disetujui Chief Nursing
+                        </option>
+                        <option value="laporan disetujui verifikator">
+                          Laporan Disetujui Verifikator
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Tombol Reset Filter */}
+                    <div className="flex flex-col w-full sm:w-auto">
+                      <label className="text-sm font-medium text-transparent mb-1">
+                        Reset
+                      </label>
+                      <button
+                        onClick={() => {
+                          setFilterKategori("");
+                          setFilterGrading("");
+                          setFilterStatus("");
+                          setSearchKodeLaporan("");
+                          setSelectedDate("");
+                        }}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-sm font-medium"
+                      >
+                        Reset Filter
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search Input for Kode Laporan - Kanan */}
+                  <div className="flex items-center space-x-2 w-full lg:w-auto">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Cari kode laporan..."
+                        value={searchKodeLaporan}
+                        onChange={(e) => setSearchKodeLaporan(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white"
+                      />
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

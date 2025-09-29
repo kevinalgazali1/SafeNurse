@@ -432,6 +432,10 @@ export default function TambahLaporanPage() {
           updatedData.frekuensiKejadian = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
+          
+          // Ubah currentStep terlebih dahulu agar tombol hilang
+          setCurrentStep("processing");
+          
           cleanAndGenerateSummary(updatedData);
 
           return; // Return early untuk skip setIsProcessingResponse(false) di bawah
@@ -707,7 +711,8 @@ export default function TambahLaporanPage() {
 
               if (data.is_lengkap) {
                 // ✅ setelah valid → bersihkan via API clean
-                cleanAndGenerateSummary(updatedData);
+                // Jangan set false di sini karena cleanAndGenerateSummary akan handle loading
+                await cleanAndGenerateSummary(updatedData);
               } else {
                 // ⚠️ Kalau tidak lengkap → kasih evaluasi
                 addMessage(
@@ -719,6 +724,8 @@ export default function TambahLaporanPage() {
                   "Silakan masukkan kronologi ulang dengan lebih lengkap."
                 );
                 setCurrentStep("editKronologi");
+                // Set false hanya jika tidak lengkap
+                setIsProcessingResponse(false);
               }
             } catch (error) {
               console.error("Error validate edited chronology:", error);
@@ -727,7 +734,6 @@ export default function TambahLaporanPage() {
                 "Terjadi kesalahan saat validasi kronologi edit. Coba lagi ya."
               );
               setCurrentStep("editKronologi");
-            } finally {
               setIsProcessingResponse(false);
             }
           };
@@ -941,6 +947,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.jenisKelamin = "Laki-laki";
@@ -954,6 +964,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -969,6 +980,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.jenisKelamin = "Perempuan";
@@ -982,6 +997,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1472,6 +1488,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "kematian";
@@ -1485,6 +1505,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1500,6 +1521,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera berat";
@@ -1513,6 +1538,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1528,6 +1554,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera sedang";
@@ -1541,6 +1571,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1556,6 +1587,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera ringan";
@@ -1569,6 +1604,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1584,6 +1620,10 @@ export default function TambahLaporanPage() {
           <button
             onClick={() => {
               if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "tidak ada cidera";
@@ -1597,6 +1637,7 @@ export default function TambahLaporanPage() {
                 setTimeout(() => {
                   addMessage("bot", "Apakah laporan sudah sesuai?");
                   setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
                 }, 2000);
               }
             }}
@@ -1680,17 +1721,24 @@ export default function TambahLaporanPage() {
         <div className="flex flex-col gap-2 mb-4 items-start">
           <button
             onClick={() => {
-              const updatedData = { ...reportData };
-              updatedData.frekuensiKejadian = "5 tahun sekali";
-              setReportData(updatedData);
-              saveToLocalStorage(updatedData);
-              const summaryAfterEditFrekuensi =
-                generateReportSummary(updatedData);
-              addMessage("bot", summaryAfterEditFrekuensi);
-              setTimeout(() => {
-                addMessage("bot", "Apakah laporan sudah sesuai?");
-                setCurrentStep("konfirmasi");
-              }, 2000);
+              if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
+                const updatedData = { ...reportData };
+                updatedData.frekuensiKejadian = "5 tahun sekali";
+                setReportData(updatedData);
+                saveToLocalStorage(updatedData);
+                const summaryAfterEditFrekuensi =
+                  generateReportSummary(updatedData);
+                addMessage("bot", summaryAfterEditFrekuensi);
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
+                }, 2000);
+              }
             }}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1703,17 +1751,24 @@ export default function TambahLaporanPage() {
           </button>
           <button
             onClick={() => {
-              const updatedData = { ...reportData };
-              updatedData.frekuensiKejadian = "2–5 tahun sekali";
-              setReportData(updatedData);
-              saveToLocalStorage(updatedData);
-              const summaryAfterEditFrekuensi =
-                generateReportSummary(updatedData);
-              addMessage("bot", summaryAfterEditFrekuensi);
-              setTimeout(() => {
-                addMessage("bot", "Apakah laporan sudah sesuai?");
-                setCurrentStep("konfirmasi");
-              }, 2000);
+              if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
+                const updatedData = { ...reportData };
+                updatedData.frekuensiKejadian = "2–5 tahun sekali";
+                setReportData(updatedData);
+                saveToLocalStorage(updatedData);
+                const summaryAfterEditFrekuensi =
+                  generateReportSummary(updatedData);
+                addMessage("bot", summaryAfterEditFrekuensi);
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
+                }, 2000);
+              }
             }}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1726,17 +1781,24 @@ export default function TambahLaporanPage() {
           </button>
           <button
             onClick={() => {
-              const updatedData = { ...reportData };
-              updatedData.frekuensiKejadian = "1–2 tahun sekali";
-              setReportData(updatedData);
-              saveToLocalStorage(updatedData);
-              const summaryAfterEditFrekuensi =
-                generateReportSummary(updatedData);
-              addMessage("bot", summaryAfterEditFrekuensi);
-              setTimeout(() => {
-                addMessage("bot", "Apakah laporan sudah sesuai?");
-                setCurrentStep("konfirmasi");
-              }, 2000);
+              if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
+                const updatedData = { ...reportData };
+                updatedData.frekuensiKejadian = "1–2 tahun sekali";
+                setReportData(updatedData);
+                saveToLocalStorage(updatedData);
+                const summaryAfterEditFrekuensi =
+                  generateReportSummary(updatedData);
+                addMessage("bot", summaryAfterEditFrekuensi);
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
+                }, 2000);
+              }
             }}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1749,17 +1811,24 @@ export default function TambahLaporanPage() {
           </button>
           <button
             onClick={() => {
-              const updatedData = { ...reportData };
-              updatedData.frekuensiKejadian = "Beberapa kali per tahun";
-              setReportData(updatedData);
-              saveToLocalStorage(updatedData);
-              const summaryAfterEditFrekuensi =
-                generateReportSummary(updatedData);
-              addMessage("bot", summaryAfterEditFrekuensi);
-              setTimeout(() => {
-                addMessage("bot", "Apakah laporan sudah sesuai?");
-                setCurrentStep("konfirmasi");
-              }, 2000);
+              if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
+                const updatedData = { ...reportData };
+                updatedData.frekuensiKejadian = "Beberapa kali per tahun";
+                setReportData(updatedData);
+                saveToLocalStorage(updatedData);
+                const summaryAfterEditFrekuensi =
+                  generateReportSummary(updatedData);
+                addMessage("bot", summaryAfterEditFrekuensi);
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
+                }, 2000);
+              }
             }}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${
@@ -1772,17 +1841,24 @@ export default function TambahLaporanPage() {
           </button>
           <button
             onClick={() => {
-              const updatedData = { ...reportData };
-              updatedData.frekuensiKejadian = "Setiap bulan/minggu";
-              setReportData(updatedData);
-              saveToLocalStorage(updatedData);
-              const summaryAfterEditFrekuensi =
-                generateReportSummary(updatedData);
-              addMessage("bot", summaryAfterEditFrekuensi);
-              setTimeout(() => {
-                addMessage("bot", "Apakah laporan sudah sesuai?");
-                setCurrentStep("konfirmasi");
-              }, 2000);
+              if (!isProcessingResponse) {
+                // Langsung set processing untuk mencegah spam
+                setIsProcessingResponse(true);
+                setCurrentStep("processing");
+                
+                const updatedData = { ...reportData };
+                updatedData.frekuensiKejadian = "Setiap bulan/minggu";
+                setReportData(updatedData);
+                saveToLocalStorage(updatedData);
+                const summaryAfterEditFrekuensi =
+                  generateReportSummary(updatedData);
+                addMessage("bot", summaryAfterEditFrekuensi);
+                setTimeout(() => {
+                  addMessage("bot", "Apakah laporan sudah sesuai?");
+                  setCurrentStep("konfirmasi");
+                  setIsProcessingResponse(false);
+                }, 2000);
+              }
             }}
             disabled={isProcessingResponse}
             className={`px-4 py-2 rounded-full text-sm transition-colors text-left w-auto ${

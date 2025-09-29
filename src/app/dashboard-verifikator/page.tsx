@@ -43,6 +43,7 @@ interface Insiden {
   grading: string;
   tgl_insiden: string;
   tgl_msk_rs: string;
+  tgl_waktu_pelaporan?: string;
   ruangan?: {
     nama_ruangan: string;
   };
@@ -62,6 +63,10 @@ export default function DashboardVerifikatorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const token = Cookies.get("token");
 
@@ -347,6 +352,32 @@ export default function DashboardVerifikatorPage() {
     }
 
     setFilteredData(data);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  // Auto-filter when any filter changes (real-time filtering)
+  useEffect(() => {
+    handleFilter();
+  }, [filterUnit, filterKategori, filterGrading, filterYear, filterMonth, insidenData]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setFilterUnit("Semua");
+    setFilterKategori("Semua");
+    setFilterGrading("Semua");
+    setFilterYear("");
+    setFilterMonth("");
+    setCurrentPage(1);
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   // === Chart Data Calculation ===
@@ -787,14 +818,17 @@ export default function DashboardVerifikatorPage() {
                         </select>
                       </div>
 
-                      {/* Filter Button */}
+                      {/* Reset Filter Button */}
                       <div className="sm:col-span-2 lg:col-span-1">
                         <button
-                          onClick={handleFilter}
-                          className="w-full sm:w-12 h-10 bg-[#6B8CAE] text-white rounded hover:bg-[#5a7a9e] transition-colors flex items-center justify-center"
+                          onClick={handleResetFilters}
+                          className="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
                         >
-                          <i className="fas fa-search"></i>
-                          <span className="ml-2 sm:hidden">Filter</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          <span className="hidden sm:inline">Reset</span>
+                          <span className="sm:hidden">Reset Filter</span>
                         </button>
                       </div>
                     </div>
@@ -908,9 +942,9 @@ export default function DashboardVerifikatorPage() {
 
                     {/* Table Body */}
                     <div className="divide-y divide-gray-200">
-                      {insidenData.map((item, index) => (
+                      {currentData.map((item, index) => (
                         <div
-                          key={item.id}
+                          key={item.kode_laporan}
                           className="animate-fadeInUp hover-lift"
                           style={{ animationDelay: `${index * 0.1}s` }}
                         >
@@ -921,13 +955,13 @@ export default function DashboardVerifikatorPage() {
                             } hover:bg-blue-50 transition-colors`}
                           >
                             <div className="text-center font-medium text-[#2C3E50]">
-                              {new Date(
+                              {item.tgl_waktu_pelaporan ? new Date(
                                 item.tgl_waktu_pelaporan
                               ).toLocaleDateString("id-ID", {
                                 day: "2-digit",
                                 month: "2-digit",
                                 year: "numeric",
-                              })}
+                              }) : "-"}
                             </div>
                             <div className="text-center text-[#2C3E50]">
                               {item.ruangan?.nama_ruangan}
@@ -984,6 +1018,78 @@ export default function DashboardVerifikatorPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                          {/* Info */}
+                          <div className="text-sm text-gray-700">
+                            Menampilkan {startIndex + 1} - {Math.min(endIndex, filteredData.length)} dari {filteredData.length} data
+                          </div>
+                          
+                          {/* Pagination Controls */}
+                          <div className="flex items-center gap-1">
+                            {/* Previous Button */}
+                            <button
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                              className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
+                            >
+                              <span className="hidden sm:inline">Sebelumnya</span>
+                              <span className="sm:hidden">‹</span>
+                            </button>
+
+                            {/* Page Numbers */}
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                // Show first page, last page, current page, and pages around current page
+                                const showPage = 
+                                  page === 1 || 
+                                  page === totalPages || 
+                                  (page >= currentPage - 1 && page <= currentPage + 1);
+                                
+                                if (!showPage) {
+                                  // Show ellipsis
+                                  if (page === currentPage - 2 || page === currentPage + 2) {
+                                    return (
+                                      <span key={page} className="px-2 py-1 text-sm text-gray-500">
+                                        ...
+                                      </span>
+                                    );
+                                  }
+                                  return null;
+                                }
+
+                                return (
+                                  <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`px-2 py-1 sm:px-3 sm:py-2 text-sm border rounded-md transition-colors ${
+                                      currentPage === page
+                                        ? 'bg-[#6B8CAE] text-white border-[#6B8CAE]'
+                                        : 'bg-white text-black border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    {page}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Next Button */}
+                            <button
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                              className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
+                            >
+                              <span className="hidden sm:inline">Selanjutnya</span>
+                              <span className="sm:hidden">›</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
