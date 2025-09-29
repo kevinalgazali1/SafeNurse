@@ -68,6 +68,14 @@ export default function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    const expired = Cookies.get("session_expired");
+    if (expired === "1") {
+      toast.error("Sesi anda sudah habis, mohon login kembali.");
+      Cookies.remove("session_expired"); // hapus supaya tidak muncul terus
+    }
+  }, []);
+
   return (
     <div className="bg-[#d9f0f6] min-h-screen flex flex-col">
       {/* Header */}
@@ -264,9 +272,7 @@ export default function LoginPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
 
@@ -281,22 +287,22 @@ export default function LoginPage() {
           }
         }
       `}</style>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: "#363636",
+            color: "#fff",
           },
           success: {
             style: {
-              background: '#10B981',
+              background: "#10B981",
             },
           },
           error: {
             style: {
-              background: '#EF4444',
+              background: "#EF4444",
             },
           },
         }}

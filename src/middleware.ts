@@ -21,17 +21,20 @@ export function middleware(req: NextRequest) {
 
     // === ✅ Cek token expired ===
     if (decoded.exp && decoded.exp < Date.now() / 1000) {
-      // Hapus token agar tidak looping
       const response = NextResponse.redirect(new URL("/login", req.url));
+
+      // Hapus token agar tidak looping
       response.cookies.delete("token");
+
+      // Tambah flag biar client bisa munculkan toast
+      response.cookies.set("session_expired", "1", { path: "/" });
+
       return response;
     }
 
     // Mapping role ke prefix folder
     const roleToPrefix: Record<string, string[]> = {
-      super_admin: ["dashboard-superadmin",
-        "dashboard-super-admin"
-      ],
+      super_admin: ["dashboard-superadmin", "dashboard-super-admin"],
       perawat: [
         "dashboard-perawat",
         "profile-perawat",
@@ -69,7 +72,9 @@ export function middleware(req: NextRequest) {
       );
 
       if (!match) {
-        return NextResponse.redirect(new URL(`/${allowedPrefixes[0]}`, req.url));
+        return NextResponse.redirect(
+          new URL(`/${allowedPrefixes[0]}`, req.url)
+        );
       }
     } else {
       return NextResponse.redirect(new URL("/login", req.url));
@@ -87,4 +92,3 @@ export const config = {
     "/((?!login|forgot-password|reset-password|api|_next|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico)).*)",
   ],
 };
-

@@ -30,6 +30,52 @@ export default function NotificationsPerawatPage() {
     setIsLoading(true);
     try {
       const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+
+      const resData = await res.json();
+      console.log("Data notifikasi:", resData);
+
+      // gabungkan notifikasi baru & lama
+      const allNotifications = [
+        ...(resData.notifikasi_baru || []),
+        ...(resData.notifikasi_lama || []),
+      ];
+
+      const mappedNotifications = allNotifications.map((n: any) => ({
+        id: n.id_notifikasi,
+        title: n.message,
+        time: n.waktu,
+        isRead: n.status === "sudah_dibaca",
+      }));
+
+      setNotifications(mappedNotifications);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNewNotifications = async () => {
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
@@ -56,7 +102,7 @@ export default function NotificationsPerawatPage() {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchNewNotifications();
   }, []);
 
   // Pagination logic
@@ -346,7 +392,6 @@ export default function NotificationsPerawatPage() {
                 <h2 className="text-xl sm:text-2xl font-bold text-[#0B7A95] mb-2 animate-text-glow">
                   Notifikasi
                 </h2>
-               
               </div>
 
               {/* Delete All Button */}
