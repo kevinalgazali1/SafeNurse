@@ -1392,28 +1392,29 @@ export default function DashboardChiefNursing() {
                 {filteredReports.length > reportsPerPage && (
                   <div className="mt-8 flex flex-col items-center space-y-4">
                     {/* Pagination Info */}
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-black font-medium">
                       Menampilkan {startIndex + 1}-
                       {Math.min(endIndex, filteredReports.length)} dari{" "}
                       {filteredReports.length} laporan
                     </div>
 
                     {/* Pagination Controls */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                           currentPage === 1
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-[#0E364A] text-white hover:bg-[#1a4a5c]"
                         }`}
                       >
-                        Sebelumnya
+                        <span className="hidden sm:inline">Sebelumnya</span>
+                        <span className="sm:hidden">‹</span>
                       </button>
 
                       {/* Page Numbers - Show max 3 pages */}
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center gap-1 sm:space-x-1">
                         {(() => {
                           const maxVisiblePages = 3;
                           let startPage = Math.max(
@@ -1445,7 +1446,7 @@ export default function DashboardChiefNursing() {
                                     Math.max(1, startPage - maxVisiblePages)
                                   )
                                 }
-                                className="px-2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                                className="px-2 py-2 rounded-lg text-xs sm:text-sm font-black bg-gray-200 text-black hover:bg-gray-300 transition-colors"
                                 title="Halaman sebelumnya"
                               >
                                 ‹
@@ -1459,10 +1460,10 @@ export default function DashboardChiefNursing() {
                               <button
                                 key={i}
                                 onClick={() => handlePageChange(i)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                                   currentPage === i
                                     ? "bg-[#0E364A] text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    : "bg-gray-200 text-black hover:bg-gray-300"
                                 }`}
                               >
                                 {i}
@@ -1480,7 +1481,7 @@ export default function DashboardChiefNursing() {
                                     Math.min(totalPages, endPage + 1)
                                   )
                                 }
-                                className="px-2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                                className="px-2 py-2 rounded-lg text-xs sm:text-sm font-black bg-gray-200 text-black hover:bg-gray-300 transition-colors"
                                 title="Halaman selanjutnya"
                               >
                                 ›
@@ -1495,13 +1496,14 @@ export default function DashboardChiefNursing() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                           currentPage === totalPages
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-[#0E364A] text-white hover:bg-[#1a4a5c]"
                         }`}
                       >
-                        Selanjutnya
+                        <span className="hidden sm:inline">Selanjutnya</span>
+                        <span className="sm:hidden">›</span>
                       </button>
                     </div>
                   </div>

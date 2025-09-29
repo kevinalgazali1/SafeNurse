@@ -2274,7 +2274,7 @@ export default function TambahLaporanPage() {
                           }}
                           placeholder={
                             currentStep === "greeting"
-                              ? "Silakan pilih Ya atau Tidak"
+                              ? "pilih Ya atau Tidak"
                               : "Ketik pesan Anda..."
                           }
                           disabled={
@@ -2283,8 +2283,13 @@ export default function TambahLaporanPage() {
                             currentStep === "greeting"
                           }
                           rows={1}
-                          style={{ resize: "none" }}
-                          className={`w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black overflow-hidden ${
+                          style={{ 
+                            resize: "none", 
+                            maxHeight: "120px",
+                            scrollbarWidth: "none", /* Firefox */
+                            msOverflowStyle: "none" /* IE and Edge */
+                          }}
+                          className={`w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black overflow-y-auto [&::-webkit-scrollbar]:hidden ${
                             isProcessingResponse ||
                             isSubmittingReport ||
                             currentStep === "greeting"

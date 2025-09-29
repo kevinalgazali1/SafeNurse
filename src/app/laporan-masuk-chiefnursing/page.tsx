@@ -108,12 +108,41 @@ export default function LaporanMasukChiefNursingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reportsPerPage] = useState(10);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const token = Cookies.get("token");
+
+  // Filter reports based on search query
+  const filteredReports = reports.filter(report =>
+    report.kodeLaporan.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+  const startIndex = (currentPage - 1) * reportsPerPage;
+  const endIndex = startIndex + reportsPerPage;
+  const currentReports = filteredReports.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle search
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   // === Ambil data ringkas laporan masuk ===
   const fetchReports = async (onlyCount = false) => {
@@ -875,16 +904,29 @@ export default function LaporanMasukChiefNursingPage() {
 
                 {/* Content Container */}
                 <div className="relative z-10">
-                  {/* Page Title */}
-                  <div className="mb-6 sm:mb-8 animate-fadeInUp">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 animate-textGlow">
+                  {/* Header with Title and Search */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 animate-fadeInUp space-y-4 sm:space-y-0">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white animate-textGlow">
                       Daftar Laporan Masuk
                     </h2>
+                    
+                    {/* Search Input */}
+                    <div className="relative w-full sm:w-auto">
+                      <input
+                        type="text"
+                        placeholder="Cari kode laporan..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="w-full sm:w-64 px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-[#0B7A95] transition-all duration-200"
+                      />
+                      <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
                   </div>
 
                   {/* Reports List */}
                   <div className="space-y-3 sm:space-y-4 animate-fadeInRight">
-                    {reports.map((report, index) => (
+                    {currentReports.length > 0 ? (
+                      currentReports.map((report, index) => (
                       <div
                         key={report.id}
                         className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer hover-lift animate-glow ${
@@ -924,7 +966,79 @@ export default function LaporanMasukChiefNursingPage() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mx-auto max-w-md">
+                        <i className="fas fa-search text-white/70 text-3xl mb-4"></i>
+                        <h3 className="text-white font-semibold text-lg mb-2">
+                          {searchQuery ? "Tidak ada laporan ditemukan" : "Belum ada laporan"}
+                        </h3>
+                        <p className="text-white/70 text-sm">
+                          {searchQuery 
+                            ? `Tidak ada laporan dengan kode "${searchQuery}"`
+                            : "Belum ada laporan masuk yang perlu ditinjau"
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Pagination */}
+                  {filteredReports.length > 0 && totalPages > 1 && (
+                    <div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                      {/* Pagination Info */}
+                      <div className="text-sm text-black font-medium">
+                        Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                      </div>
+                      
+                      {/* Pagination Controls */}
+                      <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
+                        {/* Previous Button */}
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            currentPage === 1
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-white text-black hover:bg-gray-100"
+                          }`}
+                        >
+                          <span className="hidden sm:inline">Sebelumnya</span>
+                          <span className="sm:hidden">‹</span>
+                        </button>
+                        
+                        {/* Page Numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              currentPage === page
+                                ? "bg-[#0B7A95] text-white"
+                                : "bg-white text-black hover:bg-gray-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                        
+                        {/* Next Button */}
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            currentPage === totalPages
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-white text-black hover:bg-gray-100"
+                          }`}
+                        >
+                          <span className="hidden sm:inline">Selanjutnya</span>
+                          <span className="sm:hidden">›</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   </div>
                 </div>
               </div>

@@ -479,19 +479,20 @@ export default function NotificationsKepalaRuanganPage() {
 
                 {/* Pagination */}
                 {notifications.length > 0 && totalPages > 1 && (
-                  <div className="mt-8 flex justify-center items-center space-x-2 animate-fade-in-up">
+                  <div className="mt-8 flex flex-wrap justify-center items-center gap-2 sm:space-x-2 animate-fade-in-up">
                     {/* Previous Button */}
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
                         currentPage === 1
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                          : "bg-white text-black hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                       }`}
                     >
                       <i className="fas fa-chevron-left mr-1"></i>
-                      Sebelumnya
+                      <span className="hidden sm:inline">Sebelumnya</span>
+                      <span className="sm:hidden">‹</span>
                     </button>
 
                     {/* Page Numbers - Show max 3 pages */}
@@ -527,7 +528,7 @@ export default function NotificationsKepalaRuanganPage() {
                                   Math.max(1, startPage - maxVisiblePages)
                                 )
                               }
-                              className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 bg-white text-black hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                               title="Halaman sebelumnya"
                             >
                               ‹
@@ -541,10 +542,10 @@ export default function NotificationsKepalaRuanganPage() {
                             <button
                               key={i}
                               onClick={() => handlePageChange(i)}
-                              className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
+                              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
                                 currentPage === i
                                   ? "bg-[#0B7A95] text-white shadow-lg transform scale-110"
-                                  : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                                  : "bg-white text-black hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                               }`}
                             >
                               {i}
@@ -562,7 +563,7 @@ export default function NotificationsKepalaRuanganPage() {
                                   Math.min(totalPages, endPage + 1)
                                 )
                               }
-                              className="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300 bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 bg-white text-black hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                               title="Halaman selanjutnya"
                             >
                               ›
@@ -578,13 +579,14 @@ export default function NotificationsKepalaRuanganPage() {
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
                         currentPage === totalPages
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-white text-[#0B7A95] hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                          : "bg-white text-black hover:bg-[#0B7A95] hover:text-white shadow-md hover:shadow-lg transform hover:scale-105"
                       }`}
                     >
-                      Selanjutnya
+                      <span className="hidden sm:inline">Selanjutnya</span>
+                      <span className="sm:hidden">›</span>
                       <i className="fas fa-chevron-right ml-1"></i>
                     </button>
                   </div>
@@ -592,7 +594,7 @@ export default function NotificationsKepalaRuanganPage() {
 
                 {/* Pagination Info */}
                 {notifications.length > 0 && (
-                  <div className="mt-4 text-center text-sm text-gray-600 animate-fade-in-delayed">
+                  <div className="mt-4 text-center text-xs sm:text-sm text-black animate-fade-in-delayed">
                     Menampilkan {startIndex + 1}-
                     {Math.min(endIndex, notifications.length)} dari{" "}
                     {notifications.length} notifikasi

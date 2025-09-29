@@ -499,25 +499,26 @@ export default function NotificationsVerifikatorPage() {
             {notifications.length > 0 && totalPages > 1 && (
               <div className="mt-8 flex flex-col items-center space-y-4">
                 {/* Pagination Info */}
-                <div className="text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-black">
                   Menampilkan {startIndex + 1}-
                   {Math.min(endIndex, notifications.length)} dari{" "}
                   {notifications.length} notifikasi
                 </div>
 
                 {/* Pagination Controls */}
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
                   {/* Previous Button */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       currentPage === 1
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                         : "bg-[#0B7A95] text-white hover:bg-[#0a6b85] hover:scale-105"
                     }`}
                   >
-                    ← Sebelumnya
+                    <span className="hidden sm:inline">← Sebelumnya</span>
+                    <span className="sm:hidden">‹</span>
                   </button>
 
                   {/* Page Numbers - Show max 3 pages */}
@@ -550,7 +551,7 @@ export default function NotificationsVerifikatorPage() {
                                 Math.max(1, startPage - maxVisiblePages)
                               )
                             }
-                            className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-[#0B7A95] border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
+                            className="px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 bg-white text-black border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
                             title="Halaman sebelumnya"
                           >
                             ‹
@@ -564,10 +565,10 @@ export default function NotificationsVerifikatorPage() {
                           <button
                             key={i}
                             onClick={() => handlePageChange(i)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                               currentPage === i
                                 ? "bg-[#0B7A95] text-white scale-110"
-                                : "bg-white text-[#0B7A95] border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
+                                : "bg-white text-black border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
                             }`}
                           >
                             {i}
@@ -585,7 +586,7 @@ export default function NotificationsVerifikatorPage() {
                                 Math.min(totalPages, endPage + 1)
                               )
                             }
-                            className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-[#0B7A95] border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
+                            className="px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 bg-white text-black border border-[#0B7A95] hover:bg-[#0B7A95] hover:text-white hover:scale-105"
                             title="Halaman selanjutnya"
                           >
                             ›
@@ -601,13 +602,14 @@ export default function NotificationsVerifikatorPage() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       currentPage === totalPages
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                         : "bg-[#0B7A95] text-white hover:bg-[#0a6b85] hover:scale-105"
                     }`}
                   >
-                    Selanjutnya →
+                    <span className="hidden sm:inline">Selanjutnya →</span>
+                    <span className="sm:hidden">›</span>
                   </button>
                 </div>
               </div>

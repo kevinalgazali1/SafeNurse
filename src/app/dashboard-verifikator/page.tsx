@@ -1044,19 +1044,19 @@ export default function DashboardVerifikatorPage() {
                       <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                           {/* Info */}
-                          <div className="text-sm text-gray-700">
+                          <div className="text-sm text-black font-medium">
                             Menampilkan {startIndex + 1} -{" "}
                             {Math.min(endIndex, filteredData.length)} dari{" "}
                             {filteredData.length} data
                           </div>
 
                           {/* Pagination Controls */}
-                          <div className="flex items-center gap-1">
+                          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1">
                             {/* Previous Button */}
                             <button
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={currentPage === 1}
-                              className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
+                              className="px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm font-black bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
                             >
                               <span className="hidden sm:inline">
                                 Sebelumnya
@@ -1086,7 +1086,7 @@ export default function DashboardVerifikatorPage() {
                                     return (
                                       <span
                                         key={page}
-                                        className="px-2 py-1 text-sm text-gray-500"
+                                        className="px-2 py-1 text-xs sm:text-sm text-black font-medium"
                                       >
                                         ...
                                       </span>
@@ -1099,7 +1099,7 @@ export default function DashboardVerifikatorPage() {
                                   <button
                                     key={page}
                                     onClick={() => handlePageChange(page)}
-                                    className={`px-2 py-1 sm:px-3 sm:py-2 text-sm border rounded-md transition-colors ${
+                                    className={`px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm font-black border rounded-md transition-colors ${
                                       currentPage === page
                                         ? "bg-[#6B8CAE] text-white border-[#6B8CAE]"
                                         : "bg-white text-black border-gray-300 hover:bg-gray-50"
@@ -1115,7 +1115,7 @@ export default function DashboardVerifikatorPage() {
                             <button
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={currentPage === totalPages}
-                              className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
+                              className="px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm font-black bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
                             >
                               <span className="hidden sm:inline">
                                 Selanjutnya

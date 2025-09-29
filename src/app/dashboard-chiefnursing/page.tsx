@@ -1276,18 +1276,19 @@ export default function DashboardChiefNursing() {
                 {/* Pagination */}
                 {filteredReports.length > reportsPerPage && (
                   <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200">
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm text-black font-medium">
                       Menampilkan {startIndex + 1} -{" "}
                       {Math.min(endIndex, filteredReports.length)} dari{" "}
                       {filteredReports.length} laporan
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2">
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-black border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-black"
                       >
-                        Sebelumnya
+                        <span className="hidden sm:inline">Sebelumnya</span>
+                        <span className="sm:hidden">‹</span>
                       </button>
 
                       {/* Page Numbers - Show max 3 pages */}
@@ -1323,7 +1324,7 @@ export default function DashboardChiefNursing() {
                                     Math.max(1, startPage - maxVisiblePages)
                                   )
                                 }
-                                className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                                className="px-2 py-1 text-xs sm:text-sm font-black border border-gray-300 rounded-md hover:bg-gray-50 text-black"
                                 title="Halaman sebelumnya"
                               >
                                 ‹
@@ -1337,10 +1338,10 @@ export default function DashboardChiefNursing() {
                               <button
                                 key={i}
                                 onClick={() => handlePageChange(i)}
-                                className={`px-3 py-1 text-sm border rounded-md ${
+                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm font-black border rounded-md ${
                                   currentPage === i
                                     ? "bg-blue-500 text-white border-blue-500"
-                                    : "border-gray-300 hover:bg-gray-50"
+                                    : "border-gray-300 hover:bg-gray-50 text-black"
                                 }`}
                               >
                                 {i}
@@ -1358,7 +1359,7 @@ export default function DashboardChiefNursing() {
                                     Math.min(totalPages, endPage + 1)
                                   )
                                 }
-                                className="px-2 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                                className="px-2 py-1 text-xs sm:text-sm font-black border border-gray-300 rounded-md hover:bg-gray-50 text-black"
                                 title="Halaman selanjutnya"
                               >
                                 ›
@@ -1373,9 +1374,10 @@ export default function DashboardChiefNursing() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-black border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-black"
                       >
-                        Selanjutnya
+                        <span className="hidden sm:inline">Selanjutnya</span>
+                        <span className="sm:hidden">›</span>
                       </button>
                     </div>
                   </div>
