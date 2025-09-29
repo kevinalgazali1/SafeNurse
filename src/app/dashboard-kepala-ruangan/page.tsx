@@ -1191,7 +1191,7 @@ export default function DashboardChiefNursing() {
                         <option value="diteruskan ke verifikator">
                           Diteruskan ke Verifikator
                         </option>
-                        <option value="laporan disetujui chiefnursing">
+                        <option value="laporan disetujui chief nursing">
                           Laporan Disetujui Chief Nursing
                         </option>
                         <option value="laporan disetujui verifikator">
@@ -1222,13 +1222,13 @@ export default function DashboardChiefNursing() {
 
                   {/* Search Input for Kode Laporan - Kanan */}
                   <div className="flex items-center space-x-2 w-full lg:w-auto">
-                    <div className="relative">
+                    <div className="relative w-full lg:w-auto">
                       <input
                         type="text"
                         placeholder="Cari kode laporan..."
                         value={searchKodeLaporan}
                         onChange={(e) => setSearchKodeLaporan(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white"
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white w-full lg:w-auto min-w-[200px]"
                       />
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

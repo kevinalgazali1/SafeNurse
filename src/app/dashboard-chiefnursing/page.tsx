@@ -1127,7 +1127,7 @@ export default function DashboardChiefNursing() {
                         <option value="diteruskan ke verifikator">
                           Diteruskan ke Verifikator
                         </option>
-                        <option value="laporan disetujui chiefnursing">
+                        <option value="laporan disetujui chief nursing">
                           Laporan Disetujui Chief Nursing
                         </option>
                         <option value="laporan disetujui verifikator">

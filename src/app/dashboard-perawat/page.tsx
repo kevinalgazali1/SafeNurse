@@ -184,6 +184,7 @@ export default function DashboardPerawatPage() {
   const [filterKategori, setFilterKategori] = useState("");
   const [filterGrading, setFilterGrading] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [searchKodeLaporan, setSearchKodeLaporan] = useState("");
   
 
   const token = Cookies.get("token");
@@ -418,10 +419,17 @@ export default function DashboardPerawatPage() {
       filtered = filtered.filter((r) => r.status === filterStatus);
     }
     
+    // Filter berdasarkan search kode laporan
+    if (searchKodeLaporan) {
+      filtered = filtered.filter((r) => 
+        r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase())
+      );
+    }
+    
     setFilteredReports(filtered);
     // Reset ke halaman pertama setiap kali filter berubah
     setCurrentPage(1);
-  }, [selectedDate, filterKategori, filterGrading, filterStatus, reports]);
+  }, [selectedDate, filterKategori, filterGrading, filterStatus, searchKodeLaporan, reports]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -724,7 +732,7 @@ export default function DashboardPerawatPage() {
                         <option value="diteruskan ke verifikator">
                           Diteruskan ke Verifikator
                         </option>
-                        <option value="laporan disetujui chiefnursing">
+                        <option value="laporan disetujui chief nursing">
                           Laporan Disetujui Chief Nursing
                         </option>
                         <option value="laporan disetujui verifikator">
@@ -743,6 +751,7 @@ export default function DashboardPerawatPage() {
                           setFilterKategori("");
                           setFilterGrading("");
                           setFilterStatus("");
+                          setSearchKodeLaporan("");
                         }}
                         className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-sm font-medium"
                       >
@@ -751,13 +760,31 @@ export default function DashboardPerawatPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="bg-[#0B7A95] text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:brightness-110 transition flex items-center justify-center space-x-2 w-full sm:w-auto max-w-xs sm:max-w-none animate-fadeInRight hover-lift"
-                    onClick={handleAddReport}
-                  >
-                    <i className="fas fa-plus"></i>
-                    <span>Tambah Laporan</span>
-                  </button>
+                  {/* Search Input for Kode Laporan - Di samping kiri tombol tambah laporan */}
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-4 w-full lg:w-auto">
+                    <div className="relative w-full lg:w-auto">
+                      <input
+                        type="text"
+                        placeholder="Cari kode laporan..."
+                        value={searchKodeLaporan}
+                        onChange={(e) => setSearchKodeLaporan(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white w-full lg:w-auto min-w-[200px]"
+                      />
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <button
+                      className="bg-[#0B7A95] text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:brightness-110 transition flex items-center justify-center space-x-2 w-full sm:w-auto max-w-xs sm:max-w-none animate-fadeInRight hover-lift"
+                      onClick={handleAddReport}
+                    >
+                      <i className="fas fa-plus"></i>
+                      <span>Tambah Laporan</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Desktop Table - Hidden on Mobile */}

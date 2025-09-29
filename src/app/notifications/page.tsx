@@ -164,6 +164,7 @@ export default function NotificationsPage() {
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
                 >
                   <i className="fas fa-trash text-sm"></i>
+                  <span className="sm:hidden">Delete</span>
                   <span className="hidden sm:inline">Delete All</span>
                 </button>
               )}

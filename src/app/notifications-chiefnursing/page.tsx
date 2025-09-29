@@ -415,9 +415,7 @@ export default function NotificationsChiefNursingPage() {
                       <h2 className="text-xl sm:text-2xl font-bold text-[#0B7A95] mb-2 animate-text-glow">
                         Notifikasi
                       </h2>
-                      <p className="text-gray-600 text-sm sm:text-base animate-fade-in-right">
-                        Daftar notifikasi terbaru untuk Anda
-                      </p>
+                     
                     </div>
 
                     {/* Delete All Button */}
@@ -427,6 +425,7 @@ export default function NotificationsChiefNursingPage() {
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
                       >
                         <i className="fas fa-trash text-sm"></i>
+                        <span className="sm:hidden">Delete All</span>
                         <span className="hidden sm:inline">Delete All</span>
                       </button>
                     )}

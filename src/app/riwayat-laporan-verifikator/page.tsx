@@ -72,32 +72,32 @@ interface Report {
 const getStatusLaporanColor = (status: string) => {
   switch (status) {
     case "laporan disetujui chief nursing":
-      return "bg-blue-100 text-blue-800 shadow-md";
+      return "bg-blue-500 text-white shadow-md";
     case "diteruskan ke verifikator":
-      return "bg-orange-100 text-orange-800 shadow-md";
+      return "bg-orange-500 text-white shadow-md";
     case "laporan ditolak validator":
-      return "bg-red-100 text-red-800 shadow-md";
+      return "bg-red-500 text-white shadow-md";
     case "laporan disetujui verifikator":
-      return "bg-green-100 text-green-800 shadow-md";
+      return "bg-green-500 text-white shadow-md";
     case "diteruskan ke validator":
-      return "bg-yellow-100 text-yellow-800 shadow-md";
+      return "bg-yellow-500 text-white shadow-md";
     default:
-      return "bg-gray-100 text-gray-800 shadow-md";
+      return "bg-gray-500 text-white shadow-md";
   }
 };
 
 const getGradingColor = (grading: string) => {
   switch (grading.toLowerCase()) {
     case "merah":
-      return "bg-red-100 text-red-800 shadow-md";
+      return "bg-red-500 text-white shadow-md";
     case "kuning":
-      return "bg-yellow-100 text-yellow-800 shadow-md";
+      return "bg-yellow-500 text-white shadow-md";
     case "hijau":
-      return "bg-green-100 text-green-800 shadow-md";
+      return "bg-green-500 text-white shadow-md";
     case "biru":
-      return "bg-blue-100 text-blue-800 shadow-md";
+      return "bg-blue-500 text-white shadow-md";
     default:
-      return "bg-gray-100 text-gray-800 shadow-md";
+      return "bg-gray-500 text-white shadow-md";
   }
 };
 
@@ -1241,7 +1241,7 @@ export default function DashboardChiefNursing() {
                     <option value="diteruskan ke validator">Diteruskan ke Validator</option>
                     <option value="laporan ditolak validator">Laporan Ditolak Validator</option>
                     <option value="diteruskan ke verifikator">Diteruskan ke Verifikator</option>
-                    <option value="laporan disetujui chiefnursing">Laporan Disetujui Chief Nursing</option>
+                    <option value="laporan disetujui chief nursing">Laporan Disetujui Chief Nursing</option>
                     <option value="laporan disetujui verifikator">Laporan Disetujui Verifikator</option>
                   </select>
 
@@ -1260,13 +1260,13 @@ export default function DashboardChiefNursing() {
               </div>
               
               {/* Search Input for Kode Laporan */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="Cari kode laporan..."
                   value={searchKodeLaporan}
                   onChange={(e) => setSearchKodeLaporan(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm"
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-sm w-full sm:w-auto min-w-[200px]"
                 />
               </div>
             </div>
