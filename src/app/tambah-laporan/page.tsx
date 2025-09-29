@@ -73,6 +73,44 @@ export default function TambahLaporanPage() {
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedIncidentDate, setSelectedIncidentDate] = useState("");
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
+    const fetchNotifications = async () => {
+      const token = Cookies.get("token");
+      if (!token) return;
+  
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
+        if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+  
+        const resData = await res.json();
+        console.log("Data notifikasi baru:", resData);
+  
+        // Hitung jumlah data notifikasi yang dikembalikan
+        const countBaru = resData?.data?.length || 0;
+        setNewNotificationCount(countBaru);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchNotifications();
+    }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -432,10 +470,10 @@ export default function TambahLaporanPage() {
           updatedData.frekuensiKejadian = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          
+
           // Ubah currentStep terlebih dahulu agar tombol hilang
           setCurrentStep("processing");
-          
+
           cleanAndGenerateSummary(updatedData);
 
           return; // Return early untuk skip setIsProcessingResponse(false) di bawah
@@ -950,7 +988,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.jenisKelamin = "Laki-laki";
@@ -983,7 +1021,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.jenisKelamin = "Perempuan";
@@ -1491,7 +1529,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "kematian";
@@ -1524,7 +1562,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera berat";
@@ -1557,7 +1595,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera sedang";
@@ -1590,7 +1628,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "cidera ringan";
@@ -1623,7 +1661,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 // Update data
                 const updatedData = { ...reportData };
                 updatedData.dampakInsiden = "tidak ada cidera";
@@ -1725,7 +1763,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 const updatedData = { ...reportData };
                 updatedData.frekuensiKejadian = "5 tahun sekali";
                 setReportData(updatedData);
@@ -1755,7 +1793,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 const updatedData = { ...reportData };
                 updatedData.frekuensiKejadian = "2–5 tahun sekali";
                 setReportData(updatedData);
@@ -1785,7 +1823,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 const updatedData = { ...reportData };
                 updatedData.frekuensiKejadian = "1–2 tahun sekali";
                 setReportData(updatedData);
@@ -1815,7 +1853,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 const updatedData = { ...reportData };
                 updatedData.frekuensiKejadian = "Beberapa kali per tahun";
                 setReportData(updatedData);
@@ -1845,7 +1883,7 @@ export default function TambahLaporanPage() {
                 // Langsung set processing untuk mencegah spam
                 setIsProcessingResponse(true);
                 setCurrentStep("processing");
-                
+
                 const updatedData = { ...reportData };
                 updatedData.frekuensiKejadian = "Setiap bulan/minggu";
                 setReportData(updatedData);
@@ -1946,11 +1984,11 @@ export default function TambahLaporanPage() {
           <div className="flex items-center space-x-4 animate-fadeInLeft animate-delay-100">
             {/* Back Button */}
             <button
-              className="flex items-center text-red-800 hover:text-red-800 transition-colors bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
+              className="flex items-center bg-red-600 text-white hover:bg-red-700 px-3 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
               onClick={() => (window.location.href = "/dashboard-perawat")}
               title="Kembali ke Dashboard"
             >
-              <i className="fas fa-arrow-left text-lg mr-2 text-red-800"></i>
+              <i className="fas fa-arrow-left text-lg mr-2 text-white"></i>
               <span className="hidden sm:inline text-sm font-medium">
                 Batal
               </span>
@@ -1996,14 +2034,18 @@ export default function TambahLaporanPage() {
             {/* Notifikasi */}
             <button
               className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
-              onClick={() => (window.location.href = "/notifications-perawat")}
+              onClick={() =>
+                (window.location.href = "/notifications-perawat")
+              }
             >
               <div className="relative">
                 <i className="fas fa-bell text-lg mb-1"></i>
                 {/* Notification Count Badge */}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  3
-                </span>
+                {newNotificationCount > 0 && (
+                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {newNotificationCount}
+                  </span>
+                )}
               </div>
               <span className="text-xs">Notifikasi</span>
             </button>

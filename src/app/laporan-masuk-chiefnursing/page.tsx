@@ -241,7 +241,7 @@ export default function LaporanMasukChiefNursingPage() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -251,13 +251,13 @@ export default function LaporanMasukChiefNursingPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);

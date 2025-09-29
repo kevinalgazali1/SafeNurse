@@ -289,7 +289,7 @@ export default function DashboardVerifikatorPage() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -299,13 +299,13 @@ export default function DashboardVerifikatorPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
@@ -358,7 +358,14 @@ export default function DashboardVerifikatorPage() {
   // Auto-filter when any filter changes (real-time filtering)
   useEffect(() => {
     handleFilter();
-  }, [filterUnit, filterKategori, filterGrading, filterYear, filterMonth, insidenData]);
+  }, [
+    filterUnit,
+    filterKategori,
+    filterGrading,
+    filterYear,
+    filterMonth,
+    insidenData,
+  ]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -399,6 +406,21 @@ export default function DashboardVerifikatorPage() {
     {}
   );
 
+  const monthOrder = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
   const monthlyCounts = filteredData.reduce<Record<string, number>>(
     (acc, d) => {
       const date = new Date(d.tgl_insiden);
@@ -409,9 +431,9 @@ export default function DashboardVerifikatorPage() {
     {}
   );
 
-  const monthlyData = Object.entries(monthlyCounts).map(([month, count]) => ({
+  const monthlyData = monthOrder.map((month) => ({
     month,
-    count,
+    count: monthlyCounts[month] || 0, // kalau tidak ada data, isi 0
   }));
 
   const kategoriData = Object.entries(kategoriCounts).map(([key, val]) => ({
@@ -822,13 +844,9 @@ export default function DashboardVerifikatorPage() {
                       <div className="sm:col-span-2 lg:col-span-1">
                         <button
                           onClick={handleResetFilters}
-                          className="w-full sm:w-auto bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-sm font-medium"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          <span className="hidden sm:inline">Reset</span>
-                          <span className="sm:hidden">Reset Filter</span>
+                          Reset Filter
                         </button>
                       </div>
                     </div>
@@ -955,13 +973,15 @@ export default function DashboardVerifikatorPage() {
                             } hover:bg-blue-50 transition-colors`}
                           >
                             <div className="text-center font-medium text-[#2C3E50]">
-                              {item.tgl_waktu_pelaporan ? new Date(
-                                item.tgl_waktu_pelaporan
-                              ).toLocaleDateString("id-ID", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              }) : "-"}
+                              {item.tgl_waktu_pelaporan
+                                ? new Date(
+                                    item.tgl_waktu_pelaporan
+                                  ).toLocaleDateString("id-ID", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                : "-"}
                             </div>
                             <div className="text-center text-[#2C3E50]">
                               {item.ruangan?.nama_ruangan}
@@ -1025,9 +1045,11 @@ export default function DashboardVerifikatorPage() {
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                           {/* Info */}
                           <div className="text-sm text-gray-700">
-                            Menampilkan {startIndex + 1} - {Math.min(endIndex, filteredData.length)} dari {filteredData.length} data
+                            Menampilkan {startIndex + 1} -{" "}
+                            {Math.min(endIndex, filteredData.length)} dari{" "}
+                            {filteredData.length} data
                           </div>
-                          
+
                           {/* Pagination Controls */}
                           <div className="flex items-center gap-1">
                             {/* Previous Button */}
@@ -1036,24 +1058,36 @@ export default function DashboardVerifikatorPage() {
                               disabled={currentPage === 1}
                               className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
                             >
-                              <span className="hidden sm:inline">Sebelumnya</span>
+                              <span className="hidden sm:inline">
+                                Sebelumnya
+                              </span>
                               <span className="sm:hidden">‹</span>
                             </button>
 
                             {/* Page Numbers */}
                             <div className="flex items-center gap-1">
-                              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                              {Array.from(
+                                { length: totalPages },
+                                (_, i) => i + 1
+                              ).map((page) => {
                                 // Show first page, last page, current page, and pages around current page
-                                const showPage = 
-                                  page === 1 || 
-                                  page === totalPages || 
-                                  (page >= currentPage - 1 && page <= currentPage + 1);
-                                
+                                const showPage =
+                                  page === 1 ||
+                                  page === totalPages ||
+                                  (page >= currentPage - 1 &&
+                                    page <= currentPage + 1);
+
                                 if (!showPage) {
                                   // Show ellipsis
-                                  if (page === currentPage - 2 || page === currentPage + 2) {
+                                  if (
+                                    page === currentPage - 2 ||
+                                    page === currentPage + 2
+                                  ) {
                                     return (
-                                      <span key={page} className="px-2 py-1 text-sm text-gray-500">
+                                      <span
+                                        key={page}
+                                        className="px-2 py-1 text-sm text-gray-500"
+                                      >
                                         ...
                                       </span>
                                     );
@@ -1067,8 +1101,8 @@ export default function DashboardVerifikatorPage() {
                                     onClick={() => handlePageChange(page)}
                                     className={`px-2 py-1 sm:px-3 sm:py-2 text-sm border rounded-md transition-colors ${
                                       currentPage === page
-                                        ? 'bg-[#6B8CAE] text-white border-[#6B8CAE]'
-                                        : 'bg-white text-black border-gray-300 hover:bg-gray-50'
+                                        ? "bg-[#6B8CAE] text-white border-[#6B8CAE]"
+                                        : "bg-white text-black border-gray-300 hover:bg-gray-50"
                                     }`}
                                   >
                                     {page}
@@ -1083,7 +1117,9 @@ export default function DashboardVerifikatorPage() {
                               disabled={currentPage === totalPages}
                               className="px-2 py-1 sm:px-3 sm:py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-black"
                             >
-                              <span className="hidden sm:inline">Selanjutnya</span>
+                              <span className="hidden sm:inline">
+                                Selanjutnya
+                              </span>
                               <span className="sm:hidden">›</span>
                             </button>
                           </div>

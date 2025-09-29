@@ -54,12 +54,13 @@ export default function NotificationsKepalaRuanganPage() {
   }, []);
 
   const fetchNotifications = async () => {
+    const token = Cookies.get("token");
     if (!token) return;
 
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -69,28 +70,14 @@ export default function NotificationsKepalaRuanganPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // hitung jumlah notifikasi baru
-      setNewNotificationCount(resData.notifikasi_baru?.length || 0);
-
-      // gabungkan notifikasi baru & lama
-      const allNotifications = [
-        ...(resData.notifikasi_baru || []),
-        ...(resData.notifikasi_lama || []),
-      ];
-
-      const mappedNotifications = allNotifications.map((n: any) => ({
-        id: n.id_notifikasi,
-        title: n.message,
-        time: n.waktu,
-        isRead: n.status === "sudah_dibaca",
-      }));
-
-      setNotifications(mappedNotifications);
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
+      setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
     } finally {

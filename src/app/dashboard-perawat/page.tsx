@@ -293,36 +293,36 @@ export default function DashboardPerawatPage() {
   }, []);
 
   const fetchNotifications = async () => {
-      const token = Cookies.get("token");
-      if (!token) return;
-  
-      setIsLoading(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-  
-        if (!res.ok) throw new Error("Gagal mengambil notifikasi");
-  
-        const resData = await res.json();
-        console.log("Data notifikasi:", resData);
-  
-        // Hitung hanya notifikasi baru
-        const countBaru = resData.notifikasi_baru?.length || 0;
-        setNewNotificationCount(countBaru);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+
+      const resData = await res.json();
+      console.log("Data notifikasi baru:", resData);
+
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
     useEffect(() => {
       fetchNotifications();
@@ -364,7 +364,7 @@ export default function DashboardPerawatPage() {
         unitYangMelaporkan: r.unit_yang_melaporkan,
         lokasiKejadian: r.lokasi_insiden,
         tanggalInsiden: r.tgl_insiden,
-        yangDilaporkan: "a",
+        yangDilaporkan: r.yang_dilaporkan,
         judulInsiden: r.judul_insiden,
         kronologi: r.kronologi,
         tindakanAwal: r.tindakan_awal,

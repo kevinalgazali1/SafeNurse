@@ -408,7 +408,7 @@ export default function DashboardChiefNursing() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -418,13 +418,13 @@ export default function DashboardChiefNursing() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
@@ -505,38 +505,47 @@ export default function DashboardChiefNursing() {
   // filter otomatis setiap kali selectedDate, searchKodeLaporan, atau filter lainnya berubah
   useEffect(() => {
     let filtered = reports;
-    
+
     // Filter berdasarkan tanggal
     if (selectedDate) {
       filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
-    
+
     // Filter berdasarkan kode laporan (case insensitive, bisa dari awal, tengah, atau akhir)
     if (searchKodeLaporan.trim()) {
-      filtered = filtered.filter((r) => 
-        r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase().trim())
+      filtered = filtered.filter((r) =>
+        r.kodeLaporan
+          .toLowerCase()
+          .includes(searchKodeLaporan.toLowerCase().trim())
       );
     }
-    
+
     // Filter berdasarkan kategori
     if (filterKategori) {
       filtered = filtered.filter((r) => r.kategori === filterKategori);
     }
-    
+
     // Filter berdasarkan grading
     if (filterGrading) {
       filtered = filtered.filter((r) => r.grading === filterGrading);
     }
-    
+
     // Filter berdasarkan status
     if (filterStatus) {
       filtered = filtered.filter((r) => r.status === filterStatus);
     }
-    
+
     setFilteredReports(filtered);
     // Reset ke halaman pertama ketika filter berubah
     setCurrentPage(1);
-  }, [selectedDate, searchKodeLaporan, filterKategori, filterGrading, filterStatus, reports]);
+  }, [
+    selectedDate,
+    searchKodeLaporan,
+    filterKategori,
+    filterGrading,
+    filterStatus,
+    reports,
+  ]);
 
   // Logika pagination
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -672,8 +681,9 @@ export default function DashboardChiefNursing() {
       );
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Gagal memvalidasi laporan");
+        const data = await res.json();
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
       }
 
       const data = await res.json();
@@ -747,7 +757,11 @@ export default function DashboardChiefNursing() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengirim revisi");
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
+      }
 
       // Kirim catatan revisi
       // const catatanRes = await fetch(
@@ -838,7 +852,8 @@ export default function DashboardChiefNursing() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Gagal menolak laporan");
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
       }
 
       console.log("✅ Tolak berhasil:", data);
@@ -1231,8 +1246,18 @@ export default function DashboardChiefNursing() {
                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white w-full lg:w-auto min-w-[200px]"
                       />
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
                         </svg>
                       </div>
                     </div>

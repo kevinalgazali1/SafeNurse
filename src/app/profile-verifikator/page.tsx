@@ -106,7 +106,7 @@ export default function ProfileVerifikatorPage() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -116,13 +116,13 @@ export default function ProfileVerifikatorPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
@@ -722,7 +722,7 @@ export default function ProfileVerifikatorPage() {
                       onClick={handleChangeAccount}
                       className="bg-[#6B8CAE] text-white px-3 md:px-6 py-2 rounded-lg hover:bg-[#5A7A9A] transition-all duration-300 font-medium text-xs md:text-base w-full sm:w-auto transform hover:scale-105 hover:shadow-lg"
                     >
-                      Change Account
+                      Change Password
                     </button>
                   </div>
                 </div>

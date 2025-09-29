@@ -512,7 +512,7 @@ export default function DashboardChiefNursing() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -522,13 +522,13 @@ export default function DashboardChiefNursing() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
@@ -613,38 +613,45 @@ export default function DashboardChiefNursing() {
   // filter otomatis setiap kali selectedDate, searchKodeLaporan, atau filter lainnya berubah
   useEffect(() => {
     let filtered = reports;
-    
+
     // Filter berdasarkan tanggal
     if (selectedDate) {
       filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
-    
+
     // Filter berdasarkan kode laporan (case insensitive, bisa dari mana saja)
     if (searchKodeLaporan.trim()) {
-      filtered = filtered.filter((r) => 
+      filtered = filtered.filter((r) =>
         r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase())
       );
     }
-    
+
     // Filter berdasarkan kategori
     if (filterKategori) {
       filtered = filtered.filter((r) => r.kategori === filterKategori);
     }
-    
+
     // Filter berdasarkan grading
     if (filterGrading) {
       filtered = filtered.filter((r) => r.grading === filterGrading);
     }
-    
+
     // Filter berdasarkan status
     if (filterStatus) {
       filtered = filtered.filter((r) => r.status === filterStatus);
     }
-    
+
     setFilteredReports(filtered);
     // Reset ke halaman pertama ketika filter berubah
     setCurrentPage(1);
-  }, [selectedDate, searchKodeLaporan, filterKategori, filterGrading, filterStatus, reports]);
+  }, [
+    selectedDate,
+    searchKodeLaporan,
+    filterKategori,
+    filterGrading,
+    filterStatus,
+    reports,
+  ]);
 
   // Logika pagination
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -928,41 +935,41 @@ export default function DashboardChiefNursing() {
     ); // tambahkan zona sesuai kebutuhan
   };
 
-  const handleKirimCatatan = async () => {
-    if (!selectedReport) return;
+  // const handleKirimCatatan = async () => {
+  //   if (!selectedReport) return;
 
-    const reportId = selectedReport.id;
+  //   const reportId = selectedReport.id;
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan }),
-        }
-      );
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ catatan }),
+  //       }
+  //     );
 
-      if (!res.ok) {
-        throw new Error("Gagal mengirim catatan");
-      }
+  //     if (!res.ok) {
+  //       throw new Error("Gagal mengirim catatan");
+  //     }
 
-      const data = await res.json();
-      console.log("Catatan berhasil dikirim:", data);
+  //     const data = await res.json();
+  //     console.log("Catatan berhasil dikirim:", data);
 
-      // reset input catatan setelah berhasil
-      setCatatan("");
-      handleCloseModal();
+  //     // reset input catatan setelah berhasil
+  //     setCatatan("");
+  //     handleCloseModal();
 
-      // kalau mau refresh data laporan
-      // await fetchReportDetail(selectedReport.kodeLaporan);
-    } catch (error) {
-      console.error("Error saat kirim catatan:", error);
-    }
-  };
+  //     // kalau mau refresh data laporan
+  //     // await fetchReportDetail(selectedReport.kodeLaporan);
+  //   } catch (error) {
+  //     console.error("Error saat kirim catatan:", error);
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -1238,11 +1245,21 @@ export default function DashboardChiefNursing() {
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B7A95] bg-white text-black min-w-[200px]"
                   >
                     <option value="">Semua Status</option>
-                    <option value="diteruskan ke validator">Diteruskan ke Validator</option>
-                    <option value="laporan ditolak validator">Laporan Ditolak Validator</option>
-                    <option value="diteruskan ke verifikator">Diteruskan ke Verifikator</option>
-                    <option value="laporan disetujui chief nursing">Laporan Disetujui Chief Nursing</option>
-                    <option value="laporan disetujui verifikator">Laporan Disetujui Verifikator</option>
+                    <option value="diteruskan ke validator">
+                      Diteruskan ke Validator
+                    </option>
+                    <option value="laporan ditolak validator">
+                      Laporan Ditolak Validator
+                    </option>
+                    <option value="diteruskan ke verifikator">
+                      Diteruskan ke Verifikator
+                    </option>
+                    <option value="laporan disetujui chief nursing">
+                      Laporan Disetujui Chief Nursing
+                    </option>
+                    <option value="laporan disetujui verifikator">
+                      Laporan Disetujui Verifikator
+                    </option>
                   </select>
 
                   {/* Reset Button */}
@@ -1251,14 +1268,15 @@ export default function DashboardChiefNursing() {
                       setFilterKategori("");
                       setFilterGrading("");
                       setFilterStatus("");
+                      setSearchKodeLaporan("");
                     }}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors min-w-[80px]"
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-sm font-medium"
                   >
-                    Reset
+                    Reset Filter
                   </button>
                 </div>
               </div>
-              
+
               {/* Search Input for Kode Laporan */}
               <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <input

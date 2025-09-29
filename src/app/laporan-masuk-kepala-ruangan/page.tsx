@@ -203,7 +203,7 @@ export default function LaporanMasukKepalaRuangan() {
         tanggalMasukRs: r.tgl_msk_rs || "-",
         unitYangMelaporkan: r.unit_yang_melaporkan || "-",
         lokasiKejadian: r.lokasi_insiden || "-",
-        yangDilaporkan: "-",
+        yangDilaporkan: r.yang_dilaporkan || "-",
         tanggalInsiden: r.tgl_insiden || "-",
         kronologi: r.kronologi || "-",
         tindakanAwal: r.tindakan_awal || "-",
@@ -242,7 +242,7 @@ export default function LaporanMasukKepalaRuangan() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
         {
           method: "GET",
           headers: {
@@ -252,13 +252,13 @@ export default function LaporanMasukKepalaRuangan() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
       const resData = await res.json();
-      console.log("Data notifikasi:", resData);
+      console.log("Data notifikasi baru:", resData);
 
-      // Hitung hanya notifikasi baru
-      const countBaru = resData.notifikasi_baru?.length || 0;
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
       setNewNotificationCount(countBaru);
     } catch (err) {
       console.error(err);
@@ -337,8 +337,9 @@ export default function LaporanMasukKepalaRuangan() {
       );
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Gagal memvalidasi laporan");
+        const data = await res.json();
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
       }
 
       const data = await res.json();
@@ -407,7 +408,11 @@ export default function LaporanMasukKepalaRuangan() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengirim revisi");
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
+      }
 
       // Kirim catatan revisi
       // const catatanRes = await fetch(
@@ -491,7 +496,8 @@ export default function LaporanMasukKepalaRuangan() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Gagal menolak laporan");
+        toast.error(data.message || "Gagal memvalidasi laporan");
+        return;
       }
 
       console.log("✅ Tolak berhasil:", data);
