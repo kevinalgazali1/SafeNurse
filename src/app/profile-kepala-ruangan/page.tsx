@@ -102,7 +102,7 @@ export default function ProfileKepalaRuanganPage() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/h2RgvOhkqkBT7O5oQLJ1A`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/tHyIxwDT0p544R9AGdze-`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
