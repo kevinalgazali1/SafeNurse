@@ -114,12 +114,15 @@ export default function ProfileChiefNursingPage() {
         }
 
         const data = await res.json();
-        console.log("API response:", data); // 🔥 cek isi response
+        if (!data) {
+          console.warn("Data kepala ruangan kosong");
+          return;
+        }
         setUserData(data);
         setProfileForm({
-          nama: data.nama_chief_nursing || "",
-          jabatan: data.jabatan || "",
-          no_telp: data.no_telp || "",
+          nama: data?.nama_chief_nursing || "",
+          jabatan: data?.jabatan || "",
+          no_telp: data?.no_telp || "",
         });
       } catch (error) {
         console.error("Error fetch kepala ruangan:", error);
@@ -137,7 +140,7 @@ export default function ProfileChiefNursingPage() {
 
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.users?.email || "",
+      email: userData?.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
@@ -606,10 +609,10 @@ export default function ProfileChiefNursingPage() {
                             <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                           </div>
                           <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                            {userData.nama_chief_nursing}
+                            {userData?.nama_chief_nursing}
                           </h2>
                           <p className="text-gray-600 text-center text-xs md:text-sm">
-                            {userData.users.email}
+                            {userData?.users.email}
                           </p>
                         </div>
 
@@ -624,7 +627,7 @@ export default function ProfileChiefNursingPage() {
                                 Nama Lengkap :
                               </span>
                               <span className="text-gray-800 text-sm md:text-base">
-                                {userData.nama_chief_nursing || "-"}
+                                {userData?.nama_chief_nursing || "-"}
                               </span>
                             </div>
                             <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
@@ -632,7 +635,7 @@ export default function ProfileChiefNursingPage() {
                                 Jabatan :
                               </span>
                               <span className="text-gray-800 text-sm md:text-base">
-                                {userData.jabatan || "-"}
+                                {userData?.jabatan || "-"}
                               </span>
                             </div>
                             <div className="flex flex-col sm:flex-row animate-fade-in-delay-4">
@@ -640,7 +643,7 @@ export default function ProfileChiefNursingPage() {
                                 No Telp :
                               </span>
                               <span className="text-gray-800 text-sm md:text-base">
-                                {userData.no_telp || "-"}
+                                {userData?.no_telp || "-"}
                               </span>
                             </div>
                           </div>
@@ -668,7 +671,7 @@ export default function ProfileChiefNursingPage() {
                                 Email
                               </label>
                               <p className="text-sm md:text-base text-gray-800">
-                                {userData.users.email}
+                                {userData?.users.email}
                               </p>
                             </div>
                             <div className="animate-fade-in-delay-6">
