@@ -152,11 +152,9 @@ export default function NotificationsChiefNursingPage() {
       );
 
       if (res.ok) {
-        await fetchNotifications();
+        setNotifications((prev) => prev.filter((n) => n.id !== id_notifikasi));
         setShowDeleteModal(false);
         setSelectedNotificationId(null);
-
-        // ✅ Tambahin toast sukses
         toast.success("Notifikasi berhasil dihapus!");
       } else {
         const errMsg = await res.text();
@@ -188,9 +186,7 @@ export default function NotificationsChiefNursingPage() {
       );
 
       if (res.ok) {
-        // ✅ Refetch data biar sinkron
-        await fetchNotifications();
-
+        setNotifications([]); // langsung kosongkan
         setShowDeleteAllModal(false);
         setCurrentPage(1);
         toast.success("Semua notifikasi berhasil dihapus!");
