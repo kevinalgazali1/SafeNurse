@@ -42,8 +42,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Simpan token ke cookie (1 hari)
-      Cookies.set("token", data.token, { expires: 1 });
+      // Simpan token ke cookie (15 menit)
+      const expiryDate = new Date(new Date().getTime() + 15 * 60 * 1000);
+      Cookies.set("token", data.token, { expires: expiryDate });
 
       // Decode role
       const decoded: JwtPayload = jwtDecode(data.token);

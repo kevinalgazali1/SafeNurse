@@ -176,7 +176,7 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
               <span className="text-gray-800">{report.kodeLaporan}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium text-gray-600">Kode Laporan:</span>
+              <span className="font-medium text-gray-600">Tindak Lanjut:</span>
               <span className="text-gray-800">{report.tindakLanjut}</span>
             </div>
             <div className="mt-3">
