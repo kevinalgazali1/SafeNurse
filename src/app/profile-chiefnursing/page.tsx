@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProfileChiefNursingPage() {
   const [userData, setUserData] = useState<any>(null);
@@ -98,10 +99,29 @@ export default function ProfileChiefNursingPage() {
 
     fetchNotifications();
 
+    let id_chief_nursing: string | null = null;
+    try {
+      const decoded: any = jwtDecode(token);
+      id_chief_nursing = decoded?.id_chief_nursing || null;
+      console.log("Decoded token:", decoded);
+    } catch (err) {
+      console.error("Gagal decode token:", err);
+    }
+
+    if (!id_chief_nursing) {
+      console.warn("ID chief nursing tidak tersedia di token");
+      return;
+    }
+
     const fetchData = async () => {
       try {
+        if (!id_chief_nursing) {
+          console.warn("ID chief nursing tidak tersedia");
+          return;
+        }
+
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/chief_nursing/aC0G2gaxLDaqz2954Vzri`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/chief_nursing/${id_chief_nursing}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -110,14 +130,15 @@ export default function ProfileChiefNursingPage() {
         );
 
         if (!res.ok) {
-          throw new Error("Gagal ambil data Kepala Ruangan");
+          throw new Error("Gagal ambil data chief nursing");
         }
 
         const data = await res.json();
         if (!data) {
-          console.warn("Data kepala ruangan kosong");
+          console.warn("Data chief nursing kosong");
           return;
         }
+
         setUserData(data);
         setProfileForm({
           nama: data?.nama_chief_nursing || "",

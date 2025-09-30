@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
@@ -69,10 +70,24 @@ export default function ProfilePage() {
 
     fetchNotifications();
 
+    let id_perawat: string | null = null;
+        try {
+          const decoded: any = jwtDecode(token);
+          id_perawat = decoded?.id_perawat || null;
+          console.log("Decoded token:", decoded);
+        } catch (err) {
+          console.error("Gagal decode token:", err);
+        }
+    
+        if (!id_perawat) {
+          console.warn("ID kepala ruangan tidak tersedia di token");
+          return;
+        }
+
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/perawat/oVteW89a6AIVOvFtyt3iV`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/perawat/${id_perawat}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

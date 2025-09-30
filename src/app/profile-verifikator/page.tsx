@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProfileVerifikatorPage() {
   const [userData, setUserData] = useState<any>(null);
@@ -65,10 +66,24 @@ export default function ProfileVerifikatorPage() {
 
     fetchReportCount();
 
+    let id_verifikator: string | null = null;
+    try {
+      const decoded: any = jwtDecode(token);
+      id_verifikator = decoded?.id_verifikator || null;
+      console.log("Decoded token:", decoded);
+    } catch (err) {
+      console.error("Gagal decode token:", err);
+    }
+
+    if (!id_verifikator) {
+      console.warn("ID kepala ruangan tidak tersedia di token");
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/verifikator/mBZInqBCsp7AhxgwwjYT2`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/verifikator/${id_verifikator}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

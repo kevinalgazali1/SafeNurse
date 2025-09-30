@@ -1,8 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-"use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -15,6 +13,24 @@ interface User {
   role: string;
   nama: string;
   nama_ruangan: string;
+  unit_kerja: string;
+}
+
+type UserRole =
+  | "perawat"
+  | "kepala_ruangan"
+  | "chief_nursing"
+  | "verifikator"
+  | "super_admin";
+
+interface EditUser {
+  nama: string;
+  email: string;
+  id_ruangan?: string;
+  role: UserRole;
+  jabatan?: string;
+  unit_kerja?: string;
+  no_telp?: string;
 }
 
 export default function DashboardSuperAdmin() {
@@ -85,8 +101,10 @@ export default function DashboardSuperAdmin() {
       const body = {
         email: newUser.email,
         password: newUser.password,
+        jabatan: newUser.jabatan,
         role: newUser.role,
-        id_ruangan: newUser.unitKerja, // pastikan sesuai dengan id dari API ruangan
+        id_ruangan: newUser.ruangan, // pastikan sesuai dengan id dari API ruangan
+        unit_kerja: newUser.unitKerja,
         nama: newUser.nama,
         ...(newUser.role !== "perawat" && { no_telp: newUser.telepon }), // hanya kirim kalau bukan perawat
       };
@@ -103,10 +121,16 @@ export default function DashboardSuperAdmin() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal register");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Register gagal:", errorText);
+        toast.error("Gagal register user!");
+        return;
+      }
 
       const data = await res.json();
       console.log("Register sukses:", data);
+      toast.success("User berhasil didaftarkan!");
 
       // ✅ Refresh tabel dengan fetch ulang
       await fetchUsers();
@@ -117,12 +141,15 @@ export default function DashboardSuperAdmin() {
         nama: "",
         role: "",
         unitKerja: "",
+        ruangan: "",
         email: "",
+        jabatan: "",
         telepon: "",
         password: "",
       });
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Error saat register:", err);
+      toast.error("Terjadi kesalahan saat register!");
     }
   };
 
@@ -130,7 +157,7 @@ export default function DashboardSuperAdmin() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{
-    id: number;
+    id_user: string;
     nama: string;
     email: string;
     role: string;
@@ -139,15 +166,22 @@ export default function DashboardSuperAdmin() {
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [editUser, setEditUser] = useState({
     nama: "",
-    nama_ruangan: "",
+    email: "",
     id_ruangan: "",
+    role: "perawat",
+    jabatan: "",
+    unit_kerja: "",
+    no_telp: "",
   });
+
   const [filterRole, setFilterRole] = useState("");
   const [newUser, setNewUser] = useState({
     nama: "",
     role: "",
     unitKerja: "",
+    ruangan: "",
     email: "",
+    jabatan: "",
     telepon: "",
     password: "",
   });
@@ -157,22 +191,47 @@ export default function DashboardSuperAdmin() {
     ? users.filter((user) => user.role === filterRole)
     : users;
 
-  // Handle edit user
-  const handleEditUser = (user: User) => {
-    setUserToEdit(user);
-    setEditUser({
-      nama: user.nama,
-      nama_ruangan: user.nama_ruangan,
-      id_ruangan: "", // Will be set based on nama_ruangan
-    });
+  const updateUser = async (id_user: string, userData: any) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/users/update/${id_user}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // token dari login
+          },
+          body: JSON.stringify(userData),
+        }
+      );
 
-    // Find the ruangan ID based on nama_ruangan
-    const ruangan = ruanganList.find(
-      (r) => r.nama_ruangan === user.nama_ruangan
-    );
-    if (ruangan) {
-      setEditUser((prev) => ({ ...prev, id_ruangan: ruangan.id_ruangan }));
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Gagal update user");
+      }
+
+      toast.success("User berhasil diperbarui ✅");
+      await fetchUsers(); // refresh data tabel
+      setShowEditModal(false); // tutup modal
+    } catch (err: any) {
+      console.error("Error updating user:", err);
+      toast.error(err.message || "Gagal update user ❌");
     }
+  };
+
+  // Handle edit user
+  const handleEditUser = (user: any) => {
+    setUserToEdit(user);
+
+    setEditUser({
+      nama: user.nama || "",
+      email: user.email || "",
+      id_ruangan: user.id_ruangan || "",
+      role: user.role || "perawat",
+      jabatan: user.jabatan || "",
+      unit_kerja: user.unit_kerja || "",
+      no_telp: user.no_telp || "",
+    });
 
     setShowEditModal(true);
   };
@@ -180,7 +239,7 @@ export default function DashboardSuperAdmin() {
   // Handle delete user
   const handleDeleteUser = (user: User) => {
     setUserToDelete({
-      id: parseInt(user.id_user),
+      id_user: user.id_user, // simpan id_user langsung
       nama: user.nama,
       email: user.email,
       role: user.role,
@@ -193,7 +252,7 @@ export default function DashboardSuperAdmin() {
     if (userToDelete) {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/users/${userToDelete.id}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/users/delete/${userToDelete.id_user}`,
           {
             method: "DELETE",
             headers: {
@@ -202,19 +261,24 @@ export default function DashboardSuperAdmin() {
           }
         );
 
-        if (!res.ok) throw new Error("Gagal menghapus user");
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Gagal hapus user:", errorText);
+          toast.error("Gagal menghapus user");
+          return;
+        }
 
-        // Refresh data
+        // ✅ Refresh data
         await fetchUsers();
 
-        // Close modal
+        // ✅ Tutup modal
         setShowDeleteModal(false);
         setUserToDelete(null);
 
         toast.success("User berhasil dihapus");
       } catch (err) {
         console.error("Error deleting user:", err);
-        toast.error("Gagal menghapus user");
+        toast.error("Terjadi kesalahan saat menghapus user");
       }
     }
   };
@@ -226,43 +290,19 @@ export default function DashboardSuperAdmin() {
 
   // Handle edit submit
   const handleEditSubmit = async () => {
-    if (userToEdit) {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/users/${userToEdit.id_user}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              nama: editUser.nama,
-              id_ruangan: editUser.id_ruangan,
-            }),
-          }
-        );
+    if (!userToEdit) return;
 
-        if (!res.ok) throw new Error("Gagal mengupdate user");
+    const userData = {
+      nama: editUser.nama,
+      email: editUser.email,
+      id_ruangan: editUser.id_ruangan,
+      role: editUser.role,
+      jabatan: editUser.jabatan,
+      unit_kerja: editUser.unit_kerja,
+      no_telp: editUser.no_telp,
+    };
 
-        // Refresh data
-        await fetchUsers();
-
-        // Close modal
-        setShowEditModal(false);
-        setUserToEdit(null);
-        setEditUser({
-          nama: "",
-          nama_ruangan: "",
-          id_ruangan: "",
-        });
-
-        toast.success("User berhasil diupdate");
-      } catch (err) {
-        console.error("Error updating user:", err);
-        toast.error("Gagal mengupdate user");
-      }
-    }
+    await updateUser(userToEdit.id_user, userData);
   };
 
   return (
@@ -653,23 +693,27 @@ export default function DashboardSuperAdmin() {
                   </button>
                 </div>
 
-                {/* Modal Content - Scrollable */}
+                {/* Modal Content */}
                 <div className="flex-1 overflow-y-auto p-6">
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-[#0E364A] font-medium mb-2">
-                        Nama :
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.nama}
-                        onChange={(e) =>
-                          setNewUser({ ...newUser, nama: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
-                      />
-                    </div>
+                    {/* Nama */}
+                    {newUser.role !== "" && (
+                      <div>
+                        <label className="block text-[#0E364A] font-medium mb-2">
+                          Nama :
+                        </label>
+                        <input
+                          type="text"
+                          value={newUser.nama}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, nama: e.target.value })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        />
+                      </div>
+                    )}
 
+                    {/* Role */}
                     <div>
                       <label className="block text-[#0E364A] font-medium mb-2">
                         Role :
@@ -683,53 +727,104 @@ export default function DashboardSuperAdmin() {
                       >
                         <option value="">Pilih Role</option>
                         <option value="perawat">Perawat</option>
-                        <option value="kepalaruangan">Kepala Ruangan</option>
-                        <option value="chief-nursing">Chief Nursing</option>
+                        <option value="kepala_ruangan">Kepala Ruangan</option>
+                        <option value="chief_nursing">Chief Nursing</option>
                         <option value="verifikator">Verifikator</option>
-                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-[#0E364A] font-medium mb-2">
-                        Unit Kerja :
-                      </label>
-                      <select
-                        value={newUser.unitKerja}
-                        onChange={(e) =>
-                          setNewUser({ ...newUser, unitKerja: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md 
-               focus:outline-none focus:ring-2 focus:ring-[#0B7A95] 
-               text-black bg-white"
-                      >
-                        <option value="">-- Pilih Ruangan --</option>
-                        {ruanganList.map((ruang) => (
-                          <option
-                            key={ruang.id_ruangan}
-                            value={ruang.id_ruangan}
-                          >
-                            {ruang.nama_ruangan}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* Email */}
+                    {newUser.role !== "" && (
+                      <div>
+                        <label className="block text-[#0E364A] font-medium mb-2">
+                          Email :
+                        </label>
+                        <input
+                          type="email"
+                          value={newUser.email}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, email: e.target.value })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        />
+                      </div>
+                    )}
 
-                    <div>
-                      <label className="block text-[#0E364A] font-medium mb-2">
-                        Email :
-                      </label>
-                      <input
-                        type="email"
-                        value={newUser.email}
-                        onChange={(e) =>
-                          setNewUser({ ...newUser, email: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
-                      />
-                    </div>
+                    {/* Ruangan (perawat, kepala ruangan) */}
+                    {(newUser.role === "perawat" ||
+                      newUser.role === "kepala_ruangan") && (
+                      <div>
+                        <label className="block text-[#0E364A] font-medium mb-2">
+                          Nama Ruangan :
+                        </label>
+                        <select
+                          value={newUser.ruangan}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              ruangan: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        >
+                          <option value="">-- Pilih Ruangan --</option>
+                          {ruanganList.map((ruang) => (
+                            <option
+                              key={ruang.id_ruangan}
+                              value={ruang.id_ruangan}
+                            >
+                              {ruang.nama_ruangan}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
-                    {newUser.role !== "perawat" && (
+                    {/* Unit kerja (verifikator) */}
+                    {newUser.role === "verifikator" && (
+                      <div>
+                        <label className="block text-[#0E364A] font-medium mb-2">
+                          Unit Kerja :
+                        </label>
+                        <input
+                          type="text"
+                          value={newUser.unitKerja}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              unitKerja: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* Jabatan */}
+                    {(newUser.role === "kepala_ruangan" ||
+                      newUser.role === "chief_nursing" ||
+                      newUser.role === "verifikator") && (
+                      <div>
+                        <label className="block text-[#0E364A] font-medium mb-2">
+                          Jabatan :
+                        </label>
+                        <input
+                          type="text"
+                          value={newUser.jabatan}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, jabatan: e.target.value })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* Telepon */}
+                    {(newUser.role === "kepala_ruangan" ||
+                      newUser.role === "chief_nursing" ||
+                      newUser.role === "verifikator") && (
                       <div>
                         <label className="block text-[#0E364A] font-medium mb-2">
                           No. Telepon :
@@ -744,20 +839,6 @@ export default function DashboardSuperAdmin() {
                         />
                       </div>
                     )}
-
-                    <div>
-                      <label className="block text-[#0E364A] font-medium mb-2">
-                        Password :
-                      </label>
-                      <input
-                        type="password"
-                        value={newUser.password}
-                        onChange={(e) =>
-                          setNewUser({ ...newUser, password: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -777,67 +858,70 @@ export default function DashboardSuperAdmin() {
           )}
 
           {/* Edit User Modal */}
+
           {showEditModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
               <div className="bg-[#B9D9DD] rounded-lg w-full max-w-md max-h-[90vh] relative flex flex-col">
-                {/* Modal Header */}
+                {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    <i className="fas fa-arrow-left mr-2"></i>
-                    <span>Back</span>
-                  </button>
                   <h2 className="text-xl font-semibold text-[#0E364A]">
                     Edit User
                   </h2>
                   <button
                     onClick={() => setShowEditModal(false)}
-                    className="text-gray-600 hover:text-gray-800 text-xl w-8 h-8 flex items-center justify-center"
+                    className="text-gray-600 hover:text-gray-800 text-xl"
                   >
                     ×
                   </button>
                 </div>
 
-                {/* Modal Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[#0E364A] font-medium mb-2">
-                        Nama :
-                      </label>
-                      <input
-                        type="text"
-                        value={editUser.nama}
-                        onChange={(e) =>
-                          setEditUser({ ...editUser, nama: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
-                      />
-                    </div>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {/* Nama */}
+                  <div>
+                    <label className="block text-[#0E364A] font-medium mb-2">
+                      Nama :
+                    </label>
+                    <input
+                      type="text"
+                      value={editUser.nama}
+                      onChange={(e) =>
+                        setEditUser({ ...editUser, nama: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
+                    />
+                  </div>
 
+                  {/* Email */}
+                  <div>
+                    <label className="block text-[#0E364A] font-medium mb-2">
+                      Email :
+                    </label>
+                    <input
+                      type="email"
+                      value={editUser.email}
+                      onChange={(e) =>
+                        setEditUser({ ...editUser, email: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
+                    />
+                  </div>
+
+                  {/* Kondisional sesuai role */}
+                  {["perawat", "kepala_ruangan"].includes(editUser.role) && (
                     <div>
                       <label className="block text-[#0E364A] font-medium mb-2">
                         Ruangan :
                       </label>
                       <select
                         value={editUser.id_ruangan}
-                        onChange={(e) => {
-                          const selectedRuangan = ruanganList.find(
-                            (r) => r.id_ruangan === e.target.value
-                          );
+                        onChange={(e) =>
                           setEditUser({
                             ...editUser,
                             id_ruangan: e.target.value,
-                            nama_ruangan: selectedRuangan
-                              ? selectedRuangan.nama_ruangan
-                              : "",
-                          });
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md 
-               focus:outline-none focus:ring-2 focus:ring-[#0B7A95] 
-               text-black bg-white"
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
                       >
                         <option value="">-- Pilih Ruangan --</option>
                         {ruanganList.map((ruang) => (
@@ -850,19 +934,72 @@ export default function DashboardSuperAdmin() {
                         ))}
                       </select>
                     </div>
-                  </div>
+                  )}
+
+                  {["kepala_ruangan", "chief_nursing", "verifikator"].includes(
+                    editUser.role
+                  ) && (
+                    <div>
+                      <label className="block text-[#0E364A] font-medium mb-2">
+                        Jabatan :
+                      </label>
+                      <input
+                        type="text"
+                        value={editUser.jabatan}
+                        onChange={(e) =>
+                          setEditUser({ ...editUser, jabatan: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
+                      />
+                    </div>
+                  )}
+
+                  {editUser.role === "verifikator" && (
+                    <div>
+                      <label className="block text-[#0E364A] font-medium mb-2">
+                        Unit Kerja :
+                      </label>
+                      <input
+                        type="text"
+                        value={editUser.unit_kerja}
+                        onChange={(e) =>
+                          setEditUser({
+                            ...editUser,
+                            unit_kerja: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
+                      />
+                    </div>
+                  )}
+
+                  {["kepala_ruangan", "chief_nursing", "verifikator"].includes(
+                    editUser.role
+                  ) && (
+                    <div>
+                      <label className="block text-[#0E364A] font-medium mb-2">
+                        No. Telp :
+                      </label>
+                      <input
+                        type="text"
+                        value={editUser.no_telp}
+                        onChange={(e) =>
+                          setEditUser({ ...editUser, no_telp: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-black"
+                      />
+                    </div>
+                  )}
                 </div>
 
-                {/* Modal Footer */}
-                <div className="p-6 border-t border-gray-200">
-                  <div className="flex justify-center">
-                    <button
-                      onClick={handleEditSubmit}
-                      className="bg-[#0E364A] text-white px-8 py-2 rounded-md hover:bg-[#1a4a5a] transition-colors"
-                    >
-                      Update
-                    </button>
-                  </div>
+                {/* Footer */}
+                <div className="p-6 border-t border-gray-200 flex justify-center">
+                  <button
+                    onClick={handleEditSubmit}
+                    className="bg-[#0E364A] text-white px-6 py-2 rounded-md hover:bg-[#1a4a5a] transition"
+                  >
+                    Update
+                  </button>
                 </div>
               </div>
             </div>

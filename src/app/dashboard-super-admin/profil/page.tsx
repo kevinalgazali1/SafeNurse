@@ -37,7 +37,7 @@ export default function ProfilSuperAdmin() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/super_admin/GWVb7Bu48vpsxMj_5PzUI`, // 🔥 ganti sesuai endpoint backend kamu
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/super_admin/profile`, // 🔥 ganti sesuai endpoint backend kamu
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -385,7 +385,7 @@ export default function ProfilSuperAdmin() {
                     <div className="w-24 h-24 bg-[#4A9B8E] rounded-full flex items-center justify-center mb-4">
                       <i className="fas fa-user-shield text-3xl text-white"></i>
                     </div>
-                    <h2 className="text-lg font-bold text-gray-800 text-center mb-1">Admin</h2>
+                    <h2 className="text-lg font-bold text-gray-800 text-center mb-1">{userData?.nama_super_admin}</h2>
                     <p className="text-gray-600 text-center text-sm">{userData?.email}</p>
                   </div>
                   

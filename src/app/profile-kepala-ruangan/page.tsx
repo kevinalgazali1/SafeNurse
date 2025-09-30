@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProfileKepalaRuanganPage() {
   const [userData, setUserData] = useState<any>(null);
@@ -65,44 +66,58 @@ export default function ProfileKepalaRuanganPage() {
 
     fetchReportCount();
 
-  const fetchNotifications = async () => {
-    const token = Cookies.get("token");
-    if (!token) return;
+    const fetchNotifications = async () => {
+      const token = Cookies.get("token");
+      if (!token) return;
 
-    setIsLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+        if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
-      const resData = await res.json();
-      console.log("Data notifikasi baru:", resData);
+        const resData = await res.json();
+        console.log("Data notifikasi baru:", resData);
 
-      // Hitung jumlah data notifikasi yang dikembalikan
-      const countBaru = resData?.data?.length || 0;
-      setNewNotificationCount(countBaru);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        // Hitung jumlah data notifikasi yang dikembalikan
+        const countBaru = resData?.data?.length || 0;
+        setNewNotificationCount(countBaru);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     fetchNotifications();
+
+    let id_kepala_ruangan: string | null = null;
+    try {
+      const decoded: any = jwtDecode(token);
+      id_kepala_ruangan = decoded?.id_kepala_ruangan || null;
+      console.log("Decoded token:", decoded);
+    } catch (err) {
+      console.error("Gagal decode token:", err);
+    }
+
+    if (!id_kepala_ruangan) {
+      console.warn("ID kepala ruangan tidak tersedia di token");
+      return;
+    }
 
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/tHyIxwDT0p544R9AGdze-`,
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/kepala_ruangan/${id_kepala_ruangan}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
