@@ -75,42 +75,42 @@ export default function TambahLaporanPage() {
   const [selectedIncidentDate, setSelectedIncidentDate] = useState("");
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
-    const fetchNotifications = async () => {
-      const token = Cookies.get("token");
-      if (!token) return;
-  
-      setIsLoading(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-  
-        if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
-  
-        const resData = await res.json();
-        console.log("Data notifikasi baru:", resData);
-  
-        // Hitung jumlah data notifikasi yang dikembalikan
-        const countBaru = resData?.data?.length || 0;
-        setNewNotificationCount(countBaru);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-  
-    useEffect(() => {
-      fetchNotifications();
-    }, []);
+
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+
+      const resData = await res.json();
+      console.log("Data notifikasi baru:", resData);
+
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -816,20 +816,23 @@ export default function TambahLaporanPage() {
   };
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isFirefox = /firefox/i.test(navigator.userAgent);
 
-const startVoiceRecognition = () => {
+const startVoiceRecognition = async () => {
   if (isListening) {
     setIsListening(false);
     return;
   }
 
+  const supportsSpeechRecognition =
+    "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
 
-  if (( "webkitSpeechRecognition" in window || "SpeechRecognition" in window ) 
-      && !isIOS && !isSafari) {
-    
+  // ✅ Chrome / Edge → pakai SpeechRecognition
+  if (supportsSpeechRecognition && !isIOS && !isSafari && !isFirefox) {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
     recognition.lang = "id-ID";
@@ -839,20 +842,68 @@ const startVoiceRecognition = () => {
     recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event: any) => {
-  const transcript = event.results[0][0].transcript;
-  setInputValue((prevValue) =>
-    prevValue ? `${prevValue} ${transcript}` : transcript
-  );
-  setIsListening(false);
-};
-
+      const transcript = event.results[0][0].transcript;
+      setInputValue((prevValue) =>
+        prevValue ? `${prevValue} ${transcript}` : transcript
+      );
+      setIsListening(false);
+    };
 
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
 
     recognition.start();
   } else {
-    toast.error("Browser Anda tidak mendukung speech recognition");
+    // 🚀 Fallback untuk Safari / iOS / Firefox
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/mp4";
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      const chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("file", audioBlob, "recording.webm");
+
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/api/transcribe`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) throw new Error("Transkripsi gagal");
+
+          const data = await res.json();
+          if (data.text) {
+            setInputValue((prev) =>
+              prev ? `${prev} ${data.text}` : data.text
+            );
+          }
+        } catch (err) {
+          toast.error("Gagal transkripsi audio");
+        }
+      };
+
+      setIsListening(true);
+      mediaRecorder.start();
+
+      // stop otomatis setelah 5 detik
+      setTimeout(() => {
+        if (mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+      }, 5000);
+    } catch (err) {
+      toast.error("Izin mikrofon ditolak atau tidak tersedia");
+      setIsListening(false);
+    }
   }
 };
 
@@ -2031,9 +2082,7 @@ const startVoiceRecognition = () => {
             {/* Notifikasi */}
             <button
               className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors relative"
-              onClick={() =>
-                (window.location.href = "/notifications-perawat")
-              }
+              onClick={() => (window.location.href = "/notifications-perawat")}
             >
               <div className="relative">
                 <i className="fas fa-bell text-lg mb-1"></i>
@@ -2280,11 +2329,11 @@ const startVoiceRecognition = () => {
                             currentStep === "greeting"
                           }
                           rows={1}
-                          style={{ 
-                            resize: "none", 
+                          style={{
+                            resize: "none",
                             maxHeight: "120px",
-                            scrollbarWidth: "none", /* Firefox */
-                            msOverflowStyle: "none" /* IE and Edge */
+                            scrollbarWidth: "none" /* Firefox */,
+                            msOverflowStyle: "none" /* IE and Edge */,
                           }}
                           className={`w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black overflow-y-auto [&::-webkit-scrollbar]:hidden ${
                             isProcessingResponse ||
