@@ -30,6 +30,11 @@ export default function RuanganSuperAdmin() {
   const [newRoom, setNewRoom] = useState({ nama: "" });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Pagination and search states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchRuangan, setSearchRuangan] = useState("");
+  const itemsPerPage = 10;
+
   const token = Cookies.get("token");
 
   const toggleMobileMenu = () => {
@@ -71,6 +76,24 @@ export default function RuanganSuperAdmin() {
   useEffect(() => {
     fetchRuangan();
   }, []);
+
+  // Filter and pagination logic
+  const filteredRuangan = ruangan.filter((room) =>
+    room.nama.toLowerCase().includes(searchRuangan.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredRuangan.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentRuangan = filteredRuangan.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchRuangan(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // buka modal edit
   const handleEditRoom = (room: any) => {
@@ -304,6 +327,22 @@ export default function RuanganSuperAdmin() {
                   </p>
                 </div>
 
+                {/* Search Box */}
+                <div className="mb-6 flex justify-end">
+                  <div className="relative w-full md:w-80">
+                    <input
+                      type="text"
+                      placeholder="Cari ruangan..."
+                      value={searchRuangan}
+                      onChange={handleSearchChange}
+                      className="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent"
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <i className="fas fa-search text-gray-400"></i>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Rooms Table */}
                 <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
                   {/* Desktop Table */}
@@ -324,65 +363,127 @@ export default function RuanganSuperAdmin() {
                     </div>
 
                     <div className="divide-y divide-gray-200">
-                      {ruangan.map((room, index) => (
-                        <div
-                          key={room.id}
-                          className={`grid grid-cols-2 gap-6 px-6 py-4 ${
-                            index % 2 === 0 ? "bg-[#B9D9DD]" : "bg-white"
-                          }`}
-                        >
-                          <div className="text-center text-gray-800 font-medium">
-                            {room.nama}
+                      {currentRuangan.length > 0 ? (
+                        currentRuangan.map((room, index) => (
+                          <div
+                            key={room.id}
+                            className={`grid grid-cols-2 gap-6 px-6 py-4 ${
+                              index % 2 === 0 ? "bg-[#B9D9DD]" : "bg-white"
+                            }`}
+                          >
+                            <div className="text-center text-gray-800 font-medium">
+                              {room.nama}
+                            </div>
+                            <div className="text-center">
+                              <button
+                                onClick={() => handleEditRoom(room)}
+                                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors mr-2"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRoom(room)}
+                                className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                              >
+                                Hapus
+                              </button>
+                            </div>
                           </div>
-                          <div className="text-center">
-                            <button
-                              onClick={() => handleEditRoom(room)}
-                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRoom(room)}
-                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                            >
-                              Hapus
-                            </button>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="px-6 py-8 text-center text-gray-500">
+                          {searchRuangan ? "Tidak ada ruangan yang ditemukan" : "Belum ada data ruangan"}
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 
                   {/* Mobile Cards */}
                   <div className="md:hidden space-y-4 p-4">
-                    {ruangan.map((room) => (
-                      <div
-                        key={room.id}
-                        className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="font-semibold text-gray-800 text-lg">
-                              {room.nama}
-                            </h4>
-                            <p className="text-gray-600 text-sm">Ruangan</p>
+                    {currentRuangan.length > 0 ? (
+                      currentRuangan.map((room) => (
+                        <div
+                          key={room.id}
+                          className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-semibold text-gray-800 text-lg">
+                                {room.nama}
+                              </h4>
+                              <p className="text-gray-600 text-sm">Ruangan</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEditRoom(room)}
+                                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRoom(room)}
+                                className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                              >
+                                Hapus
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleEditRoom(room)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors mr-2"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRoom(room)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                          >
-                            Hapus
-                          </button>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        {searchRuangan ? "Tidak ada ruangan yang ditemukan" : "Belum ada data ruangan"}
                       </div>
-                    ))}
+                    )}
                   </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                      {/* Previous Button */}
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-2 rounded-md text-sm font-medium w-full sm:w-auto ${
+                          currentPage === 1
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-black hover:bg-gray-100 border border-gray-300"
+                        }`}
+                      >
+                        Sebelumnya
+                      </button>
+
+                      {/* Page Numbers - Hidden on very small screens, shown as scrollable on mobile */}
+                      <div className="flex space-x-1 overflow-x-auto max-w-full">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-2 rounded-md text-sm font-medium flex-shrink-0 ${
+                              currentPage === page
+                                ? "bg-[#0B7A95] text-white"
+                                : "bg-white text-black hover:bg-gray-100 border border-gray-300"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Next Button */}
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-2 rounded-md text-sm font-medium w-full sm:w-auto ${
+                          currentPage === totalPages
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-black hover:bg-gray-100 border border-gray-300"
+                        }`}
+                      >
+                        Selanjutnya
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

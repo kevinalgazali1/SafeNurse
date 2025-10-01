@@ -39,6 +39,11 @@ export default function DashboardSuperAdmin() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ruanganList, setRuanganList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Pagination and search states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchUser, setSearchUser] = useState("");
+  const itemsPerPage = 10;
 
   const token = Cookies.get("token");
 
@@ -186,10 +191,114 @@ export default function DashboardSuperAdmin() {
     password: "",
   });
 
-  // Filter users by role
-  const filteredUsers = filterRole
-    ? users.filter((user) => user.role === filterRole)
-    : users;
+  // Filter users by role and search
+  const filteredUsers = users.filter((user) => {
+    const matchesRole = filterRole ? user.role === filterRole : true;
+    const matchesSearch = searchUser 
+      ? user.nama.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchUser.toLowerCase())
+      : true;
+    return matchesRole && matchesSearch;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  const handleFilterChange = (newFilterRole: string) => {
+    setFilterRole(newFilterRole);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearchUser(newSearch);
+    setCurrentPage(1);
+  };
+
+  // Pagination component
+  const PaginationComponent = () => {
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+      
+      if (totalPages <= maxVisiblePages) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        if (currentPage <= 3) {
+          for (let i = 1; i <= 4; i++) {
+            pages.push(i);
+          }
+          pages.push('...');
+          pages.push(totalPages);
+        } else if (currentPage >= totalPages - 2) {
+          pages.push(1);
+          pages.push('...');
+          for (let i = totalPages - 3; i <= totalPages; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push(1);
+          pages.push('...');
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pages.push(i);
+          }
+          pages.push('...');
+          pages.push(totalPages);
+        }
+      }
+      return pages;
+    };
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-6">
+        <button
+          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            currentPage === 1
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+          }`}
+        >
+          Sebelumnya
+        </button>
+        
+        {getPageNumbers().map((page, index) => (
+          <button
+            key={index}
+            onClick={() => typeof page === 'number' && setCurrentPage(page)}
+            disabled={page === '...'}
+            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              page === currentPage
+                ? 'bg-[#0B7A95] text-white'
+                : page === '...'
+                ? 'bg-transparent text-black cursor-default'
+                : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+        
+        <button
+          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            currentPage === totalPages
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+          }`}
+        >
+          Selanjutnya
+        </button>
+      </div>
+    );
+  };
 
   const updateUser = async (id_user: string, userData: any) => {
     try {
@@ -477,16 +586,17 @@ export default function DashboardSuperAdmin() {
                   </p>
                 </div>
 
-                {/* Search Filter */}
+                {/* Search and Filter */}
                 <div className="mb-6">
-                  <div className="flex justify-end">
-                    <div className="w-64">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    {/* Filter by Role */}
+                    <div className="w-full md:w-64">
                       <label className="block text-white font-medium mb-2">
                         Filter by Role:
                       </label>
                       <select
                         value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value)}
+                        onChange={(e) => handleFilterChange(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
                       >
                         <option value="">Semua Role</option>
@@ -494,8 +604,25 @@ export default function DashboardSuperAdmin() {
                         <option value="kepala_ruangan">Kepala Ruangan</option>
                         <option value="chief_nursing">Chief Nursing</option>
                         <option value="verifikator">Verifikator</option>
-                        <option value="super_admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
                       </select>
+                    </div>
+
+                    {/* Search by User */}
+                    <div className="w-full md:w-64">
+                      <label className="block text-white font-medium mb-2">
+                        Search by User:
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Cari nama atau email..."
+                          value={searchUser}
+                          onChange={(e) => handleSearchChange(e.target.value)}
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B7A95] text-black bg-white"
+                        />
+                        <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -537,7 +664,7 @@ export default function DashboardSuperAdmin() {
 
                     {/* Table Body */}
                     <div className="divide-y divide-gray-200">
-                      {filteredUsers.map((user, index) => {
+                      {currentUsers.map((user, index) => {
                         // Mapping role agar lebih readable
                         const roleLabel: Record<string, string> = {
                           super_admin: "Super Admin",
@@ -588,12 +715,21 @@ export default function DashboardSuperAdmin() {
                           </div>
                         );
                       })}
+                      
+                      {/* Show message if no users found */}
+                      {currentUsers.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <i className="fas fa-users text-4xl mb-4 opacity-50"></i>
+                          <p className="text-lg">Tidak ada user yang ditemukan</p>
+                          <p className="text-sm">Coba ubah filter atau kata kunci pencarian</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Mobile Cards - Visible on Mobile */}
                   <div className="md:hidden space-y-4 p-4">
-                    {filteredUsers.map((user) => {
+                    {currentUsers.map((user) => {
                       const roleLabel: Record<string, string> = {
                         super_admin: "Super Admin",
                         verifikator: "Verifikator",
@@ -655,8 +791,20 @@ export default function DashboardSuperAdmin() {
                         </div>
                       );
                     })}
+                    
+                    {/* Show message if no users found - Mobile */}
+                    {currentUsers.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <i className="fas fa-users text-4xl mb-4 opacity-50"></i>
+                        <p className="text-lg">Tidak ada user yang ditemukan</p>
+                        <p className="text-sm">Coba ubah filter atau kata kunci pencarian</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Pagination */}
+                {filteredUsers.length > 0 && <PaginationComponent />}
               </div>
             </div>
           </main>
