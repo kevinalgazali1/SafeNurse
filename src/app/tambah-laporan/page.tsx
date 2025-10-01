@@ -815,49 +815,46 @@ export default function TambahLaporanPage() {
     processUserResponse(response);
   };
 
-  const startVoiceRecognition = () => {
-    if (isListening) {
-      // Stop recording if currently listening
-      setIsListening(false);
-      return;
-    }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+const startVoiceRecognition = () => {
+  if (isListening) {
+    setIsListening(false);
+    return;
+  }
 
-      recognition.lang = "id-ID";
-      recognition.continuous = false;
-      recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
+  if (( "webkitSpeechRecognition" in window || "SpeechRecognition" in window ) 
+      && !isIOS && !isSafari) {
+    
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        // Append new transcript to existing input value instead of replacing
-        setInputValue((prevValue) => {
-          // If there's existing text, add a space after the existing text
-          return prevValue ? `${prevValue} ${transcript}` : transcript;
-        });
-        setIsListening(false);
-      };
+    recognition.lang = "id-ID";
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
+    recognition.onstart = () => setIsListening(true);
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
+    recognition.onresult = (event: any) => {
+  const transcript = event.results[0][0].transcript;
+  setInputValue((prevValue) =>
+    prevValue ? `${prevValue} ${transcript}` : transcript
+  );
+  setIsListening(false);
+};
 
-      recognition.start();
-    } else {
-      toast.error("Browser Anda tidak mendukung speech recognition");
-    }
-  };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  } else {
+    toast.error("Browser Anda tidak mendukung speech recognition");
+  }
+};
 
   const renderQuickButtons = () => {
     if (currentStep === "greeting") {
