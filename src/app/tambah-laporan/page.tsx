@@ -819,93 +819,101 @@ export default function TambahLaporanPage() {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const isFirefox = /firefox/i.test(navigator.userAgent);
 
-const startVoiceRecognition = async () => {
-  if (isListening) {
-    setIsListening(false);
-    return;
-  }
-
-  const supportsSpeechRecognition =
-    "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
-
-  // ✅ Chrome / Edge → pakai SpeechRecognition
-  if (supportsSpeechRecognition && !isIOS && !isSafari && !isFirefox) {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "id-ID";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInputValue((prevValue) =>
-        prevValue ? `${prevValue} ${transcript}` : transcript
-      );
+  const startVoiceRecognition = async () => {
+    if (isListening) {
       setIsListening(false);
-    };
-
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-
-    recognition.start();
-  } else {
-    // 🚀 Fallback untuk Safari / iOS / Firefox
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/mp4";
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      const chunks: Blob[] = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: "audio/webm" });
-        const formData = new FormData();
-        formData.append("file", audioBlob, "recording.webm");
-
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/transcribe`, {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!res.ok) throw new Error("Transkripsi gagal");
-
-          const data = await res.json();
-          if (data.text) {
-            setInputValue((prev) =>
-              prev ? `${prev} ${data.text}` : data.text
-            );
-          }
-        } catch (err) {
-          toast.error("Gagal transkripsi audio");
-        }
-      };
-
-      setIsListening(true);
-      mediaRecorder.start();
-
-      // stop otomatis setelah 5 detik
-      setTimeout(() => {
-        if (mediaRecorder.state !== "inactive") {
-          mediaRecorder.stop();
-        }
-      }, 5000);
-    } catch (err) {
-      toast.error("Izin mikrofon ditolak atau tidak tersedia");
-      setIsListening(false);
+      return;
     }
-  }
-};
+
+    const supportsSpeechRecognition =
+      "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
+
+    // ✅ Chrome / Edge → pakai SpeechRecognition
+    if (supportsSpeechRecognition && !isIOS && !isSafari && !isFirefox) {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = "id-ID";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => setIsListening(true);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputValue((prevValue) =>
+          prevValue ? `${prevValue} ${transcript}` : transcript
+        );
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognition.start();
+    } else {
+      // 🚀 Fallback untuk Safari / iOS / Firefox
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : "audio/mp4";
+        const mediaRecorder = new MediaRecorder(stream, { mimeType });
+        const chunks: Blob[] = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(chunks, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "recording.webm");
+
+          try {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_API}/transcribe`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+              }
+            );
+
+            if (!res.ok) throw new Error("Transkripsi gagal");
+
+            const data = await res.json();
+            if (data.text) {
+              setInputValue((prev) =>
+                prev ? `${prev} ${data.text}` : data.text
+              );
+            }
+          } catch (err) {
+            toast.error("Gagal transkripsi audio");
+          }
+        };
+
+        setIsListening(true);
+        mediaRecorder.start();
+
+        // stop otomatis setelah 5 detik
+        setTimeout(() => {
+          if (mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+          }
+        }, 5000);
+      } catch (err) {
+        toast.error("Izin mikrofon ditolak atau tidak tersedia");
+        setIsListening(false);
+      }
+    }
+  };
 
   const renderQuickButtons = () => {
     if (currentStep === "greeting") {
