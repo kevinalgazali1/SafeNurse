@@ -439,7 +439,7 @@ export default function RuanganSuperAdmin() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="mt-6 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <div className="mt-6 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
                       {/* Previous Button */}
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}

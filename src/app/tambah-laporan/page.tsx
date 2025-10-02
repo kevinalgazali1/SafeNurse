@@ -214,7 +214,7 @@ export default function TambahLaporanPage() {
           if (res.ok && result.data) {
             const clean = result.data;
 
-            // ✅ update state reportData dengan hasil clean
+            // update state reportData dengan hasil clean
             const updatedWithClean = {
               namaPasien: clean.nama_pasien,
               noRM: clean.no_rm,
@@ -397,21 +397,22 @@ export default function TambahLaporanPage() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ chronology: response }),
+                  body: JSON.stringify({
+                    chronology: response,
+                    judul_insiden: response,
+                  }),
                 }
               );
 
               const data = await res.json();
 
               if (data.is_lengkap) {
-                // Kalau lengkap → lanjut ke step berikutnya
                 addMessage(
                   "bot",
                   "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
                 );
                 setCurrentStep("tindakanSegera");
               } else {
-                // Kalau tidak lengkap → kasih evaluasi
                 addMessage(
                   "bot",
                   `Kronologi belum lengkap. Evaluasi:\n\n${data.evaluasi}`
@@ -420,7 +421,7 @@ export default function TambahLaporanPage() {
                   "bot",
                   "Silakan masukkan kronologi ulang dengan lebih lengkap."
                 );
-                setCurrentStep("kronologi"); // tetap di step kronologi
+                setCurrentStep("kronologi");
               }
             } catch (error) {
               console.error("Error validate chronology:", error);
@@ -428,9 +429,8 @@ export default function TambahLaporanPage() {
                 "bot",
                 "Terjadi kesalahan saat validasi kronologi. Coba lagi ya."
               );
-              setCurrentStep("kronologi"); // tetap di step kronologi
+              setCurrentStep("kronologi");
             } finally {
-              // Pastikan loading dihilangkan setelah API selesai
               setIsProcessingResponse(false);
             }
           };
@@ -741,18 +741,18 @@ export default function TambahLaporanPage() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ chronology: response }),
+                  body: JSON.stringify({
+                    chronology: response,
+                    judul_insiden: response,
+                  }),
                 }
               );
 
               const data = await res.json();
 
               if (data.is_lengkap) {
-                // ✅ setelah valid → bersihkan via API clean
-                // Jangan set false di sini karena cleanAndGenerateSummary akan handle loading
                 await cleanAndGenerateSummary(updatedData);
               } else {
-                // ⚠️ Kalau tidak lengkap → kasih evaluasi
                 addMessage(
                   "bot",
                   `Kronologi edit belum lengkap. Evaluasi:\n\n${data.evaluasi}`
@@ -762,7 +762,6 @@ export default function TambahLaporanPage() {
                   "Silakan masukkan kronologi ulang dengan lebih lengkap."
                 );
                 setCurrentStep("editKronologi");
-                // Set false hanya jika tidak lengkap
                 setIsProcessingResponse(false);
               }
             } catch (error) {
@@ -818,9 +817,21 @@ export default function TambahLaporanPage() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const isFirefox = /firefox/i.test(navigator.userAgent);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const startVoiceRecognition = async () => {
     if (isListening) {
+      // ✅ Kalau lagi merekam → stop manual
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
+        mediaRecorderRef.current.stop();
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
       setIsListening(false);
       return;
     }
@@ -828,8 +839,8 @@ export default function TambahLaporanPage() {
     const supportsSpeechRecognition =
       "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
 
-    // ✅ Chrome / Edge → pakai SpeechRecognition
     if (supportsSpeechRecognition && !isIOS && !isSafari && !isFirefox) {
+      // ✅ Browser support SpeechRecognition (Chrome/Edge)
       const SpeechRecognition =
         (window as any).SpeechRecognition ||
         (window as any).webkitSpeechRecognition;
@@ -840,7 +851,6 @@ export default function TambahLaporanPage() {
       recognition.interimResults = false;
 
       recognition.onstart = () => setIsListening(true);
-
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInputValue((prevValue) =>
@@ -848,21 +858,25 @@ export default function TambahLaporanPage() {
         );
         setIsListening(false);
       };
-
       recognition.onerror = () => setIsListening(false);
       recognition.onend = () => setIsListening(false);
 
       recognition.start();
     } else {
-      // 🚀 Fallback untuk Safari / iOS / Firefox
+      // 🚀 Fallback Safari / iOS / Firefox
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
+        mediaStreamRef.current = stream;
+
         const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
           ? "audio/webm;codecs=opus"
           : "audio/mp4";
+
         const mediaRecorder = new MediaRecorder(stream, { mimeType });
+        mediaRecorderRef.current = mediaRecorder;
+
         const chunks: Blob[] = [];
 
         mediaRecorder.ondataavailable = (e) => {
@@ -879,13 +893,10 @@ export default function TambahLaporanPage() {
               `${process.env.NEXT_PUBLIC_BACKEND_API}/transcribe`,
               {
                 method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
               }
             );
-
             if (!res.ok) throw new Error("Transkripsi gagal");
 
             const data = await res.json();
@@ -894,21 +905,29 @@ export default function TambahLaporanPage() {
                 prev ? `${prev} ${data.text}` : data.text
               );
             }
-          } catch (err) {
+          } catch {
             toast.error("Gagal transkripsi audio");
           }
+
+          // 🔥 Pastikan stream benar-benar stop
+          if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+            mediaStreamRef.current = null;
+          }
+
+          setIsListening(false);
         };
 
         setIsListening(true);
         mediaRecorder.start();
 
-        // stop otomatis setelah 5 detik
+        // Auto stop setelah 5 detik (jika user tidak klik stop)
         setTimeout(() => {
           if (mediaRecorder.state !== "inactive") {
             mediaRecorder.stop();
           }
         }, 5000);
-      } catch (err) {
+      } catch {
         toast.error("Izin mikrofon ditolak atau tidak tersedia");
         setIsListening(false);
       }
