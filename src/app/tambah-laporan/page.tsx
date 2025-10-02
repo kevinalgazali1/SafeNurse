@@ -926,7 +926,7 @@ export default function TambahLaporanPage() {
           if (mediaRecorder.state !== "inactive") {
             mediaRecorder.stop();
           }
-        }, 5000);
+        }, 15000);
       } catch {
         toast.error("Izin mikrofon ditolak atau tidak tersedia");
         setIsListening(false);
