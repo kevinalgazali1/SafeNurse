@@ -90,7 +90,9 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           {/* Status di atas kanan */}
           <div className="flex justify-end items-center space-x-2 mb-2">
             <span
-              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}
+              className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(
+                report.status
+              )}`}
             >
               {report.status}
             </span>
@@ -128,7 +130,11 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="font-medium text-gray-600">Grading:</span>
-              <span className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+              <span
+                className={`inline-block px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(
+                  report.grading
+                )}`}
+              >
                 {report.grading}
               </span>
             </div>
@@ -179,13 +185,12 @@ export default function DashboardPerawatPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 10;
   const [newNotificationCount, setNewNotificationCount] = useState(0);
-  
+
   // State untuk filter
   const [filterKategori, setFilterKategori] = useState("");
   const [filterGrading, setFilterGrading] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [searchKodeLaporan, setSearchKodeLaporan] = useState("");
-  
 
   const token = Cookies.get("token");
 
@@ -323,10 +328,10 @@ export default function DashboardPerawatPage() {
       setIsLoading(false);
     }
   };
-  
-    useEffect(() => {
-      fetchNotifications();
-    }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const fetchReports = async () => {
     if (!token) {
@@ -398,38 +403,45 @@ export default function DashboardPerawatPage() {
   // filter otomatis setiap kali selectedDate atau filter lainnya berubah
   useEffect(() => {
     let filtered = reports;
-    
+
     // Filter berdasarkan tanggal
     if (selectedDate) {
       filtered = filtered.filter((r) => r.tanggal === selectedDate);
     }
-    
+
     // Filter berdasarkan kategori
     if (filterKategori) {
       filtered = filtered.filter((r) => r.kategori === filterKategori);
     }
-    
+
     // Filter berdasarkan grading
     if (filterGrading) {
       filtered = filtered.filter((r) => r.grading === filterGrading);
     }
-    
+
     // Filter berdasarkan status
     if (filterStatus) {
       filtered = filtered.filter((r) => r.status === filterStatus);
     }
-    
+
     // Filter berdasarkan search kode laporan
     if (searchKodeLaporan) {
-      filtered = filtered.filter((r) => 
+      filtered = filtered.filter((r) =>
         r.kodeLaporan.toLowerCase().includes(searchKodeLaporan.toLowerCase())
       );
     }
-    
+
     setFilteredReports(filtered);
     // Reset ke halaman pertama setiap kali filter berubah
     setCurrentPage(1);
-  }, [selectedDate, filterKategori, filterGrading, filterStatus, searchKodeLaporan, reports]);
+  }, [
+    selectedDate,
+    filterKategori,
+    filterGrading,
+    filterStatus,
+    searchKodeLaporan,
+    reports,
+  ]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -440,7 +452,7 @@ export default function DashboardPerawatPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -511,30 +523,30 @@ export default function DashboardPerawatPage() {
           {/* Header/Navbar */}
           <header className="bg-[#B9D9DD] rounded-xl mx-6 mt-6">
             <div className="flex justify-between items-center px-6 py-3">
-            <div className="flex items-center space-x-3">
-          {/* Logo SafeNurse */}
-          <Image
-            src="/logosafenurse.png"
-            alt="Logo SafeNurse"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+              <div className="flex items-center space-x-3">
+                {/* Logo SafeNurse */}
+                <Image
+                  src="/logosafenurse.png"
+                  alt="Logo SafeNurse"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
 
-          {/* Logo Unhas */}
-          <Image
-            src="/logounhas.png"
-            alt="Logo Unhas"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+                {/* Logo Unhas */}
+                <Image
+                  src="/logounhas.png"
+                  alt="Logo Unhas"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
 
-          <h1 className="text-white text-xl font-bold">
-            Safe
-            <span className="font-bold text-[#0B7A95]">Nurse</span>
-          </h1>
-        </div>
+                <h1 className="text-white text-xl font-bold">
+                  Safe
+                  <span className="font-bold text-[#0B7A95]">Nurse</span>
+                </h1>
+              </div>
 
               {/* Desktop Navigation Items */}
               <div className="hidden md:flex items-center space-x-6">
@@ -771,8 +783,18 @@ export default function DashboardPerawatPage() {
                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7A95] focus:border-transparent text-black placeholder-gray-500 bg-white w-full lg:w-auto min-w-[200px]"
                       />
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -810,39 +832,47 @@ export default function DashboardPerawatPage() {
                       currentReports.map((report, index) => (
                         <div
                           key={report.kodeLaporan}
-                          className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm ${
+                          className={`grid grid-cols-9 gap-2 px-4 py-3 text-sm items-center text-center ${
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           } hover:bg-blue-50 transition-colors`}
                         >
-                          <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
-                            {new Date(report.tanggalWaktuPelaporan).toLocaleDateString("id-ID")}
+                          <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-xs font-medium">
+                            {new Date(
+                              report.tanggalWaktuPelaporan
+                            ).toLocaleDateString("id-ID")}
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.kategori}
-                          </div>
-                          <div className="text-center">
-                            <span className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(report.status)}`}>
+                          <div className="text-gray-600">{report.kategori}</div>
+                          <div>
+                            <span
+                              className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(
+                                report.status
+                              )}`}
+                            >
                               {report.status}
                             </span>
                           </div>
-                          <div className="text-center">
-                            <span className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(report.grading)}`}>
+                          <div>
+                            <span
+                              className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(
+                                report.grading
+                              )}`}
+                            >
                               {report.grading}
                             </span>
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanKepalaRuangan || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanChiefnursing || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanVerifikator || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.kodeLaporan}
                           </div>
-                          <div className="text-center">
+                          <div>
                             <button
                               onClick={() => handleDetailClick(report)}
                               className="bg-[#0B7A95] text-white px-3 py-1 rounded text-xs hover:bg-[#0a6b85] transition-colors"
@@ -853,8 +883,10 @@ export default function DashboardPerawatPage() {
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 py-6">
-                        Tidak ada laporan ditemukan
+                      <div className="grid grid-cols-9 items-center text-center">
+                        <div className="col-span-9 text-gray-500 py-6">
+                          Tidak ada laporan saat ini
+                        </div>
                       </div>
                     )}
                   </div>
@@ -862,17 +894,23 @@ export default function DashboardPerawatPage() {
 
                 {/* Mobile Card Layout - Visible on Mobile */}
                 <div className="lg:hidden space-y-4 animate-fadeInDelayed">
-                  {currentReports.map((report, index) => (
-                    <div
-                      key={report.id}
-                      className={`animate-fadeInUp stagger-${index % 3}`}
-                    >
-                      <MobileReportCard
-                        report={report}
-                        onDetailClick={handleDetailClick}
-                      />
+                  {currentReports.length > 0 ? (
+                    currentReports.map((report, index) => (
+                      <div
+                        key={report.id}
+                        className={`animate-fadeInUp stagger-${index % 3}`}
+                      >
+                        <MobileReportCard
+                          report={report}
+                          onDetailClick={handleDetailClick}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-white py-6">
+                      Tidak ada laporan saat ini
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 {/* Pagination */}
@@ -880,9 +918,11 @@ export default function DashboardPerawatPage() {
                   <div className="mt-8 flex flex-col items-center space-y-4">
                     {/* Pagination Info */}
                     <div className="text-sm text-black font-medium">
-                      Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                      Menampilkan {startIndex + 1}-
+                      {Math.min(endIndex, filteredReports.length)} dari{" "}
+                      {filteredReports.length} laporan
                     </div>
-                    
+
                     {/* Pagination Controls */}
                     <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
                       <button
@@ -890,34 +930,47 @@ export default function DashboardPerawatPage() {
                         disabled={currentPage === 1}
                         className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                           currentPage === 1
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#0E364A] text-white hover:bg-[#1a4a5c]'
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#0E364A] text-white hover:bg-[#1a4a5c]"
                         }`}
                       >
                         <span className="hidden sm:inline">Sebelumnya</span>
                         <span className="sm:hidden">‹</span>
                       </button>
-                      
+
                       {/* Page Numbers - Show max 3 pages */}
                       <div className="flex items-center gap-1 sm:space-x-1">
                         {(() => {
                           const maxVisiblePages = 3;
-                          let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                          const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                          
+                          let startPage = Math.max(
+                            1,
+                            currentPage - Math.floor(maxVisiblePages / 2)
+                          );
+                          const endPage = Math.min(
+                            totalPages,
+                            startPage + maxVisiblePages - 1
+                          );
+
                           // Adjust start page if we're near the end
                           if (endPage - startPage + 1 < maxVisiblePages) {
-                            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                            startPage = Math.max(
+                              1,
+                              endPage - maxVisiblePages + 1
+                            );
                           }
-                          
+
                           const pages = [];
-                          
+
                           // Left navigation arrow for previous set of pages
                           if (startPage > 1) {
                             pages.push(
                               <button
                                 key="prev-set"
-                                onClick={() => handlePageChange(Math.max(1, startPage - maxVisiblePages))}
+                                onClick={() =>
+                                  handlePageChange(
+                                    Math.max(1, startPage - maxVisiblePages)
+                                  )
+                                }
                                 className="px-2 py-2 rounded-lg text-xs sm:text-sm font-black bg-gray-200 text-black hover:bg-gray-300 transition-colors"
                                 title="Halaman sebelumnya"
                               >
@@ -925,7 +978,7 @@ export default function DashboardPerawatPage() {
                               </button>
                             );
                           }
-                          
+
                           // Page numbers
                           for (let i = startPage; i <= endPage; i++) {
                             pages.push(
@@ -934,21 +987,25 @@ export default function DashboardPerawatPage() {
                                 onClick={() => handlePageChange(i)}
                                 className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                                   currentPage === i
-                                    ? 'bg-[#0E364A] text-white'
-                                    : 'bg-gray-200 text-black hover:bg-gray-300'
+                                    ? "bg-[#0E364A] text-white"
+                                    : "bg-gray-200 text-black hover:bg-gray-300"
                                 }`}
                               >
                                 {i}
                               </button>
                             );
                           }
-                          
+
                           // Right navigation arrow for next set of pages
                           if (endPage < totalPages) {
                             pages.push(
                               <button
                                 key="next-set"
-                                onClick={() => handlePageChange(Math.min(totalPages, endPage + 1))}
+                                onClick={() =>
+                                  handlePageChange(
+                                    Math.min(totalPages, endPage + 1)
+                                  )
+                                }
                                 className="px-2 py-2 rounded-lg text-xs sm:text-sm font-black bg-gray-200 text-black hover:bg-gray-300 transition-colors"
                                 title="Halaman selanjutnya"
                               >
@@ -956,18 +1013,18 @@ export default function DashboardPerawatPage() {
                               </button>
                             );
                           }
-                          
+
                           return pages;
                         })()}
                       </div>
-                      
+
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-black transition-colors ${
                           currentPage === totalPages
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#0E364A] text-white hover:bg-[#1a4a5c]'
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#0E364A] text-white hover:bg-[#1a4a5c]"
                         }`}
                       >
                         <span className="hidden sm:inline">Selanjutnya</span>
@@ -1257,9 +1314,7 @@ export default function DashboardPerawatPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SafeNurse All Rights reserved.
           </p>
-          <p className="text-xs text-white/80">
-            Universitas Hasanuddin
-          </p>
+          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
         </div>
       </footer>
     </div>

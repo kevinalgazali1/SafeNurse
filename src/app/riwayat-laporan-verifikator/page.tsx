@@ -1313,7 +1313,7 @@ export default function DashboardChiefNursing() {
                   currentReports.map((report, index) => (
                     <div
                       key={report.kodeLaporan}
-                      className={`grid grid-cols-10 gap-2 px-4 py-3 text-sm ${
+                      className={`grid grid-cols-10 gap-2 px-4 py-3 text-sm items-center ${
                         index % 2 === 0 ? "bg-white" : "bg-gray-50"
                       } hover:bg-blue-50 transition-colors`}
                     >
@@ -1369,7 +1369,7 @@ export default function DashboardChiefNursing() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-gray-500 py-6">
+                  <div className="col-span-10 text-center text-gray-500 py-6">
                     Tidak ada laporan ditemukan
                   </div>
                 )}
@@ -1378,20 +1378,28 @@ export default function DashboardChiefNursing() {
 
             {/* Mobile Card Layout - Visible on Mobile */}
             <div className="lg:hidden space-y-4 animate-fadeInDelayed">
-              {currentReports.map((report, index) => (
-                <div
-                  key={report.id}
-                  className={`animate-fadeInUp stagger-${Math.min(
-                    index + 1,
-                    4
-                  )}`}
-                >
-                  <MobileReportCard
-                    report={report}
-                    onDetailClick={handleDetailClick}
-                  />
+              {currentReports.length > 0 ? (
+                currentReports.map((report, index) => (
+                  <div
+                    key={report.id}
+                    className={`animate-fadeInUp stagger-${Math.min(
+                      index + 1,
+                      4
+                    )}`}
+                  >
+                    <MobileReportCard
+                      report={report}
+                      onDetailClick={handleDetailClick}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-white">
+                  <p className="text-sm font-medium">
+                    Tidak ada laporan ditemukan
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Pagination */}

@@ -45,6 +45,16 @@ export default function TambahLaporanPage() {
     },
   ]);
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      const el = textareaRef.current;
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 120) + "px"; // max 3 baris
+    }
+  });
+
   const [currentStep, setCurrentStep] = useState("greeting");
   const [inputValue, setInputValue] = useState("");
   const [reportData, setReportData] = useState({
@@ -921,7 +931,7 @@ export default function TambahLaporanPage() {
         setIsListening(true);
         mediaRecorder.start();
 
-        // Auto stop setelah 5 detik (jika user tidak klik stop)
+        // Auto stop setelah 15 detik (jika user tidak klik stop)
         setTimeout(() => {
           if (mediaRecorder.state !== "inactive") {
             mediaRecorder.stop();
@@ -2063,8 +2073,11 @@ export default function TambahLaporanPage() {
               onClick={() => (window.location.href = "/dashboard-perawat")}
               title="Kembali ke Dashboard"
             >
-              <i className="fas fa-arrow-left text-lg mr-2 text-white"></i>
-              <span className="hidden sm:inline text-sm font-medium">
+              {/* Icon selalu tampil */}
+              <i className="fas fa-arrow-left text-lg text-white"></i>
+
+              {/* Teks hanya tampil di layar ≥ sm */}
+              <span className="hidden sm:inline ml-2 text-sm font-medium">
                 Batal
               </span>
             </button>
@@ -2122,7 +2135,6 @@ export default function TambahLaporanPage() {
               </div>
               <span className="text-xs">Notifikasi</span>
             </button>
-
             {/* Tutorial */}
             <button
               className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
@@ -2170,7 +2182,7 @@ export default function TambahLaporanPage() {
 
               {/* Notifikasi */}
               <button
-                className="flex items-center text-white hover:text-[#0B7A95] transition-colors py-2 relative"
+                className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded relative"
                 onClick={() =>
                   (window.location.href = "/notifications-perawat")
                 }
@@ -2178,9 +2190,11 @@ export default function TambahLaporanPage() {
                 <div className="relative">
                   <i className="fas fa-bell text-lg mr-3"></i>
                   {/* Notification Count Badge */}
-                  <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    3
-                  </span>
+                  {newNotificationCount > 0 && (
+                    <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {newNotificationCount}
+                    </span>
+                  )}
                 </div>
                 <span>Notifikasi</span>
               </button>
@@ -2337,6 +2351,7 @@ export default function TambahLaporanPage() {
                     <div className="flex items-center space-x-2">
                       <div className="flex-1 relative">
                         <textarea
+                          ref={textareaRef}
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
                           onKeyDown={(e) => {

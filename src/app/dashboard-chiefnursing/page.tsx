@@ -1192,19 +1192,17 @@ export default function DashboardChiefNursing() {
                       currentReports.map((report, index) => (
                         <div
                           key={report.kodeLaporan}
-                          className={`grid grid-cols-10 gap-2 px-4 py-3 text-sm ${
+                          className={`grid grid-cols-10 gap-2 px-4 py-3 text-sm items-center text-center ${
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           } hover:bg-blue-50 transition-colors`}
                         >
-                          <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-center text-xs font-medium">
+                          <div className="bg-[#0E364A] text-white px-3 py-1 rounded text-xs font-medium">
                             {new Date(
                               report.tanggalWaktuPelaporan
                             ).toLocaleDateString("id-ID")}
                           </div>
-                          <div className="text-gray-600 text-center">
-                            {report.kategori}
-                          </div>
-                          <div className="text-center">
+                          <div className="text-gray-600">{report.kategori}</div>
+                          <div>
                             <span
                               className={`inline-block min-w-[120px] px-3 py-2 rounded-lg text-xs font-semibold ${getStatusLaporanColor(
                                 report.status
@@ -1213,7 +1211,7 @@ export default function DashboardChiefNursing() {
                               {report.status}
                             </span>
                           </div>
-                          <div className="text-center">
+                          <div>
                             <span
                               className={`inline-block min-w-[80px] px-3 py-2 rounded-lg text-xs font-semibold ${getGradingColor(
                                 report.grading
@@ -1222,22 +1220,22 @@ export default function DashboardChiefNursing() {
                               {report.grading}
                             </span>
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanKepalaRuangan || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanChiefnursing || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.catatanVerifikator || "-"}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.kodeLaporan}
                           </div>
-                          <div className="text-gray-600 text-center">
+                          <div className="text-gray-600">
                             {report.tindakLanjut || "-"}
                           </div>
-                          <div className="text-center">
+                          <div>
                             <button
                               onClick={() => handleDetailClick(report)}
                               className="bg-[#0B7A95] text-white px-3 py-1 rounded text-xs hover:bg-[#0a6b85] transition-colors"
@@ -1248,8 +1246,10 @@ export default function DashboardChiefNursing() {
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 py-6">
-                        Tidak ada laporan ditemukan
+                      <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                        <p className="text-sm font-medium">
+                          Tidak ada laporan ditemukan
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1257,20 +1257,28 @@ export default function DashboardChiefNursing() {
 
                 {/* Mobile Card Layout - Visible on Mobile */}
                 <div className="lg:hidden space-y-4 animate-fadeInDelayed">
-                  {currentReports.map((report, index) => (
-                    <div
-                      key={report.id}
-                      className={`animate-fadeInUp stagger-${Math.min(
-                        index + 1,
-                        4
-                      )}`}
-                    >
-                      <MobileReportCard
-                        report={report}
-                        onDetailClick={handleDetailClick}
-                      />
+                  {currentReports.length > 0 ? (
+                    currentReports.map((report, index) => (
+                      <div
+                        key={report.id}
+                        className={`animate-fadeInUp stagger-${Math.min(
+                          index + 1,
+                          4
+                        )}`}
+                      >
+                        <MobileReportCard
+                          report={report}
+                          onDetailClick={handleDetailClick}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-10 text-white">
+                      <p className="text-sm font-medium">
+                        Tidak ada laporan ditemukan
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 {/* Pagination */}
