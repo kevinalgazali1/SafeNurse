@@ -56,6 +56,7 @@ export default function DashboardVerifikatorPage() {
   const [filterGrading, setFilterGrading] = useState("Semua");
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
   const [insidenData, setInsidenData] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<Insiden[]>([]);
@@ -241,13 +242,31 @@ export default function DashboardVerifikatorPage() {
 
         const json = await res.json();
         console.log(json);
-        setLaporanData(json.data || []);
-        if (json?.data) {
-          setInsidenData(json.data);
-          setFilteredData(json.data);
-        }
+
+        const data = json.data || [];
+        setLaporanData(data);
+        setInsidenData(data);
+        setFilteredData(data);
+
+        const years = Array.from(
+          new Set<number>(
+            data
+              .map((item: any) => {
+                const date = new Date(
+                  item.tgl_waktu_pelaporan
+                );
+                const year = date.getFullYear();
+                return isNaN(year) ? null : year;
+              })
+              .filter((year: number | null): year is number => year !== null) // pastikan hasilnya number
+          )
+        )
+          .sort((a: number, b: number) => b - a) // urut dari terbaru ke lama
+          .map((y: number) => y.toString()); // ubah ke string
+
+        setAvailableYears(years);
       } catch (err) {
-        console.error(err);
+        console.error("Fetch error:", err);
       } finally {
         setIsLoading(false);
       }
@@ -804,13 +823,15 @@ export default function DashboardVerifikatorPage() {
                           className="w-full px-3 py-2 bg-[#6B8CAE] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
                         >
                           <option value="">Semua Tahun</option>
-                          <option value="2024">2026</option>
-                          <option value="2024">2025</option>
-                          <option value="2024">2024</option>
-                          <option value="2023">2023</option>
-                          <option value="2022">2022</option>
-                          <option value="2021">2021</option>
-                          <option value="2020">2020</option>
+                          {availableYears.length > 0 ? (
+                            availableYears.map((year) => (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            ))
+                          ) : (
+                            <option disabled>Memuat...</option>
+                          )}
                         </select>
                       </div>
 
@@ -973,9 +994,9 @@ export default function DashboardVerifikatorPage() {
                             } hover:bg-blue-50 transition-colors`}
                           >
                             <div className="text-center font-medium text-[#2C3E50]">
-                              {item.tgl_waktu_pelaporan
+                              {item.tgl_insiden
                                 ? new Date(
-                                    item.tgl_waktu_pelaporan
+                                    item.tgl_insiden
                                   ).toLocaleDateString("id-ID", {
                                     day: "2-digit",
                                     month: "2-digit",
@@ -1006,7 +1027,7 @@ export default function DashboardVerifikatorPage() {
                                   Tanggal:
                                 </span>
                                 <span className="text-sm font-medium text-[#2C3E50]">
-                                  {item.tgl_msk_rs}
+                                  {item.tgl_waktu_pelaporan}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center">
