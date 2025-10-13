@@ -111,12 +111,12 @@ export default function LoginPage() {
         </div>
 
         {/* Login Button */}
-        <button
+        {/* <button
           className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#095a6b] transition-all duration-300 font-medium hover:scale-105"
           onClick={() => (window.location.href = "/login")}
         >
           Login
-        </button>
+        </button> */}
       </header>
 
       {/* Main content */}
