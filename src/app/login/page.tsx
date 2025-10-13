@@ -43,7 +43,7 @@ export default function LoginPage() {
       }
 
       // Simpan token ke cookie (15 menit)
-      const expiryDate = new Date(new Date().getTime() + 60 * 60 * 1000);
+      const expiryDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
       Cookies.set("token", data.token, { expires: expiryDate });
 
       // Decode role
