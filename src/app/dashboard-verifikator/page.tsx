@@ -771,7 +771,7 @@ export default function DashboardVerifikatorPage() {
                           <option value="Semua">Semua</option>
                           <option value="IGD">IGD</option>
                           <option value="ICU">ICU</option>
-                          <option value="Bedah">Bedah</option>
+                          <option value="Rawat Inap">Rawat Inap</option>
                         </select>
                       </div>
 
