@@ -2,10 +2,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 interface User {
   id_user: string;
@@ -39,7 +46,7 @@ export default function DashboardSuperAdmin() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ruanganList, setRuanganList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Pagination and search states
   const [currentPage, setCurrentPage] = useState(1);
   const [searchUser, setSearchUser] = useState("");
@@ -50,6 +57,45 @@ export default function DashboardSuperAdmin() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -194,7 +240,7 @@ export default function DashboardSuperAdmin() {
   // Filter users by role and search
   const filteredUsers = users.filter((user) => {
     const matchesRole = filterRole ? user.role === filterRole : true;
-    const matchesSearch = searchUser 
+    const matchesSearch = searchUser
       ? user.nama.toLowerCase().includes(searchUser.toLowerCase()) ||
         user.email.toLowerCase().includes(searchUser.toLowerCase())
       : true;
@@ -223,7 +269,7 @@ export default function DashboardSuperAdmin() {
     const getPageNumbers = () => {
       const pages = [];
       const maxVisiblePages = 5;
-      
+
       if (totalPages <= maxVisiblePages) {
         for (let i = 1; i <= totalPages; i++) {
           pages.push(i);
@@ -233,21 +279,21 @@ export default function DashboardSuperAdmin() {
           for (let i = 1; i <= 4; i++) {
             pages.push(i);
           }
-          pages.push('...');
+          pages.push("...");
           pages.push(totalPages);
         } else if (currentPage >= totalPages - 2) {
           pages.push(1);
-          pages.push('...');
+          pages.push("...");
           for (let i = totalPages - 3; i <= totalPages; i++) {
             pages.push(i);
           }
         } else {
           pages.push(1);
-          pages.push('...');
+          pages.push("...");
           for (let i = currentPage - 1; i <= currentPage + 1; i++) {
             pages.push(i);
           }
-          pages.push('...');
+          pages.push("...");
           pages.push(totalPages);
         }
       }
@@ -261,37 +307,37 @@ export default function DashboardSuperAdmin() {
           disabled={currentPage === 1}
           className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
             currentPage === 1
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-white text-black hover:bg-gray-100 border border-gray-300"
           }`}
         >
           Sebelumnya
         </button>
-        
+
         {getPageNumbers().map((page, index) => (
           <button
             key={index}
-            onClick={() => typeof page === 'number' && setCurrentPage(page)}
-            disabled={page === '...'}
+            onClick={() => typeof page === "number" && setCurrentPage(page)}
+            disabled={page === "..."}
             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
               page === currentPage
-                ? 'bg-[#0B7A95] text-white'
-                : page === '...'
-                ? 'bg-transparent text-black cursor-default'
-                : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+                ? "bg-[#0B7A95] text-white"
+                : page === "..."
+                ? "bg-transparent text-black cursor-default"
+                : "bg-white text-black hover:bg-gray-100 border border-gray-300"
             }`}
           >
             {page}
           </button>
         ))}
-        
+
         <button
           onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
           className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
             currentPage === totalPages
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-white text-black hover:bg-gray-100 border border-gray-300'
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-white text-black hover:bg-gray-100 border border-gray-300"
           }`}
         >
           Selanjutnya
@@ -715,13 +761,17 @@ export default function DashboardSuperAdmin() {
                           </div>
                         );
                       })}
-                      
+
                       {/* Show message if no users found */}
                       {currentUsers.length === 0 && (
                         <div className="text-center py-8 text-gray-500">
                           <i className="fas fa-users text-4xl mb-4 opacity-50"></i>
-                          <p className="text-lg">Tidak ada user yang ditemukan</p>
-                          <p className="text-sm">Coba ubah filter atau kata kunci pencarian</p>
+                          <p className="text-lg">
+                            Tidak ada user yang ditemukan
+                          </p>
+                          <p className="text-sm">
+                            Coba ubah filter atau kata kunci pencarian
+                          </p>
                         </div>
                       )}
                     </div>
@@ -791,13 +841,15 @@ export default function DashboardSuperAdmin() {
                         </div>
                       );
                     })}
-                    
+
                     {/* Show message if no users found - Mobile */}
                     {currentUsers.length === 0 && (
                       <div className="text-center py-8 text-gray-500">
                         <i className="fas fa-users text-4xl mb-4 opacity-50"></i>
                         <p className="text-lg">Tidak ada user yang ditemukan</p>
-                        <p className="text-sm">Coba ubah filter atau kata kunci pencarian</p>
+                        <p className="text-sm">
+                          Coba ubah filter atau kata kunci pencarian
+                        </p>
                       </div>
                     )}
                   </div>

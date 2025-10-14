@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Image from "next/image";
 import { toast, Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 interface Report {
   id: string;
@@ -108,11 +116,11 @@ export default function LaporanMasukChiefNursingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(10);
-  
+
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -120,10 +128,50 @@ export default function LaporanMasukChiefNursingPage() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const router = useRouter();
   const token = Cookies.get("token");
 
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Filter reports based on search query
-  const filteredReports = reports.filter(report =>
+  const filteredReports = reports.filter((report) =>
     report.kodeLaporan.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -909,7 +957,7 @@ export default function LaporanMasukChiefNursingPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-white animate-textGlow">
                       Daftar Laporan Masuk
                     </h2>
-                    
+
                     {/* Search Input */}
                     <div className="relative w-full sm:w-auto">
                       <input
@@ -927,118 +975,126 @@ export default function LaporanMasukChiefNursingPage() {
                   <div className="space-y-3 sm:space-y-4 animate-fadeInRight">
                     {currentReports.length > 0 ? (
                       currentReports.map((report, index) => (
-                      <div
-                        key={report.id}
-                        className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer hover-lift animate-glow ${
-                          index === 0
-                            ? "animate-fadeInDelayed"
-                            : index === 1
-                            ? "animate-fadeInDelayed2"
-                            : "animate-fadeInDelayed"
-                        }`}
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                        onClick={() => fetchReportDetail(report.id)}
-                      >
-                        <div className="flex items-start space-x-3 sm:space-x-4">
-                          <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0 animate-pulseGentle">
-                            <i className="fas fa-envelope text-white text-sm sm:text-lg animate-bounceSubtle"></i>
-                          </div>
-                          <div className="flex-1 min-w-0 overflow-hidden">
-                            <h3 className="text-sm sm:text-lg font-semibold text-gray-800 mb-1 leading-tight">
-                              Laporan dari Perawat{" "}
-                              {report.namaPerawatYangMenangani}
-                            </h3>
+                        <div
+                          key={report.id}
+                          className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer hover-lift animate-glow ${
+                            index === 0
+                              ? "animate-fadeInDelayed"
+                              : index === 1
+                              ? "animate-fadeInDelayed2"
+                              : "animate-fadeInDelayed"
+                          }`}
+                          style={{ animationDelay: `${index * 0.1}s` }}
+                          onClick={() => fetchReportDetail(report.id)}
+                        >
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0 animate-pulseGentle">
+                              <i className="fas fa-envelope text-white text-sm sm:text-lg animate-bounceSubtle"></i>
+                            </div>
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                              <h3 className="text-sm sm:text-lg font-semibold text-gray-800 mb-1 leading-tight">
+                                Laporan dari Perawat{" "}
+                                {report.namaPerawatYangMenangani}
+                              </h3>
 
-                            <div className="space-y-1">
-                              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                <span className="font-medium">
-                                  Judul Insiden:
-                                </span>{" "}
-                                {report.judulInsiden}
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                <span className="font-medium">
-                                  Tanggal Laporan:
-                                </span>{" "}
-                                {report.tanggalWaktuPelaporan}
-                              </p>
+                              <div className="space-y-1">
+                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                  <span className="font-medium">
+                                    Judul Insiden:
+                                  </span>{" "}
+                                  {report.judulInsiden}
+                                </p>
+                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                  <span className="font-medium">
+                                    Tanggal Laporan:
+                                  </span>{" "}
+                                  {report.tanggalWaktuPelaporan}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mx-auto max-w-md">
+                          <i className="fas fa-search text-white/70 text-3xl mb-4"></i>
+                          <h3 className="text-white font-semibold text-lg mb-2">
+                            {searchQuery
+                              ? "Tidak ada laporan ditemukan"
+                              : "Belum ada laporan"}
+                          </h3>
+                          <p className="text-white/70 text-sm">
+                            {searchQuery
+                              ? `Tidak ada laporan dengan kode "${searchQuery}"`
+                              : "Belum ada laporan masuk yang perlu ditinjau"}
+                          </p>
+                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mx-auto max-w-md">
-                        <i className="fas fa-search text-white/70 text-3xl mb-4"></i>
-                        <h3 className="text-white font-semibold text-lg mb-2">
-                          {searchQuery ? "Tidak ada laporan ditemukan" : "Belum ada laporan"}
-                        </h3>
-                        <p className="text-white/70 text-sm">
-                          {searchQuery 
-                            ? `Tidak ada laporan dengan kode "${searchQuery}"`
-                            : "Belum ada laporan masuk yang perlu ditinjau"
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Pagination */}
-                  {filteredReports.length > 0 && totalPages > 1 && (
-                    <div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                      {/* Pagination Info */}
-                      <div className="text-sm text-black font-medium">
-                        Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
-                      </div>
-                      
-                      {/* Pagination Controls */}
-                      <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
-                        {/* Previous Button */}
-                        <button
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                            currentPage === 1
-                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                              : "bg-white text-black hover:bg-gray-100"
-                          }`}
-                        >
-                          <span className="hidden sm:inline">Sebelumnya</span>
-                          <span className="sm:hidden">‹</span>
-                        </button>
-                        
-                        {/* Page Numbers */}
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    )}
+
+                    {/* Pagination */}
+                    {filteredReports.length > 0 && totalPages > 1 && (
+                      <div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                        {/* Pagination Info */}
+                        <div className="text-sm text-black font-medium">
+                          Menampilkan {startIndex + 1}-
+                          {Math.min(endIndex, filteredReports.length)} dari{" "}
+                          {filteredReports.length} laporan
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
+                          {/* Previous Button */}
                           <button
-                            key={page}
-                            onClick={() => handlePageChange(page)}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
                             className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              currentPage === page
-                                ? "bg-[#0B7A95] text-white"
+                              currentPage === 1
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                 : "bg-white text-black hover:bg-gray-100"
                             }`}
                           >
-                            {page}
+                            <span className="hidden sm:inline">Sebelumnya</span>
+                            <span className="sm:hidden">‹</span>
                           </button>
-                        ))}
-                        
-                        {/* Next Button */}
-                        <button
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                            currentPage === totalPages
-                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                              : "bg-white text-black hover:bg-gray-100"
-                          }`}
-                        >
-                          <span className="hidden sm:inline">Selanjutnya</span>
-                          <span className="sm:hidden">›</span>
-                        </button>
+
+                          {/* Page Numbers */}
+                          {Array.from(
+                            { length: totalPages },
+                            (_, i) => i + 1
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                currentPage === page
+                                  ? "bg-[#0B7A95] text-white"
+                                  : "bg-white text-black hover:bg-gray-100"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+
+                          {/* Next Button */}
+                          <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              currentPage === totalPages
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-white text-black hover:bg-gray-100"
+                            }`}
+                          >
+                            <span className="hidden sm:inline">
+                              Selanjutnya
+                            </span>
+                            <span className="sm:hidden">›</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               </div>

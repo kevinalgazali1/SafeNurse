@@ -19,6 +19,15 @@ import {
   Legend,
 } from "recharts";
 
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
+
 const gradingColors: Record<string, string> = {
   merah: "#ef4444", // merah
   kuning: "#facc15", // kuning
@@ -68,7 +77,7 @@ export default function DashboardVerifikatorPage() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
+  const router = useRouter();
   const token = Cookies.get("token");
 
   // CSS Keyframes untuk animasi
@@ -224,6 +233,45 @@ export default function DashboardVerifikatorPage() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -252,9 +300,7 @@ export default function DashboardVerifikatorPage() {
           new Set<number>(
             data
               .map((item: any) => {
-                const date = new Date(
-                  item.tgl_waktu_pelaporan
-                );
+                const date = new Date(item.tgl_waktu_pelaporan);
                 const year = date.getFullYear();
                 return isNaN(year) ? null : year;
               })
@@ -995,13 +1041,14 @@ export default function DashboardVerifikatorPage() {
                           >
                             <div className="text-center font-medium text-[#2C3E50]">
                               {item.tgl_insiden
-                                ? new Date(
-                                    item.tgl_insiden
-                                  ).toLocaleDateString("id-ID", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })
+                                ? new Date(item.tgl_insiden).toLocaleDateString(
+                                    "id-ID",
+                                    {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    }
+                                  )
                                 : "-"}
                             </div>
                             <div className="text-center text-[#2C3E50]">

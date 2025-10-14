@@ -6,6 +6,13 @@ import Image from "next/image";
 import Cookies from "js-cookie";
 import toast, { Toaster } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
@@ -28,7 +35,47 @@ export default function ProfilePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
+    const router = useRouter();
   const token = Cookies.get("token"); // ambil JWT dari cookie
+
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -36,53 +83,53 @@ export default function ProfilePage() {
       return;
     }
 
-  const fetchNotifications = async () => {
-    const token = Cookies.get("token");
-    if (!token) return;
+    const fetchNotifications = async () => {
+      const token = Cookies.get("token");
+      if (!token) return;
 
-    setIsLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+        if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
 
-      const resData = await res.json();
-      console.log("Data notifikasi baru:", resData);
+        const resData = await res.json();
+        console.log("Data notifikasi baru:", resData);
 
-      // Hitung jumlah data notifikasi yang dikembalikan
-      const countBaru = resData?.data?.length || 0;
-      setNewNotificationCount(countBaru);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        // Hitung jumlah data notifikasi yang dikembalikan
+        const countBaru = resData?.data?.length || 0;
+        setNewNotificationCount(countBaru);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     fetchNotifications();
 
     let id_perawat: string | null = null;
-        try {
-          const decoded: any = jwtDecode(token);
-          id_perawat = decoded?.id_perawat || null;
-          console.log("Decoded token:", decoded);
-        } catch (err) {
-          console.error("Gagal decode token:", err);
-        }
-    
-        if (!id_perawat) {
-          console.warn("ID kepala ruangan tidak tersedia di token");
-          return;
-        }
+    try {
+      const decoded: any = jwtDecode(token);
+      id_perawat = decoded?.id_perawat || null;
+      console.log("Decoded token:", decoded);
+    } catch (err) {
+      console.error("Gagal decode token:", err);
+    }
+
+    if (!id_perawat) {
+      console.warn("ID kepala ruangan tidak tersedia di token");
+      return;
+    }
 
     const fetchData = async () => {
       try {

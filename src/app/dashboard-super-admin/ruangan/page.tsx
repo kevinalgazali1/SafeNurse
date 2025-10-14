@@ -2,10 +2,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 interface Ruangan {
   id_ruangan: string;
@@ -40,6 +47,45 @@ export default function RuanganSuperAdmin() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
 
   // 🔹 Fetch ruangan dari API
   const fetchRuangan = async () => {
@@ -84,7 +130,10 @@ export default function RuanganSuperAdmin() {
 
   const totalPages = Math.ceil(filteredRuangan.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentRuangan = filteredRuangan.slice(startIndex, startIndex + itemsPerPage);
+  const currentRuangan = filteredRuangan.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchRuangan(e.target.value);
@@ -392,7 +441,9 @@ export default function RuanganSuperAdmin() {
                         ))
                       ) : (
                         <div className="px-6 py-8 text-center text-gray-500">
-                          {searchRuangan ? "Tidak ada ruangan yang ditemukan" : "Belum ada data ruangan"}
+                          {searchRuangan
+                            ? "Tidak ada ruangan yang ditemukan"
+                            : "Belum ada data ruangan"}
                         </div>
                       )}
                     </div>
@@ -432,7 +483,9 @@ export default function RuanganSuperAdmin() {
                       ))
                     ) : (
                       <div className="text-center text-gray-500 py-8">
-                        {searchRuangan ? "Tidak ada ruangan yang ditemukan" : "Belum ada data ruangan"}
+                        {searchRuangan
+                          ? "Tidak ada ruangan yang ditemukan"
+                          : "Belum ada data ruangan"}
                       </div>
                     )}
                   </div>
@@ -455,7 +508,10 @@ export default function RuanganSuperAdmin() {
 
                       {/* Page Numbers - Hidden on very small screens, shown as scrollable on mobile */}
                       <div className="flex space-x-1 overflow-x-auto max-w-full">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1
+                        ).map((page) => (
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}

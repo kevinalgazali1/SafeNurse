@@ -5,6 +5,14 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import { toast, Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 interface Report {
   id: string;
@@ -241,8 +249,47 @@ export default function DashboardChiefNursing() {
   const [filterKategori, setFilterKategori] = useState("");
   const [filterGrading, setFilterGrading] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-
+  const router = useRouter();
   const token = Cookies.get("token");
+
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
 
   // CSS Keyframes untuk animasi
   useEffect(() => {

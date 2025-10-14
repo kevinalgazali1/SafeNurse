@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Image from "next/image";
 import { toast, Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+
+interface JwtPayload {
+  role: string;
+  exp?: number;
+  iat?: number;
+}
 
 interface Report {
   id: string;
@@ -118,7 +126,7 @@ export default function LaporanMasukVerifikator() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
-  
+
   // Pagination and search states
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(10);
@@ -303,11 +311,51 @@ export default function LaporanMasukVerifikator() {
     };
   }, []);
 
+  const router = useRouter();
+  const token = Cookies.get("token");
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const token = Cookies.get("token");
+  const checkTokenValidity = () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      logoutUser();
+      return;
+    }
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      if (!decoded.exp) return;
+
+      const now = Date.now() / 1000; // dalam detik
+      const timeLeft = decoded.exp - now;
+
+      if (timeLeft <= 0) {
+        logoutUser();
+      }
+    } catch (err) {
+      console.error("Token invalid:", err);
+      logoutUser();
+    }
+  };
+
+  // === 🚪 Fungsi Logout ===
+  const logoutUser = () => {
+    Cookies.remove("token");
+    Cookies.set("session_expired", "1", { path: "/" });
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    checkTokenValidity(); // cek pertama kali
+    const interval = setInterval(() => {
+      checkTokenValidity();
+    }, 3000); // tiap 5 detik
+
+    return () => clearInterval(interval);
+  }, []);
 
   // === Ambil data ringkas laporan masuk ===
   const fetchReports = async (onlyCount = false) => {
@@ -444,7 +492,7 @@ export default function LaporanMasukVerifikator() {
   }, []);
 
   // Pagination and search logic
-  const filteredReports = reports.filter(report =>
+  const filteredReports = reports.filter((report) =>
     report.kodeLaporan.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -1027,27 +1075,30 @@ export default function LaporanMasukVerifikator() {
                         <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mx-auto max-w-md">
                           <i className="fas fa-search text-white/70 text-3xl mb-4"></i>
                           <h3 className="text-white font-semibold text-lg mb-2">
-                            {searchQuery ? "Tidak ada laporan ditemukan" : "Belum ada laporan"}
+                            {searchQuery
+                              ? "Tidak ada laporan ditemukan"
+                              : "Belum ada laporan"}
                           </h3>
                           <p className="text-white/70 text-sm">
-                            {searchQuery 
+                            {searchQuery
                               ? `Tidak ada laporan dengan kode "${searchQuery}"`
-                              : "Belum ada laporan masuk yang perlu ditinjau"
-                            }
+                              : "Belum ada laporan masuk yang perlu ditinjau"}
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Pagination */}
                   {filteredReports.length > 0 && totalPages > 1 && (
                     <div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                       {/* Pagination Info */}
                       <div className="text-sm text-black font-medium">
-                        Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} dari {filteredReports.length} laporan
+                        Menampilkan {startIndex + 1}-
+                        {Math.min(endIndex, filteredReports.length)} dari{" "}
+                        {filteredReports.length} laporan
                       </div>
-                      
+
                       {/* Pagination Controls */}
                       <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-2">
                         {/* Previous Button */}
@@ -1063,9 +1114,12 @@ export default function LaporanMasukVerifikator() {
                           <span className="hidden sm:inline">Sebelumnya</span>
                           <span className="sm:hidden">‹</span>
                         </button>
-                        
+
                         {/* Page Numbers */}
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1
+                        ).map((page) => (
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}
@@ -1078,7 +1132,7 @@ export default function LaporanMasukVerifikator() {
                             {page}
                           </button>
                         ))}
-                        
+
                         {/* Next Button */}
                         <button
                           onClick={() => handlePageChange(currentPage + 1)}
