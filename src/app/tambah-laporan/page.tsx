@@ -465,11 +465,13 @@ export default function TambahLaporanPage() {
               const data = await res.json();
 
               if (data.is_lengkap) {
+                // Tampilkan kembali kronologi untuk konfirmasi pengguna
                 addMessage(
                   "bot",
-                  "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+                  `Berikut kronologi yang Anda sampaikan:\n\n${updatedData.kronologi}`
                 );
-                setCurrentStep("tindakanSegera");
+                addMessage("bot", "Apakah kronologi sudah sesuai?");
+                setCurrentStep("konfirmasiKronologi");
               } else {
                 addMessage(
                   "bot",
@@ -535,6 +537,35 @@ export default function TambahLaporanPage() {
           cleanAndGenerateSummary(updatedData);
 
           return; // Return early untuk skip setIsProcessingResponse(false) di bawah
+
+        case "konfirmasiKronologi":
+          if (
+            response.toLowerCase().includes("konfirmasi") ||
+            response.toLowerCase().includes("lanjut") ||
+            response.toLowerCase().includes("sesuai")
+          ) {
+            addMessage(
+              "bot",
+              "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+            );
+            setCurrentStep("tindakanSegera");
+          } else if (
+            response.toLowerCase().includes("revisi") ||
+            response.toLowerCase().includes("ubah") ||
+            response.toLowerCase().includes("tidak sesuai")
+          ) {
+            addMessage(
+              "bot",
+              "Silakan masukkan kronologi ulang dengan lebih lengkap."
+            );
+            setCurrentStep("kronologi");
+          } else {
+            addMessage(
+              "bot",
+              'Mohon pilih "Konfirmasi & Lanjut" atau "Revisi Kronologi".'
+            );
+          }
+          break;
 
         case "konfirmasi":
           if (
@@ -1017,6 +1048,35 @@ export default function TambahLaporanPage() {
             }`}
           >
             Tidak
+          </button>
+        </div>
+      );
+    }
+
+    if (currentStep === "konfirmasiKronologi") {
+      return (
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => handleQuickResponse("Konfirmasi & Lanjut")}
+            disabled={isProcessingResponse}
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              isProcessingResponse
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
+            }`}
+          >
+            Konfirmasi & Lanjut
+          </button>
+          <button
+            onClick={() => handleQuickResponse("Revisi Kronologi")}
+            disabled={isProcessingResponse}
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              isProcessingResponse
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-gray-500 text-white hover:bg-gray-600"
+            }`}
+          >
+            Revisi Kronologi
           </button>
         </div>
       );
@@ -2390,6 +2450,7 @@ export default function TambahLaporanPage() {
                 currentStep !== "tglMasukRS" &&
                 currentStep !== "tglKejadian" &&
                 currentStep !== "konfirmasi" &&
+                currentStep !== "konfirmasiKronologi" &&
                 currentStep !== "editJenisKelamin" &&
                 currentStep !== "editDampakInsiden" &&
                 currentStep !== "editFrekuensiKejadian" &&
