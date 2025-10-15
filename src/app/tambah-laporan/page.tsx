@@ -465,23 +465,24 @@ export default function TambahLaporanPage() {
               const data = await res.json();
 
               if (data.is_lengkap) {
-                // Tampilkan kembali kronologi untuk konfirmasi pengguna
+                // Kronologi sudah lengkap: langsung lanjut ke pertanyaan berikutnya
+                addMessage(
+                  "bot",
+                  "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+                );
+                setCurrentStep("tindakanSegera");
+              } else {
+                // Kronologi belum lengkap: tampilkan ulang kronologi, evaluasi, dan minta konfirmasi/revisi
                 addMessage(
                   "bot",
                   `Berikut kronologi yang Anda sampaikan:\n\n${updatedData.kronologi}`
                 );
-                addMessage("bot", "Apakah kronologi sudah sesuai?");
-                setCurrentStep("konfirmasiKronologi");
-              } else {
                 addMessage(
                   "bot",
                   `Kronologi belum lengkap. Evaluasi:\n\n${data.evaluasi}`
                 );
-                addMessage(
-                  "bot",
-                  "Silakan masukkan kronologi ulang dengan lebih lengkap."
-                );
-                setCurrentStep("kronologi");
+                addMessage("bot", "Apakah kronologi sudah sesuai?");
+                setCurrentStep("konfirmasiKronologi");
               }
             } catch (error) {
               console.error("Error validate chronology:", error);
@@ -559,6 +560,34 @@ export default function TambahLaporanPage() {
               "Silakan masukkan kronologi ulang dengan lebih lengkap."
             );
             setCurrentStep("kronologi");
+          } else {
+            addMessage(
+              "bot",
+              'Mohon pilih "Konfirmasi & Lanjut" atau "Revisi Kronologi".'
+            );
+          }
+          break;
+
+        case "konfirmasiKronologiEdit":
+          if (
+            response.toLowerCase().includes("konfirmasi") ||
+            response.toLowerCase().includes("lanjut") ||
+            response.toLowerCase().includes("sesuai")
+          ) {
+            // Lanjut: generate ringkasan baru dan kembali ke konfirmasi
+            setCurrentStep("processing");
+            cleanAndGenerateSummary(updatedData);
+            return; // Skip setIsProcessingResponse(false) di bawah
+          } else if (
+            response.toLowerCase().includes("revisi") ||
+            response.toLowerCase().includes("ubah") ||
+            response.toLowerCase().includes("tidak sesuai")
+          ) {
+            addMessage(
+              "bot",
+              "Silakan masukkan kronologi ulang dengan lebih lengkap."
+            );
+            setCurrentStep("editKronologi");
           } else {
             addMessage(
               "bot",
@@ -840,17 +869,26 @@ export default function TambahLaporanPage() {
               const data = await res.json();
 
               if (data.is_lengkap) {
-                await cleanAndGenerateSummary(updatedData);
+                // Kronologi edit dinyatakan lengkap: tampilkan kronologi baru untuk konfirmasi
+                addMessage(
+                  "bot",
+                  `Berikut kronologi yang Anda sampaikan:\n\n${updatedData.kronologi}`
+                );
+                addMessage("bot", "Apakah kronologi sudah sesuai?");
+                setCurrentStep("konfirmasiKronologiEdit");
+                setIsProcessingResponse(false);
               } else {
+                // Kronologi edit belum lengkap: tampilkan kronologi baru, evaluasi, dan minta konfirmasi/revisi
+                addMessage(
+                  "bot",
+                  `Berikut kronologi yang Anda sampaikan:\n\n${updatedData.kronologi}`
+                );
                 addMessage(
                   "bot",
                   `Kronologi edit belum lengkap. Evaluasi:\n\n${data.evaluasi}`
                 );
-                addMessage(
-                  "bot",
-                  "Silakan masukkan kronologi ulang dengan lebih lengkap."
-                );
-                setCurrentStep("editKronologi");
+                addMessage("bot", "Apakah kronologi sudah sesuai?");
+                setCurrentStep("konfirmasiKronologiEdit");
                 setIsProcessingResponse(false);
               }
             } catch (error) {
@@ -1054,6 +1092,35 @@ export default function TambahLaporanPage() {
     }
 
     if (currentStep === "konfirmasiKronologi") {
+      return (
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => handleQuickResponse("Konfirmasi & Lanjut")}
+            disabled={isProcessingResponse}
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              isProcessingResponse
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-[#0B7A95] text-white hover:bg-[#0a6b85]"
+            }`}
+          >
+            Konfirmasi & Lanjut
+          </button>
+          <button
+            onClick={() => handleQuickResponse("Revisi Kronologi")}
+            disabled={isProcessingResponse}
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              isProcessingResponse
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-gray-500 text-white hover:bg-gray-600"
+            }`}
+          >
+            Revisi Kronologi
+          </button>
+        </div>
+      );
+    }
+
+    if (currentStep === "konfirmasiKronologiEdit") {
       return (
         <div className="flex gap-2 mb-4">
           <button
@@ -2451,6 +2518,7 @@ export default function TambahLaporanPage() {
                 currentStep !== "tglKejadian" &&
                 currentStep !== "konfirmasi" &&
                 currentStep !== "konfirmasiKronologi" &&
+                currentStep !== "konfirmasiKronologiEdit" &&
                 currentStep !== "editJenisKelamin" &&
                 currentStep !== "editDampakInsiden" &&
                 currentStep !== "editFrekuensiKejadian" &&
