@@ -738,6 +738,7 @@ export default function DashboardChiefNursing() {
 
       // Refresh data laporan biar status ter-update
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal dan reset form
       handleCloseValidasiModal();
@@ -832,6 +833,7 @@ export default function DashboardChiefNursing() {
 
       // Refresh list laporan agar perubahan terlihat
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal setelah berhasil
       handleCloseRevisiModal();
@@ -915,6 +917,7 @@ export default function DashboardChiefNursing() {
 
       // Refresh data laporan
       await fetchReports();
+      await fetchNotifications();
     } catch (error) {
       console.error("Error saat menolak laporan:", error);
       toast.error("Gagal menolak laporan. Silakan coba lagi.");

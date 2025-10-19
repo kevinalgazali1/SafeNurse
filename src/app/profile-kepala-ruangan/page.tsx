@@ -65,7 +65,7 @@ export default function ProfileKepalaRuanganPage() {
     }
   };
 
-  // === 🚪 Fungsi Logout ===
+  // === Fungsi Logout ===
   const logoutUser = () => {
     Cookies.remove("token");
     Cookies.set("session_expired", "1", { path: "/" });
@@ -195,6 +195,42 @@ export default function ProfileKepalaRuanganPage() {
     fetchData();
   }, []);
 
+  const fetchNotifications = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/notifikasi/new`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi baru");
+
+      const resData = await res.json();
+      console.log("Data notifikasi baru:", resData);
+
+      // Hitung jumlah data notifikasi yang dikembalikan
+      const countBaru = resData?.data?.length || 0;
+      setNewNotificationCount(countBaru);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -257,7 +293,7 @@ export default function ProfileKepalaRuanganPage() {
       console.log("Password updated:", result);
 
       toast.success("Password berhasil diubah!");
-
+      await fetchNotifications();
       // ✅ Tutup modal otomatis
       handleCloseModal();
     } catch (error) {
@@ -314,6 +350,7 @@ export default function ProfileKepalaRuanganPage() {
         no_telp: profileForm.no_telp,
       }));
 
+      await fetchNotifications();
       // Tutup modal
       setShowChangeProfileModal(false);
     } catch (error) {

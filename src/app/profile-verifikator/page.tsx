@@ -260,6 +260,7 @@ export default function ProfileVerifikatorPage() {
 
       toast.success("Password berhasil diubah!");
 
+      await fetchNotifications();
       // ✅ Tutup modal otomatis
       handleCloseModal();
     } catch (error) {
@@ -318,6 +319,7 @@ export default function ProfileVerifikatorPage() {
         no_telp: profileForm.no_telp,
       }));
 
+      await fetchNotifications();
       // Tutup modal
       setShowChangeProfileModal(false);
     } catch (error) {

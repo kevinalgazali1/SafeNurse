@@ -620,6 +620,7 @@ export default function LaporanMasukVerifikator() {
 
       // Refresh data laporan
       await fetchReports();
+      await fetchNotifications();
 
       handleCloseModal();
       handleCloseValidasiModal();
@@ -699,6 +700,7 @@ export default function LaporanMasukVerifikator() {
 
       // Refresh list laporan agar perubahan terlihat
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal setelah berhasil
       handleCloseRevisiModal();

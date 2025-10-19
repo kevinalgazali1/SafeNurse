@@ -417,6 +417,7 @@ export default function LaporanMasukChiefNursingPage() {
 
       // Refresh data laporan
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal dan reset form
       handleCloseValidasiModal();
@@ -497,6 +498,7 @@ export default function LaporanMasukChiefNursingPage() {
 
       // Refresh list laporan agar perubahan terlihat
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal setelah berhasil
       handleCloseRevisiModal();
@@ -510,41 +512,41 @@ export default function LaporanMasukChiefNursingPage() {
     }
   };
 
-  const handleKirimCatatan = async () => {
-    if (!selectedReport) return;
+  // const handleKirimCatatan = async () => {
+  //   if (!selectedReport) return;
 
-    const reportId = selectedReport.id;
+  //   const reportId = selectedReport.id;
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ catatan }),
-        }
-      );
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ catatan }),
+  //       }
+  //     );
 
-      if (!res.ok) {
-        throw new Error("Gagal mengirim catatan");
-      }
+  //     if (!res.ok) {
+  //       throw new Error("Gagal mengirim catatan");
+  //     }
 
-      const data = await res.json();
-      console.log("Catatan berhasil dikirim:", data);
+  //     const data = await res.json();
+  //     console.log("Catatan berhasil dikirim:", data);
 
-      // reset input catatan setelah berhasil
-      setCatatan("");
-      handleCloseModal();
+  //     // reset input catatan setelah berhasil
+  //     setCatatan("");
+  //     handleCloseModal();
 
-      // kalau mau refresh data laporan
-      // await fetchReportDetail(selectedReport.kodeLaporan);
-    } catch (error) {
-      console.error("Error saat kirim catatan:", error);
-    }
-  };
+  //     // kalau mau refresh data laporan
+  //     // await fetchReportDetail(selectedReport.kodeLaporan);
+  //   } catch (error) {
+  //     console.error("Error saat kirim catatan:", error);
+  //   }
+  // };
 
   const formatTanggal = (tanggal: string) => {
     if (!tanggal || tanggal === "-") return "-";

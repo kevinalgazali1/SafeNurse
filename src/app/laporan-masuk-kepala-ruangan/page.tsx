@@ -434,6 +434,7 @@ export default function LaporanMasukKepalaRuangan() {
 
       // Refresh data laporan
       await fetchReports();
+      await fetchNotifications();
     } catch (error: any) {
       console.error("❌ Error validasi:", error.message);
       toast.error(error.message || "Terjadi kesalahan saat validasi laporan");
@@ -513,6 +514,7 @@ export default function LaporanMasukKepalaRuangan() {
 
       // Refresh list laporan agar perubahan terlihat
       await fetchReports();
+      await fetchNotifications();
 
       // Tutup modal setelah berhasil
       handleCloseRevisiModal();
@@ -589,6 +591,7 @@ export default function LaporanMasukKepalaRuangan() {
 
       // Refresh data laporan
       await fetchReports();
+      await fetchNotifications();
     } catch (error) {
       console.error("Error saat menolak laporan:", error);
       toast.error("Gagal menolak laporan. Silakan coba lagi.");

@@ -73,6 +73,7 @@ export default function DashboardVerifikatorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
+  const [ruanganList, setRuanganList] = useState<any[]>([]);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -256,7 +257,7 @@ export default function DashboardVerifikatorPage() {
     }
   };
 
-  // === 🚪 Fungsi Logout ===
+  // === Fungsi Logout ===
   const logoutUser = () => {
     Cookies.remove("token");
     Cookies.set("session_expired", "1", { path: "/" });
@@ -320,6 +321,37 @@ export default function DashboardVerifikatorPage() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchRuangan = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal mengambil data ruangan");
+
+        const data = await res.json();
+        console.log("Data ruangan:", data);
+
+        // Hapus duplikat nama_ruangan (jika ada)
+        const uniqueRuangan = Array.from(
+          new Map(data.map((item: any) => [item.nama_ruangan, item])).values()
+        );
+
+        setRuanganList(uniqueRuangan);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) fetchRuangan();
+  }, [token]);
 
   const fetchReportCount = async () => {
     if (!token) return;
@@ -815,9 +847,14 @@ export default function DashboardVerifikatorPage() {
                           className="w-full px-3 py-2 bg-[#6B8CAE] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
                         >
                           <option value="Semua">Semua</option>
-                          <option value="IGD">IGD</option>
-                          <option value="ICU">ICU</option>
-                          <option value="Rawat Inap">Rawat Inap</option>
+                          {ruanganList.map((ruangan) => (
+                            <option
+                              key={ruangan.id_ruangan}
+                              value={ruangan.nama_ruangan}
+                            >
+                              {ruangan.nama_ruangan}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
