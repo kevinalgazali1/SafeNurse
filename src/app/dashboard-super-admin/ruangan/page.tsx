@@ -144,6 +144,17 @@ export default function RuanganSuperAdmin() {
     setCurrentPage(page);
   };
 
+  const getVisiblePages = () => {
+    const maxVisiblePages = 3;
+    const pages: number[] = [];
+    if (totalPages === 0) return pages;
+    const groupIndex = Math.floor((currentPage - 1) / maxVisiblePages);
+    const start = groupIndex * maxVisiblePages + 1;
+    const end = Math.min(start + maxVisiblePages - 1, totalPages);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
   // buka modal edit
   const handleEditRoom = (room: any) => {
     setEditRoom({
@@ -492,30 +503,28 @@ export default function RuanganSuperAdmin() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="mt-6 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+                    <div className="mt-6 flex flex-row justify-center items-center space-x-2 mb-4">
                       {/* Previous Button */}
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className={`px-3 py-2 rounded-md text-sm font-medium w-full sm:w-auto ${
+                        className={`px-3 py-2 rounded-full text-sm font-medium ${
                           currentPage === 1
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-white text-black hover:bg-gray-100 border border-gray-300"
                         }`}
                       >
-                        Sebelumnya
+                        <i className="fas fa-chevron-left" aria-hidden="true"></i>
+                        <span className="hidden sm:inline ml-2">Sebelumnya</span>
                       </button>
 
-                      {/* Page Numbers - Hidden on very small screens, shown as scrollable on mobile */}
-                      <div className="flex space-x-1 overflow-x-auto max-w-full">
-                        {Array.from(
-                          { length: totalPages },
-                          (_, i) => i + 1
-                        ).map((page) => (
+                      {/* Page Numbers */}
+                      <div className="flex flex-row space-x-1">
+                        {getVisiblePages().map((page) => (
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}
-                            className={`px-3 py-2 rounded-md text-sm font-medium flex-shrink-0 ${
+                            className={`px-3 py-2 rounded-full text-sm font-medium ${
                               currentPage === page
                                 ? "bg-[#0B7A95] text-white"
                                 : "bg-white text-black hover:bg-gray-100 border border-gray-300"
@@ -530,13 +539,14 @@ export default function RuanganSuperAdmin() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className={`px-3 py-2 rounded-md text-sm font-medium w-full sm:w-auto ${
+                        className={`px-3 py-2 rounded-full text-sm font-medium ${
                           currentPage === totalPages
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-white text-black hover:bg-gray-100 border border-gray-300"
                         }`}
                       >
-                        Selanjutnya
+                        <span className="hidden sm:inline mr-2">Selanjutnya</span>
+                        <i className="fas fa-chevron-right" aria-hidden="true"></i>
                       </button>
                     </div>
                   )}

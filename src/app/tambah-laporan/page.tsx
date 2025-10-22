@@ -559,6 +559,7 @@ export default function TambahLaporanPage() {
               "bot",
               "Silakan masukkan kronologi ulang dengan lebih lengkap."
             );
+            setInputValue(updatedData.kronologi || "");
             setCurrentStep("kronologi");
           } else {
             addMessage(
@@ -587,6 +588,7 @@ export default function TambahLaporanPage() {
               "bot",
               "Silakan masukkan kronologi ulang dengan lebih lengkap."
             );
+            setInputValue(updatedData.kronologi || "");
             setCurrentStep("editKronologi");
           } else {
             addMessage(
@@ -709,14 +711,17 @@ export default function TambahLaporanPage() {
             switch (nomorDataPasien) {
               case 1:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.namaPasien || "");
                 setCurrentStep("editNamaPasien");
                 break;
               case 2:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.noRM || "");
                 setCurrentStep("editNoRM");
                 break;
               case 3:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.umur || "");
                 setCurrentStep("editUmur");
                 break;
               case 4:
@@ -739,10 +744,12 @@ export default function TambahLaporanPage() {
             switch (nomorRincian) {
               case 1:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.unitPelapor || "");
                 setCurrentStep("editUnitPelapor");
                 break;
               case 2:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.lokasiInsiden || "");
                 setCurrentStep("editLokasiInsiden");
                 break;
               case 3:
@@ -751,22 +758,27 @@ export default function TambahLaporanPage() {
                 break;
               case 4:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.yangDilaporkan || "");
                 setCurrentStep("editYangDilaporkan");
                 break;
               case 5:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.judulInsiden || "");
                 setCurrentStep("editJudulInsiden");
                 break;
               case 6:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.kronologi || "");
                 setCurrentStep("editKronologi");
                 break;
               case 7:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.tindakanSegera || "");
                 setCurrentStep("editTindakanSegera");
                 break;
               case 8:
                 addMessage("bot", "Berikan jawaban barunya:");
+                setInputValue(reportData.tindakanOleh || "");
                 setCurrentStep("editTindakanOleh");
                 break;
               case 9:
@@ -897,6 +909,7 @@ export default function TambahLaporanPage() {
                 "bot",
                 "Terjadi kesalahan saat validasi kronologi edit. Coba lagi ya."
               );
+              setInputValue(updatedData.kronologi || "");
               setCurrentStep("editKronologi");
               setIsProcessingResponse(false);
             }
@@ -1048,12 +1061,12 @@ export default function TambahLaporanPage() {
         setIsListening(true);
         mediaRecorder.start();
 
-        // Auto stop setelah 15 detik (jika user tidak klik stop)
+        // Auto stop setelah 5 menit (jika user tidak klik stop)
         setTimeout(() => {
           if (mediaRecorder.state !== "inactive") {
             mediaRecorder.stop();
           }
-        }, 15000);
+        }, 300000);
       } catch {
         toast.error("Izin mikrofon ditolak atau tidak tersedia");
         setIsListening(false);

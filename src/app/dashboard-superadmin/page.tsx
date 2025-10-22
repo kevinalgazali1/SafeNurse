@@ -267,63 +267,43 @@ export default function DashboardSuperAdmin() {
   // Pagination component
   const PaginationComponent = () => {
     const getPageNumbers = () => {
-      const pages = [];
-      const maxVisiblePages = 5;
+      const pages: (number)[] = [];
+      const maxVisiblePages = 3;
 
-      if (totalPages <= maxVisiblePages) {
-        for (let i = 1; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        if (currentPage <= 3) {
-          for (let i = 1; i <= 4; i++) {
-            pages.push(i);
-          }
-          pages.push("...");
-          pages.push(totalPages);
-        } else if (currentPage >= totalPages - 2) {
-          pages.push(1);
-          pages.push("...");
-          for (let i = totalPages - 3; i <= totalPages; i++) {
-            pages.push(i);
-          }
-        } else {
-          pages.push(1);
-          pages.push("...");
-          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-            pages.push(i);
-          }
-          pages.push("...");
-          pages.push(totalPages);
-        }
+      if (totalPages === 0) return pages;
+
+      const groupIndex = Math.floor((currentPage - 1) / maxVisiblePages);
+      const start = groupIndex * maxVisiblePages + 1;
+      const end = Math.min(start + maxVisiblePages - 1, totalPages);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
       }
       return pages;
     };
 
     return (
-      <div className="flex justify-center items-center space-x-2 mt-6">
+      <div className="flex flex-row justify-center items-center space-x-2 mt-6">
         <button
           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
             currentPage === 1
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-white text-black hover:bg-gray-100 border border-gray-300"
           }`}
         >
-          Sebelumnya
+          <i className="fas fa-chevron-left" aria-hidden="true"></i>
+          <span className="hidden sm:inline ml-2">Sebelumnya</span>
         </button>
 
         {getPageNumbers().map((page, index) => (
           <button
             key={index}
-            onClick={() => typeof page === "number" && setCurrentPage(page)}
-            disabled={page === "..."}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            onClick={() => setCurrentPage(page)}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
               page === currentPage
                 ? "bg-[#0B7A95] text-white"
-                : page === "..."
-                ? "bg-transparent text-black cursor-default"
                 : "bg-white text-black hover:bg-gray-100 border border-gray-300"
             }`}
           >
@@ -334,13 +314,14 @@ export default function DashboardSuperAdmin() {
         <button
           onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
             currentPage === totalPages
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-white text-black hover:bg-gray-100 border border-gray-300"
           }`}
         >
-          Selanjutnya
+          <span className="hidden sm:inline mr-2">Selanjutnya</span>
+          <i className="fas fa-chevron-right" aria-hidden="true"></i>
         </button>
       </div>
     );
