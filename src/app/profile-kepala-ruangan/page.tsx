@@ -529,8 +529,8 @@ export default function ProfileKepalaRuanganPage() {
             <Image
               src="/logosafenurse.png"
               alt="Logo SafeNurse"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               className="object-contain"
             />
 

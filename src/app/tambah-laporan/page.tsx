@@ -2275,8 +2275,8 @@ export default function TambahLaporanPage() {
               <Image
                 src="/logosafenurse.png"
                 alt="Logo SafeNurse"
-                width={30}
-                height={30}
+                width={50}
+                height={50}
                 className="object-contain"
               />
 

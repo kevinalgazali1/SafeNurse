@@ -90,8 +90,8 @@ export default function LoginPage() {
           <Image
             src="/logosafenurse.png"
             alt="Logo SafeNurse"
-            width={40}
-            height={40}
+            width={50}
+            height={50}
             className="object-contain"
           />
 
@@ -110,13 +110,6 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        {/* Login Button */}
-        {/* <button
-          className="bg-[#0B7A95] text-white px-6 py-2 rounded-lg hover:bg-[#095a6b] transition-all duration-300 font-medium hover:scale-105"
-          onClick={() => (window.location.href = "/login")}
-        >
-          Login
-        </button> */}
       </header>
 
       {/* Main content */}
