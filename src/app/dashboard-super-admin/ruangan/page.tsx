@@ -514,8 +514,13 @@ export default function RuanganSuperAdmin() {
                             : "bg-white text-black hover:bg-gray-100 border border-gray-300"
                         }`}
                       >
-                        <i className="fas fa-chevron-left" aria-hidden="true"></i>
-                        <span className="hidden sm:inline ml-2">Sebelumnya</span>
+                        <i
+                          className="fas fa-chevron-left"
+                          aria-hidden="true"
+                        ></i>
+                        <span className="hidden sm:inline ml-2">
+                          Sebelumnya
+                        </span>
                       </button>
 
                       {/* Page Numbers */}
@@ -545,8 +550,13 @@ export default function RuanganSuperAdmin() {
                             : "bg-white text-black hover:bg-gray-100 border border-gray-300"
                         }`}
                       >
-                        <span className="hidden sm:inline mr-2">Selanjutnya</span>
-                        <i className="fas fa-chevron-right" aria-hidden="true"></i>
+                        <span className="hidden sm:inline mr-2">
+                          Selanjutnya
+                        </span>
+                        <i
+                          className="fas fa-chevron-right"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     </div>
                   )}
@@ -741,9 +751,11 @@ export default function RuanganSuperAdmin() {
           <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
             <div className="text-center space-y-1">
               <p className="text-sm font-medium">
-                Copyright 2025 © SafeNurse All Rights reserved.
+                Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
               </p>
-              <p className="text-xs text-white/80">Universitas Hasanuddin</p>
+              <p className="text-xs text-white/80">
+                Penelitian Tesis Magister Kemdiktisaintek
+              </p>
             </div>
           </footer>
 

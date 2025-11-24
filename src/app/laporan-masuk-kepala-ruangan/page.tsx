@@ -2021,9 +2021,9 @@ export default function LaporanMasukKepalaRuangan() {
       <footer className="mt-auto bg-[#0B7A95] text-white py-4 px-6">
         <div className="text-center space-y-1">
           <p className="text-sm font-medium">
-            Copyright 2025 © SafeNurse All Rights reserved.
+            Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Universitas Hasanuddin</p>
+          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
         </div>
       </footer>
       <Toaster
