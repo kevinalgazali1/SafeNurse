@@ -1087,6 +1087,18 @@ export default function DashboardChiefNursing() {
                   </div>
                   <span className="text-xs">Laporan Masuk</span>
                 </button>
+
+                {/* Video Tutorial */}
+                <button
+                  className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+                  onClick={() =>
+                    (window.location.href = "/video-tutorial-kepala-ruangan")
+                  }
+                >
+                  <i className="fas fa-play-circle text-lg mb-1"></i>
+                  <span className="text-xs">Tutorial</span>
+                </button>
+
                 {/* Manage Profil */}
                 <button
                   className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
@@ -1160,6 +1172,17 @@ export default function DashboardChiefNursing() {
                     )}
                   </div>
                   <span>Laporan Masuk</span>
+                </button>
+
+                {/* Video Tutorial */}
+                <button
+                  className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                  onClick={() =>
+                    (window.location.href = "/video-tutorial-kepala-ruangan")
+                  }
+                >
+                  <i className="fas fa-play-circle text-lg mr-3"></i>
+                  <span>Tutorial</span>
                 </button>
 
                 {/* Manage Profil */}
@@ -1319,34 +1342,34 @@ export default function DashboardChiefNursing() {
                   {/* Table Header */}
                   <div className="bg-[#0B7A95] text-white animate-fadeInRight">
                     <div className="grid grid-cols-10 gap-2 px-4 py-3 text-sm font-medium">
-                      <div className="text-center animate-bounceSubtle stagger-1">
+                      <div className="text-center">
                         Tanggal Laporan
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-2">
+                      <div className="text-center">
                         Kategori Insiden
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-3">
+                      <div className="text-center">
                         Status Laporan
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-4">
+                      <div className="text-center">
                         Grading
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-5">
-                        Catatan kepala ruangan
+                      <div className="text-center">
+                      RTL kepala ruangan
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-1">
-                        Catatan Chief Nursing
+                      <div className="text-center">
+                      RTL Chief Nursing
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-2">
-                        Catatan verifikator
+                      <div className="text-center">
+                      RTL verifikator
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-3">
+                      <div className="text-center">
                         Kode Laporan
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-4">
+                      <div className="text-center">
                         Tindak Lanjut
                       </div>
-                      <div className="text-center animate-bounceSubtle stagger-5">
+                      <div className="text-center">
                         Detail
                       </div>
                     </div>
@@ -1893,7 +1916,7 @@ export default function DashboardChiefNursing() {
                       Kategori :
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {["KTD", "KPC", "KNC", "KTC", "Sentinel"].map(
+                      {["KPC", "KNC", "KTC", "KTD", "Sentinel"].map(
                         (kategori) => (
                           <button
                             key={kategori}
@@ -1918,10 +1941,10 @@ export default function DashboardChiefNursing() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { name: "merah", color: "bg-red-500" },
-                        { name: "kuning", color: "bg-yellow-500" },
-                        { name: "hijau", color: "bg-green-500" },
                         { name: "biru", color: "bg-blue-500" },
+                        { name: "hijau", color: "bg-green-500" },
+                        { name: "kuning", color: "bg-yellow-500" },
+                        { name: "merah", color: "bg-red-500" },
                       ].map((grading) => (
                         <button
                           key={grading.name}

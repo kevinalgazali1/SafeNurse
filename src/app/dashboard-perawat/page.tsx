@@ -199,6 +199,10 @@ export default function DashboardPerawatPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [searchKodeLaporan, setSearchKodeLaporan] = useState("");
 
+  // State untuk statistik laporan
+  const [totalReportsAllTime, setTotalReportsAllTime] = useState(0);
+  const [totalReportsThisMonth, setTotalReportsThisMonth] = useState(0);
+
   const token = Cookies.get("token");
 
   const checkTokenValidity = () => {
@@ -435,6 +439,30 @@ export default function DashboardPerawatPage() {
 
       setReports(mappedReports);
       setFilteredReports(mappedReports); // default semua
+
+      // Hitung statistik laporan
+      const totalAllTime = mappedReports.length;
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const reportsThisMonth = mappedReports.filter((report: Report) => {
+        // Gunakan tanggalWaktuPelaporan jika ada, jika tidak gunakan tanggal insiden
+        const reportDateStr = report.tanggalWaktuPelaporan || report.tanggal;
+        if (!reportDateStr) return false;
+
+        const reportDate = new Date(reportDateStr);
+        // Pastikan tanggal valid
+        if (isNaN(reportDate.getTime())) return false;
+
+        return (
+          reportDate.getMonth() === currentMonth &&
+          reportDate.getFullYear() === currentYear
+        );
+      });
+
+      setTotalReportsAllTime(totalAllTime);
+      setTotalReportsThisMonth(reportsThisMonth.length);
     } catch (err) {
       console.error(err);
     } finally {
@@ -729,6 +757,52 @@ export default function DashboardPerawatPage() {
 
               {/* Content */}
               <div className="relative z-10">
+                {/* Statistik Laporan Section */}
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 animate-fadeInUp">
+                  {/* Card Total Laporan Selamanya */}
+                  <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 border-l-2 sm:border-l-4 border-[#0B7A95] hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1 truncate">
+                          Total Laporan
+                        </p>
+                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-[#0B7A95]">
+                          {totalReportsAllTime}
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-white mt-0.5 sm:mt-1 truncate">
+                          Selamanya
+                        </p>
+                      </div>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#0B7A95] bg-opacity-10 rounded-full flex items-center justify-center flex-shrink-0 ml-1 sm:ml-2">
+                        <i className="fas fa-clipboard-list text-[#0B7A95] text-xs sm:text-sm md:text-base"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Total Laporan Bulan Ini */}
+                  <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 border-l-2 sm:border-l-4 border-[#4CAF50] hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1 truncate">
+                          Bulan Ini
+                        </p>
+                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-[#4CAF50]">
+                          {totalReportsThisMonth}
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 truncate">
+                          {new Date().toLocaleDateString("id-ID", {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#4CAF50] bg-opacity-10 rounded-full flex items-center justify-center flex-shrink-0 ml-1 sm:ml-2">
+                        <i className="fas fa-calendar-alt text-[#4CAF50] text-xs sm:text-sm md:text-base"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Header section with date picker and add button */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 animate-fadeInUp space-y-4 lg:space-y-0">
                   {/* Filter Section - Kiri Atas */}
@@ -864,9 +938,9 @@ export default function DashboardPerawatPage() {
                       <div className="text-center">Kategori Insiden</div>
                       <div className="text-center">Status Laporan</div>
                       <div className="text-center">Grading</div>
-                      <div className="text-center">Catatan kepala ruangan</div>
-                      <div className="text-center">Catatan Chief Nursing</div>
-                      <div className="text-center">Catatan verifikator</div>
+                      <div className="text-center">RTL kepala ruangan</div>
+                      <div className="text-center">RTL Chief Nursing</div>
+                      <div className="text-center">RTL verifikator</div>
                       <div className="text-center">Kode Laporan</div>
                       <div className="text-center">Detail</div>
                     </div>
@@ -1360,7 +1434,9 @@ export default function DashboardPerawatPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
+          <p className="text-xs text-white/80">
+            Penelitian Tesis Magister Kemdiktisaintek
+          </p>
         </div>
       </footer>
     </div>

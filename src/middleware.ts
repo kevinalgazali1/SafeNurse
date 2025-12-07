@@ -47,12 +47,14 @@ export function middleware(req: NextRequest) {
         "profile-kepala-ruangan",
         "laporan-masuk-kepala-ruangan",
         "notifications-kepala-ruangan",
+        "video-tutorial-kepala-ruangan",
       ],
       chief_nursing: [
         "dashboard-chiefnursing",
         "profile-chiefnursing",
         "laporan-masuk-chiefnursing",
         "notifications-chiefnursing",
+        "video-tutorial-chiefnursing",
       ],
       verifikator: [
         "dashboard-verifikator",
@@ -60,6 +62,7 @@ export function middleware(req: NextRequest) {
         "laporan-masuk-verifikator",
         "riwayat-laporan-verifikator",
         "notifications-verifikator",
+        "video-tutorial-verifikator",
       ],
     };
 

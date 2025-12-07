@@ -1347,9 +1347,9 @@ export default function DashboardChiefNursing() {
                   <div className="text-center">Kategori Insiden</div>
                   <div className="text-center">Status Laporan</div>
                   <div className="text-center">Grading</div>
-                  <div className="text-center">Catatan kepala ruangan</div>
-                  <div className="text-center">Catatan Chief Nursing</div>
-                  <div className="text-center">Catatan verifikator</div>
+                  <div className="text-center">RTL kepala ruangan</div>
+                  <div className="text-center">RTL Chief Nursing</div>
+                  <div className="text-center">RTL verifikator</div>
                   <div className="text-center">Kode Laporan</div>
                   <div className="text-center">Tindak Lanjut</div>
                   <div className="text-center">Detail</div>
@@ -1965,7 +1965,7 @@ export default function DashboardChiefNursing() {
                   Kategori :
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {["KTD", "KPC", "KNC", "KTC", "Sentinel"].map((kategori) => (
+                  {["KPC", "KNC", "KTC", "KTD", "Sentinel"].map((kategori) => (
                     <button
                       key={kategori}
                       onClick={() => setSelectedKategori(kategori)}
@@ -1988,10 +1988,10 @@ export default function DashboardChiefNursing() {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { name: "merah", color: "bg-red-500" },
-                    { name: "kuning", color: "bg-yellow-500" },
-                    { name: "hijau", color: "bg-green-500" },
                     { name: "biru", color: "bg-blue-500" },
+                    { name: "hijau", color: "bg-green-500" },
+                    { name: "kuning", color: "bg-yellow-500" },
+                    { name: "merah", color: "bg-red-500" },
                   ].map((grading) => (
                     <button
                       key={grading.name}

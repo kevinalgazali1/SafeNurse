@@ -982,6 +982,17 @@ export default function LaporanMasukKepalaRuangan() {
                   <span className="text-xs">Laporan Masuk</span>
                 </button>
 
+                {/* Video Tutorial */}
+                <button
+                  className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+                  onClick={() =>
+                    (window.location.href = "/video-tutorial-kepala-ruangan")
+                  }
+                >
+                  <i className="fas fa-play-circle text-lg mb-1"></i>
+                  <span className="text-xs">Tutorial</span>
+                </button>
+
                 {/* Manage Profil */}
                 <button
                   className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
@@ -1052,6 +1063,17 @@ export default function LaporanMasukKepalaRuangan() {
                       )}
                     </div>
                     <span>Laporan Masuk</span>
+                  </button>
+
+                  {/* Video Tutorial */}
+                  <button
+                    className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                    onClick={() =>
+                      (window.location.href = "/video-tutorial-kepala-ruangan")
+                    }
+                  >
+                    <i className="fas fa-play-circle text-lg mr-3"></i>
+                    <span>Tutorial</span>
                   </button>
 
                   {/* Manage Profil */}
@@ -1562,7 +1584,7 @@ export default function LaporanMasukKepalaRuangan() {
                       Kategori :
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {["KTD", "KPC", "KNC", "KTC", "Sentinel"].map(
+                      {["KPC", "KNC", "KTC", "KTD", "Sentinel"].map(
                         (kategori) => (
                           <button
                             key={kategori}
@@ -1587,10 +1609,10 @@ export default function LaporanMasukKepalaRuangan() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { name: "merah", color: "bg-red-500" },
-                        { name: "kuning", color: "bg-yellow-500" },
-                        { name: "hijau", color: "bg-green-500" },
                         { name: "biru", color: "bg-blue-500" },
+                        { name: "hijau", color: "bg-green-500" },
+                        { name: "kuning", color: "bg-yellow-500" },
+                        { name: "merah", color: "bg-red-500" },
                       ].map((grading) => (
                         <button
                           key={grading.name}

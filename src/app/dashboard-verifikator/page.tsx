@@ -710,6 +710,17 @@ export default function DashboardVerifikatorPage() {
                     <span className="text-xs">Laporan Masuk</span>
                   </button>
 
+                  {/* Video Tutorial */}
+                  <button
+                    className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
+                    onClick={() =>
+                      (window.location.href = "/video-tutorial-verifikator")
+                    }
+                  >
+                    <i className="fas fa-play-circle text-lg mb-1"></i>
+                    <span className="text-xs">Tutorial</span>
+                  </button>
+
                   {/* Manage Profil */}
                   <button
                     className="flex flex-col items-center text-white hover:text-[#0B7A95] transition-colors"
@@ -791,6 +802,17 @@ export default function DashboardVerifikatorPage() {
                         )}
                       </div>
                       <span>Laporan Masuk</span>
+                    </button>
+
+                    {/* Video Tutorial */}
+                    <button
+                      className="flex items-center text-white hover:text-[#0B7A95] transition-colors p-2 rounded"
+                      onClick={() =>
+                        (window.location.href = "/video-tutorial-verifikator")
+                      }
+                    >
+                      <i className="fas fa-play-circle text-lg mr-3"></i>
+                      <span>Tutorial</span>
                     </button>
 
                     {/* Manage Profil */}

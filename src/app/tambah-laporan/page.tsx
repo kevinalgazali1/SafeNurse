@@ -51,6 +51,7 @@ export default function TambahLaporanPage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      questionNumber: 1, // Nomor pertanyaan
     },
   ]);
 
@@ -105,6 +106,53 @@ export default function TambahLaporanPage() {
 
   const [currentStep, setCurrentStep] = useState("greeting");
   const [inputValue, setInputValue] = useState("");
+  
+  // Mapping step ke nomor pertanyaan
+  const stepToQuestionNumber: Record<string, number> = {
+    greeting: 1,
+    namaPasien: 2,
+    noRM: 3,
+    umur: 4,
+    jenisKelamin: 5,
+    tglMasukRS: 6,
+    unitPelapor: 7,
+    lokasiInsiden: 8,
+    tglKejadian: 9,
+    yangDilaporkan: 10,
+    judulInsiden: 11,
+    kronologi: 12,
+    tindakanSegera: 13,
+    tindakanOleh: 14,
+    dampakInsiden: 15,
+    frekuensiKejadian: 16,
+  };
+
+  const TOTAL_QUESTIONS = 16;
+
+  // Fungsi untuk mendapatkan nomor pertanyaan dari step
+  const getQuestionNumber = (step: string): number | null => {
+    return stepToQuestionNumber[step] || null;
+  };
+
+  // Fungsi untuk mendapatkan nomor pertanyaan dari message
+  const getQuestionNumberFromMessage = (messageId: number, messages: any[]): number | null => {
+    // Cari step yang sesuai dengan message ini
+    // Kita perlu track step untuk setiap message, atau kita bisa hitung dari urutan
+    let questionCount = 0;
+    for (let i = 0; i < messages.length; i++) {
+      if (messages[i].id === messageId && messages[i].sender === "bot") {
+        // Hitung berapa banyak pesan bot sebelumnya
+        for (let j = 0; j < i; j++) {
+          if (messages[j].sender === "bot") {
+            questionCount++;
+          }
+        }
+        return questionCount + 1;
+      }
+    }
+    return null;
+  };
+
   const [reportData, setReportData] = useState({
     namaPasien: "",
     noRM: "",
@@ -183,7 +231,7 @@ export default function TambahLaporanPage() {
     scrollToBottom();
   }, [messages]);
 
-  const addMessage = (sender: string, text: string) => {
+  const addMessage = (sender: string, text: string, questionNumber?: number) => {
     const newMessage = {
       id: messages.length + 1,
       sender,
@@ -192,6 +240,7 @@ export default function TambahLaporanPage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      questionNumber: sender === "bot" ? questionNumber : undefined,
     };
     setMessages((prev) => [...prev, newMessage]);
   };
@@ -345,7 +394,7 @@ export default function TambahLaporanPage() {
             response.toLowerCase().includes("ya") ||
             response.toLowerCase().includes("iya")
           ) {
-            addMessage("bot", "Nama pasien?");
+            addMessage("bot", "Nama pasien?", 2);
             setCurrentStep("namaPasien");
           } else {
             addMessage(
@@ -360,7 +409,7 @@ export default function TambahLaporanPage() {
           updatedData.namaPasien = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "No.RM?");
+          addMessage("bot", "No.RM?", 3);
           setCurrentStep("noRM");
           break;
 
@@ -368,7 +417,7 @@ export default function TambahLaporanPage() {
           updatedData.noRM = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Umur?");
+          addMessage("bot", "Umur?", 4);
           setCurrentStep("umur");
           break;
 
@@ -376,7 +425,7 @@ export default function TambahLaporanPage() {
           updatedData.umur = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Jenis Kelamin?");
+          addMessage("bot", "Jenis Kelamin?", 5);
           setCurrentStep("jenisKelamin");
           break;
 
@@ -384,7 +433,7 @@ export default function TambahLaporanPage() {
           updatedData.jenisKelamin = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Tanggal masuk RS?");
+          addMessage("bot", "Tanggal masuk RS?", 6);
           setCurrentStep("tglMasukRS");
           break;
 
@@ -392,7 +441,7 @@ export default function TambahLaporanPage() {
           updatedData.tglMasukRS = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Unit yang melaporkan?");
+          addMessage("bot", "Unit yang melaporkan?", 7);
           setCurrentStep("unitPelapor");
           break;
 
@@ -400,7 +449,7 @@ export default function TambahLaporanPage() {
           updatedData.unitPelapor = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Lokasi insiden?");
+          addMessage("bot", "Lokasi insiden?", 8);
           setCurrentStep("lokasiInsiden");
           break;
 
@@ -408,7 +457,7 @@ export default function TambahLaporanPage() {
           updatedData.lokasiInsiden = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Tgl/bulan/tahun/jam terjadinya insiden?");
+          addMessage("bot", "Tgl/bulan/tahun/jam terjadinya insiden?", 9);
           setCurrentStep("tglKejadian");
           break;
 
@@ -416,7 +465,7 @@ export default function TambahLaporanPage() {
           updatedData.tglKejadian = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Yang Dilaporkan?");
+          addMessage("bot", "Yang Dilaporkan?", 10);
           setCurrentStep("yangDilaporkan");
           break;
 
@@ -424,7 +473,7 @@ export default function TambahLaporanPage() {
           updatedData.yangDilaporkan = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Judul Insiden?");
+          addMessage("bot", "Judul Insiden?", 11);
           setCurrentStep("judulInsiden");
           break;
 
@@ -434,7 +483,8 @@ export default function TambahLaporanPage() {
           saveToLocalStorage(updatedData);
           addMessage(
             "bot",
-            "Jelaskan kronologi insiden secara detail dan berurutan. Untuk memastikan laporan Anda lengkap, mohon sertakan informasi berikut:\n\nSiapa: Nama pasien dan staf yang terlibat atau merespons pertama kali.\n\nKapan & Di Mana: Tanggal, jam, dan lokasi spesifik kejadian.\n\nApa & Bagaimana: Apa insiden yang terjadi dan bagaimana urutan kejadiannya dari awal hingga akhir.\n\nMengapa: Dugaan penyebab atau faktor yang berkontribusi pada insiden. (Jika teridentifikasi)"
+            "Jelaskan kronologi insiden secara detail dan berurutan. Untuk memastikan laporan Anda lengkap, mohon sertakan informasi berikut:\n\nSiapa: Nama pasien dan staf yang terlibat atau merespons pertama kali.\n\nKapan & Di Mana: Tanggal, jam, dan lokasi spesifik kejadian.\n\nApa & Bagaimana: Apa insiden yang terjadi dan bagaimana urutan kejadiannya dari awal hingga akhir.\n\nMengapa: Dugaan penyebab atau faktor yang berkontribusi pada insiden. (Jika teridentifikasi)",
+            12
           );
           setCurrentStep("kronologi");
           break;
@@ -468,7 +518,8 @@ export default function TambahLaporanPage() {
                 // Kronologi sudah lengkap: langsung lanjut ke pertanyaan berikutnya
                 addMessage(
                   "bot",
-                  "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+                  "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?",
+                  13
                 );
                 setCurrentStep("tindakanSegera");
               } else {
@@ -504,7 +555,7 @@ export default function TambahLaporanPage() {
           updatedData.tindakanSegera = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Tindakan diberikan oleh?");
+          addMessage("bot", "Tindakan diberikan oleh?", 14);
           setCurrentStep("tindakanOleh");
           break;
 
@@ -512,7 +563,7 @@ export default function TambahLaporanPage() {
           updatedData.tindakanOleh = response;
           setReportData(updatedData);
           saveToLocalStorage(updatedData);
-          addMessage("bot", "Dampak insiden terhadap pasien:");
+          addMessage("bot", "Dampak insiden terhadap pasien:", 15);
           setCurrentStep("dampakInsiden");
           break;
 
@@ -522,7 +573,8 @@ export default function TambahLaporanPage() {
           saveToLocalStorage(updatedData);
           addMessage(
             "bot",
-            "Seberapa sering kejadian yang sama terjadi di unit tempat anda bekerja?"
+            "Seberapa sering kejadian yang sama terjadi di unit tempat anda bekerja?",
+            16
           );
           setCurrentStep("frekuensiKejadian");
           break;
@@ -547,7 +599,8 @@ export default function TambahLaporanPage() {
           ) {
             addMessage(
               "bot",
-              "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?"
+              "Tindakan yang dilakukan segera setelah kejadian & apa hasilnya?",
+              13
             );
             setCurrentStep("tindakanSegera");
           } else if (
@@ -2459,8 +2512,15 @@ export default function TambahLaporanPage() {
                     }`}
                   >
                     {message.sender === "bot" && (
-                      <div className="w-8 h-8 bg-[#0B7A95] rounded-full flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-                        <i className="fas fa-robot text-white text-sm"></i>
+                      <div className="flex flex-col items-center mr-2 mt-1 flex-shrink-0">
+                        <div className="w-8 h-8 bg-[#0B7A95] rounded-full flex items-center justify-center">
+                          <i className="fas fa-robot text-white text-sm"></i>
+                        </div>
+                        {(message as any).questionNumber && (
+                          <span className="text-xs text-gray-500 mt-1 text-center whitespace-nowrap">
+                            {(message as any).questionNumber}/{TOTAL_QUESTIONS}
+                          </span>
+                        )}
                       </div>
                     )}
                     <div
