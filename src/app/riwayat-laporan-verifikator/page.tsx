@@ -65,14 +65,18 @@ interface Report {
   validasiKepalaRuangan: {
     kategori: string;
     grading: string;
-    rekomendasiTindakan: string;
-    catatan: string;
+    kronologi: string;
+    implementasi: string;
+    hasil: string;
+    rencanaTindakLanjut: string;
   };
   validasiChiefNursing: {
     kategori: string;
     grading: string;
-    rekomendasiTindakan: string;
-    catatan: string;
+    kronologi: string;
+    implementasi: string;
+    hasil: string;
+    rencanaTindakLanjut: string;
   };
 }
 
@@ -231,14 +235,16 @@ export default function DashboardChiefNursing() {
   const [selectedKategori, setSelectedKategori] = useState("");
   const [selectedGrading, setSelectedGrading] = useState("");
   const [catatanRevisi, setCatatanRevisi] = useState("");
-  const [tindakanAwal, setTindakanAwal] = useState("");
+  const [kronologi, setKronologi] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
 
   // State untuk modal validasi
   const [showValidasiModal, setShowValidasiModal] = useState(false);
-  const [alasanValidasi, setAlasanValidasi] = useState("");
+  const [implementasi, setImplementasi] = useState("");
+  const [hasil, setHasil] = useState("");
+  const [rencanaTindakLanjut, setRencanaTindakLanjut] = useState("");
 
   // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -774,16 +780,18 @@ export default function DashboardChiefNursing() {
         validasiKepalaRuangan: {
           kategori: r.validasi_kepala_ruangan?.kategori || "-",
           grading: r.validasi_kepala_ruangan?.grading || "-",
-          rekomendasiTindakan:
-            r.validasi_kepala_ruangan?.rekomendasi_tindakan || "-",
-          catatan: r.validasi_kepala_ruangan?.catatan || "-",
+          kronologi: "-",
+          implementasi: "-",
+          hasil: "-",
+          rencanaTindakLanjut: "-",
         },
         validasiChiefNursing: {
           kategori: r.validasi_chief_nursing?.kategori || "-",
           grading: r.validasi_chief_nursing?.grading || "-",
-          rekomendasiTindakan:
-            r.validasi_chief_nursing?.rekomendasi_tindakan || "-",
-          catatan: r.validasi_chief_nursing?.catatan || "-",
+          kronologi: "-",
+          implementasi: "-",
+          hasil: "-",
+          rencanaTindakLanjut: "-",
         },
       };
 
@@ -803,20 +811,26 @@ export default function DashboardChiefNursing() {
 
   const handleValidasi = () => {
     setShowValidasiModal(true);
-    setAlasanValidasi("");
+    setImplementasi("");
+    setHasil("");
+    setRencanaTindakLanjut("");
   };
 
   const handleCloseValidasiModal = () => {
     setShowValidasiModal(false);
-    setAlasanValidasi("");
+    setImplementasi("");
+    setHasil("");
+    setRencanaTindakLanjut("");
   };
 
   const handleKonfirmasiValidasi = async () => {
     if (!selectedReport) return;
 
-    // Validasi alasan wajib diisi
-    if (!alasanValidasi.trim()) {
-      toast.error("Alasan validasi wajib diisi!");
+    // Validasi ketiga field harus diisi
+    if (!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()) {
+      toast.error(
+        "Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!"
+      );
       return;
     }
 
@@ -832,9 +846,7 @@ export default function DashboardChiefNursing() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            catatan: alasanValidasi, // alasan penolakan
-          }),
+          body: JSON.stringify({}),
         }
       );
 
@@ -882,7 +894,7 @@ export default function DashboardChiefNursing() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleKirimRevisi = async () => {
@@ -908,7 +920,6 @@ export default function DashboardChiefNursing() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
-            rekomendasi_tindakan: tindakanAwal,
             catatan: catatanRevisi,
           }),
         }
@@ -961,7 +972,7 @@ export default function DashboardChiefNursing() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleCloseRiwayatModal = () => {
@@ -1839,19 +1850,37 @@ export default function DashboardChiefNursing() {
 
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
-                    Rekomendasi Tindakan:
+                    Kronologi:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    {selectedReport.validasiKepalaRuangan.rekomendasiTindakan}
+                    {selectedReport.validasiKepalaRuangan.kronologi}
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Implementasi:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    {selectedReport.validasiKepalaRuangan.implementasi}
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Hasil:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    {selectedReport.validasiKepalaRuangan.hasil}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
-                    Catatan:
+                    Rencana tindak lanjut:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    {selectedReport.validasiKepalaRuangan.catatan}
+                    {selectedReport.validasiKepalaRuangan.rencanaTindakLanjut}
                   </p>
                 </div>
               </div>
@@ -1882,19 +1911,37 @@ export default function DashboardChiefNursing() {
 
                 <div className="mb-3">
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
-                    Rekomendasi Tindakan:
+                    Kronologi:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    {selectedReport.validasiChiefNursing.rekomendasiTindakan}
+                    {selectedReport.validasiChiefNursing.kronologi}
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Implementasi:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    {selectedReport.validasiChiefNursing.implementasi}
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                    Hasil:
+                  </label>
+                  <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
+                    {selectedReport.validasiChiefNursing.hasil}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
-                    Catatan:
+                    Rencana tindak lanjut:
                   </label>
                   <p className="text-gray-800 bg-white/50 p-2 rounded text-sm">
-                    {selectedReport.validasiChiefNursing.catatan}
+                    {selectedReport.validasiChiefNursing.rencanaTindakLanjut}
                   </p>
                 </div>
               </div>
@@ -2008,17 +2055,17 @@ export default function DashboardChiefNursing() {
                 </div>
               </div>
 
-              {/* Tindakan Awal */}
+              {/* Kronologi */}
               <div className="mb-6">
                 <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                  Tindakan awal :
+                  Kronologi :
                 </label>
                 <textarea
-                  value={tindakanAwal}
-                  onChange={(e) => setTindakanAwal(e.target.value)}
+                  value={kronologi}
+                  onChange={(e) => setKronologi(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                   rows={3}
-                  placeholder="Masukkan tindakan awal..."
+                  placeholder="Masukkan kronologi..."
                 />
               </div>
 
@@ -2347,21 +2394,55 @@ export default function DashboardChiefNursing() {
 
             {/* Content Modal */}
             <div className="p-4 sm:p-6 space-y-4">
-              <p className="text-[#2C3E50] font-medium text-sm">
-                Jelaskan alasan kamu memvalidasi laporan ini:
-              </p>
+              {/* Implementasi */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Implementasi :
+                </label>
+                <textarea
+                  value={implementasi}
+                  onChange={(e) => setImplementasi(e.target.value)}
+                  placeholder="Masukkan implementasi..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
+              </div>
 
-              <textarea
-                value={alasanValidasi}
-                onChange={(e) => setAlasanValidasi(e.target.value)}
-                placeholder="Masukkan alasan validasi..."
-                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
-                rows={4}
-              />
+              {/* Hasil */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Hasil :
+                </label>
+                <textarea
+                  value={hasil}
+                  onChange={(e) => setHasil(e.target.value)}
+                  placeholder="Masukkan hasil..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
+              </div>
+
+              {/* Rencana Tindak Lanjut */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Rencana tindak lanjut :
+                </label>
+                <textarea
+                  value={rencanaTindakLanjut}
+                  onChange={(e) => setRencanaTindakLanjut(e.target.value)}
+                  placeholder="Masukkan rencana tindak lanjut..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
+              </div>
 
               <button
                 onClick={handleKonfirmasiValidasi}
-                disabled={!alasanValidasi.trim()}
+                disabled={
+                  !implementasi.trim() ||
+                  !hasil.trim() ||
+                  !rencanaTindakLanjut.trim()
+                }
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Validasi
@@ -2377,7 +2458,9 @@ export default function DashboardChiefNursing() {
           <p className="text-sm font-medium">
             Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
+          <p className="text-xs text-white/80">
+            Penelitian Tesis Magister Kemdiktisaintek
+          </p>
         </div>
       </footer>
       <Toaster

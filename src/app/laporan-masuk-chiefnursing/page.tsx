@@ -107,11 +107,13 @@ export default function LaporanMasukChiefNursingPage() {
   const [showRevisiModal, setShowRevisiModal] = useState(false);
   const [showRiwayatModal, setShowRiwayatModal] = useState(false);
   const [showValidasiModal, setShowValidasiModal] = useState(false);
-  const [alasanValidasi, setAlasanValidasi] = useState("");
+  const [implementasi, setImplementasi] = useState("");
+  const [hasil, setHasil] = useState("");
+  const [rencanaTindakLanjut, setRencanaTindakLanjut] = useState("");
   const [selectedKategori, setSelectedKategori] = useState("");
   const [selectedGrading, setSelectedGrading] = useState("");
   const [catatanRevisi, setCatatanRevisi] = useState("");
-  const [tindakanAwal, setTindakanAwal] = useState("");
+  const [kronologi, setKronologi] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
@@ -359,7 +361,9 @@ export default function LaporanMasukChiefNursingPage() {
 
   const handleCloseValidasiModal = () => {
     setShowValidasiModal(false);
-    setAlasanValidasi("");
+    setImplementasi("");
+    setHasil("");
+    setRencanaTindakLanjut("");
   };
 
   const handleValidasi = () => {
@@ -367,7 +371,13 @@ export default function LaporanMasukChiefNursingPage() {
   };
 
   const handleKonfirmasiValidasi = async () => {
-    if (!selectedReport || !alasanValidasi.trim()) return;
+    if (!selectedReport) return;
+
+    // Validasi ketiga field harus diisi
+    if (!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()) {
+      toast.error("Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!");
+      return;
+    }
 
     const reportId = selectedReport.id;
 
@@ -402,7 +412,7 @@ export default function LaporanMasukChiefNursingPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            catatan: alasanValidasi, // alasan penolakan
+            catatan: "", // alasan penolakan
           }),
         }
       );
@@ -434,7 +444,7 @@ export default function LaporanMasukChiefNursingPage() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleCloseRevisiModal = () => {
@@ -442,7 +452,7 @@ export default function LaporanMasukChiefNursingPage() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleKirimRevisi = async () => {
@@ -468,7 +478,6 @@ export default function LaporanMasukChiefNursingPage() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
-            rekomendasi_tindakan: tindakanAwal,
             catatan: catatanRevisi,
           }),
         }
@@ -1490,17 +1499,17 @@ export default function LaporanMasukChiefNursingPage() {
                       </div>
                     </div>
 
-                    {/* Tindakan Awal */}
+                    {/* Kronologi */}
                     <div className="mb-6">
                       <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                        Tindakan awal :
+                        Kronologi :
                       </label>
                       <textarea
-                        value={tindakanAwal}
-                        onChange={(e) => setTindakanAwal(e.target.value)}
+                        value={kronologi}
+                        onChange={(e) => setKronologi(e.target.value)}
                         className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                         rows={3}
-                        placeholder="Masukkan tindakan awal..."
+                        placeholder="Masukkan kronologi..."
                       />
                     </div>
 
@@ -1838,17 +1847,45 @@ export default function LaporanMasukChiefNursingPage() {
                       </div>
                     </div>
 
-                    {/* Textarea Alasan Validasi */}
+                    {/* Implementasi */}
                     <div>
                       <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
-                        Alasan Validasi <span className="text-red-500">*</span>
+                        Implementasi :
                       </label>
                       <textarea
-                        value={alasanValidasi}
-                        onChange={(e) => setAlasanValidasi(e.target.value)}
+                        value={implementasi}
+                        onChange={(e) => setImplementasi(e.target.value)}
                         className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
-                        rows={4}
-                        placeholder="Masukkan alasan validasi..."
+                        rows={3}
+                        placeholder="Masukkan implementasi..."
+                      />
+                    </div>
+
+                    {/* Hasil */}
+                    <div>
+                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                        Hasil :
+                      </label>
+                      <textarea
+                        value={hasil}
+                        onChange={(e) => setHasil(e.target.value)}
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
+                        rows={3}
+                        placeholder="Masukkan hasil..."
+                      />
+                    </div>
+
+                    {/* Rencana Tindak Lanjut */}
+                    <div>
+                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                        Rencana tindak lanjut :
+                      </label>
+                      <textarea
+                        value={rencanaTindakLanjut}
+                        onChange={(e) => setRencanaTindakLanjut(e.target.value)}
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
+                        rows={3}
+                        placeholder="Masukkan rencana tindak lanjut..."
                       />
                     </div>
 
@@ -1856,8 +1893,8 @@ export default function LaporanMasukChiefNursingPage() {
                     <div className="flex flex-col space-y-2 pt-2">
                       <button
                         onClick={handleKonfirmasiValidasi}
-                        disabled={!alasanValidasi.trim()}
-                        className="w-full bg-[#28a745] text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-[#218838] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+                        disabled={!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()}
+                        className="w-full bg-[#28a745] text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm sm:text-base disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         Validasi
                       </button>

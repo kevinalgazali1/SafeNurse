@@ -112,8 +112,10 @@ export default function LaporanMasukKepalaRuangan() {
   const [selectedGrading, setSelectedGrading] = useState("");
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [alasanTolak, setAlasanTolak] = useState("");
-  const [alasanValidasi, setAlasanValidasi] = useState("");
-  const [tindakanAwal, setTindakanAwal] = useState("");
+  const [implementasi, setImplementasi] = useState("");
+  const [hasil, setHasil] = useState("");
+  const [rencanaTindakLanjut, setRencanaTindakLanjut] = useState("");
+  const [kronologi, setKronologi] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
@@ -365,7 +367,9 @@ export default function LaporanMasukKepalaRuangan() {
 
   const handleCloseValidasiModal = () => {
     setShowValidasiModal(false);
-    setAlasanValidasi("");
+    setImplementasi("");
+    setHasil("");
+    setRencanaTindakLanjut("");
   };
 
   const handleValidasi = () => {
@@ -373,8 +377,11 @@ export default function LaporanMasukKepalaRuangan() {
   };
 
   const handleKonfirmasiValidasi = async () => {
-    if (!selectedReport || !alasanValidasi.trim()) {
-      toast.error("Mohon isi alasan validasi terlebih dahulu");
+    if (!selectedReport) return;
+
+    // Validasi ketiga field harus diisi
+    if (!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()) {
+      toast.error("Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!");
       return;
     }
 
@@ -407,9 +414,7 @@ export default function LaporanMasukKepalaRuangan() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            catatan: alasanValidasi, // alasan penolakan
-          }),
+          body: JSON.stringify({}),
         }
       );
 
@@ -423,7 +428,9 @@ export default function LaporanMasukKepalaRuangan() {
       console.log("✅ Validasi berhasil:", data);
 
       // Reset form dan tutup modal
-      setAlasanValidasi("");
+      setImplementasi("");
+    setHasil("");
+    setRencanaTindakLanjut("");
       handleCloseValidasiModal();
       handleCloseModal();
 
@@ -446,7 +453,7 @@ export default function LaporanMasukKepalaRuangan() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleCloseRevisiModal = () => {
@@ -454,7 +461,7 @@ export default function LaporanMasukKepalaRuangan() {
     setSelectedKategori("");
     setSelectedGrading("");
     setCatatanRevisi("");
-    setTindakanAwal("");
+    setKronologi("");
   };
 
   const handleKirimRevisi = async () => {
@@ -480,7 +487,6 @@ export default function LaporanMasukKepalaRuangan() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
-            rekomendasi_tindakan: tindakanAwal,
             catatan: catatanRevisi,
           }),
         }
@@ -1629,17 +1635,17 @@ export default function LaporanMasukKepalaRuangan() {
                     </div>
                   </div>
 
-                  {/* Tindakan Awal */}
+                  {/* Kronologi */}
                   <div className="mb-6">
                     <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
-                      Tindakan awal :
+                      Kronologi :
                     </label>
                     <textarea
-                      value={tindakanAwal}
-                      onChange={(e) => setTindakanAwal(e.target.value)}
+                      value={kronologi}
+                      onChange={(e) => setKronologi(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                       rows={3}
-                      placeholder="Masukkan tindakan awal..."
+                      placeholder="Masukkan kronologi..."
                     />
                   </div>
 
@@ -2014,21 +2020,52 @@ export default function LaporanMasukKepalaRuangan() {
 
                 {/* Content Modal */}
                 <div className="p-4 sm:p-6 space-y-4">
-                  <p className="text-[#2C3E50] font-medium text-sm">
-                    Jelaskan alasan kamu memvalidasi laporan ini:
-                  </p>
+                  {/* Implementasi */}
+                  <div>
+                    <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                      Implementasi :
+                    </label>
+                    <textarea
+                      value={implementasi}
+                      onChange={(e) => setImplementasi(e.target.value)}
+                      placeholder="Masukkan implementasi..."
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                      rows={3}
+                    />
+                  </div>
 
-                  <textarea
-                    value={alasanValidasi}
-                    onChange={(e) => setAlasanValidasi(e.target.value)}
-                    placeholder="Masukkan alasan validasi..."
-                    className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
-                    rows={4}
-                  />
+                  {/* Hasil */}
+                  <div>
+                    <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                      Hasil :
+                    </label>
+                    <textarea
+                      value={hasil}
+                      onChange={(e) => setHasil(e.target.value)}
+                      placeholder="Masukkan hasil..."
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Rencana Tindak Lanjut */}
+                  <div>
+                    <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                      Rencana tindak lanjut :
+                    </label>
+                    <textarea
+                      value={rencanaTindakLanjut}
+                      onChange={(e) => setRencanaTindakLanjut(e.target.value)}
+                      placeholder="Masukkan rencana tindak lanjut..."
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                      rows={3}
+                    />
+                  </div>
 
                   <button
                     onClick={handleKonfirmasiValidasi}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                    disabled={!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Validasi
                   </button>
