@@ -40,9 +40,18 @@ interface ReportData {
   frekuensiKejadian: string;
 }
 
+interface Message {
+  id: number;
+  sender: string;
+  text: string;
+  timestamp: string;
+  questionNumber?: number; // ✅ dibuat opsional
+}
+
+
 export default function TambahLaporanPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: "bot",
