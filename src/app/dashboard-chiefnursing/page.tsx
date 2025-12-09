@@ -1726,25 +1726,33 @@ export default function DashboardChiefNursing() {
                     </p>
                   </div>
 
-                  <div className="mt-6 flex justify-center space-x-3">
+                  {/* Action Buttons - Grid Layout Desktop, Stack Mobile */}
+                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     <button
                       onClick={handleValidasi}
-                      className="bg-[#28a745] text-white px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm"
+                      className="bg-[#28a745] text-white px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm w-full sm:col-span-2"
                     >
                       Validasi
                     </button>
                     <button
                       onClick={handleRevisi}
-                      className="bg-[#ffc107] text-white px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm"
+                      className="bg-[#ffc107] text-white px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm w-full"
                     >
                       Revisi
                     </button>
                     <button
                       onClick={handleRiwayat}
-                      className="bg-[#6B8CAE] text-white px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm"
+                      className="bg-[#6B8CAE] text-white px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full"
                     >
                       Riwayat
                     </button>
+                  </div>
+                  
+                  {/* Penjelasan Tombol */}
+                  <div className="text-xs text-gray-600 space-y-1 px-2 pb-2 mt-2">
+                    <p><span className="font-semibold">Validasi:</span> Setujui laporan dan isi implementasi, hasil, serta rencana tindak lanjut.</p>
+                    <p><span className="font-semibold">Revisi:</span> Minta perbaikan laporan dengan mengubah kategori, grading, atau kronologi.</p>
+                    <p><span className="font-semibold">Riwayat:</span> Lihat riwayat perubahan dan catatan pada laporan ini.</p>
                   </div>
                 </div>
               </div>

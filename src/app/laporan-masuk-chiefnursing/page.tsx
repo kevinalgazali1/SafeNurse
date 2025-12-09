@@ -375,7 +375,9 @@ export default function LaporanMasukChiefNursingPage() {
 
     // Validasi ketiga field harus diisi
     if (!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()) {
-      toast.error("Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!");
+      toast.error(
+        "Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!"
+      );
       return;
     }
 
@@ -571,6 +573,102 @@ export default function LaporanMasukChiefNursingPage() {
         minute: "2-digit",
       }).format(date) + " WITA"
     ); // tambahkan zona sesuai kebutuhan
+  };
+
+  // Fungsi untuk parse tanggal format Indonesia (contoh: "29 November 2025, 15:09 WITA")
+  const parseIndonesianDate = (dateString: string): Date | null => {
+    if (!dateString || dateString === "-") return null;
+
+    // Mapping nama bulan Indonesia ke angka (0-11 untuk JavaScript Date)
+    const bulanMap: { [key: string]: number } = {
+      Januari: 0,
+      Februari: 1,
+      Maret: 2,
+      April: 3,
+      Mei: 4,
+      Juni: 5,
+      Juli: 6,
+      Agustus: 7,
+      September: 8,
+      Oktober: 9,
+      November: 10,
+      Desember: 11,
+    };
+
+    try {
+      // Hapus "WITA" dan whitespace ekstra
+      let cleanedDate = dateString.replace(/WITA/gi, "").trim();
+
+      // Pattern: "29 November 2025, 15:09" atau "9 Desember 2025, 10:13"
+      // Regex untuk extract: tanggal, bulan, tahun, jam, menit
+      const pattern = /(\d{1,2})\s+(\w+)\s+(\d{4}),?\s+(\d{1,2}):(\d{2})/;
+      const match = cleanedDate.match(pattern);
+
+      if (match) {
+        const tanggal = parseInt(match[1], 10);
+        const namaBulan = match[2];
+        const tahun = parseInt(match[3], 10);
+        const jam = parseInt(match[4], 10);
+        const menit = parseInt(match[5], 10);
+
+        // Cari bulan di mapping
+        const bulan = bulanMap[namaBulan];
+        if (bulan !== undefined) {
+          // Buat Date object dengan komponen yang sudah di-extract
+          const parsedDate = new Date(tahun, bulan, tanggal, jam, menit, 0, 0);
+          return parsedDate;
+        }
+      }
+
+      // Fallback: coba dengan new Date langsung (untuk format ISO)
+      const isoDate = new Date(dateString);
+      if (!isNaN(isoDate.getTime())) {
+        return isoDate;
+      }
+
+      return null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  // Fungsi untuk mengecek apakah laporan sudah 48 jam atau lebih
+  const isReportOver48Hours = (tanggalLaporan: string | undefined): boolean => {
+    if (
+      !tanggalLaporan ||
+      tanggalLaporan === "-" ||
+      tanggalLaporan === null ||
+      tanggalLaporan === undefined
+    ) {
+      return false;
+    }
+
+    try {
+      // Coba parse dengan parser Indonesia dulu
+      let reportDate = parseIndonesianDate(tanggalLaporan);
+
+      // Jika gagal, coba dengan new Date langsung (untuk format ISO)
+      if (!reportDate) {
+        reportDate = new Date(tanggalLaporan);
+        if (isNaN(reportDate.getTime())) {
+          return false;
+        }
+      }
+
+      const now = new Date();
+      const diffInMs = now.getTime() - reportDate.getTime();
+      const diffInHours = diffInMs / (1000 * 60 * 60); // Convert to hours
+
+      return diffInHours >= 48;
+    } catch (error) {
+      console.error(
+        "Error checking report age:",
+        error,
+        "Date:",
+        tanggalLaporan
+      );
+      return false;
+    }
   };
 
   return (
@@ -1007,47 +1105,92 @@ export default function LaporanMasukChiefNursingPage() {
                   {/* Reports List */}
                   <div className="space-y-3 sm:space-y-4 animate-fadeInRight">
                     {currentReports.length > 0 ? (
-                      currentReports.map((report, index) => (
-                        <div
-                          key={report.id}
-                          className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 sm:p-6 hover:bg-white/95 transition-colors cursor-pointer hover-lift animate-glow ${
-                            index === 0
-                              ? "animate-fadeInDelayed"
-                              : index === 1
-                              ? "animate-fadeInDelayed2"
-                              : "animate-fadeInDelayed"
-                          }`}
-                          style={{ animationDelay: `${index * 0.1}s` }}
-                          onClick={() => fetchReportDetail(report.id)}
-                        >
-                          <div className="flex items-start space-x-3 sm:space-x-4">
-                            <div className="bg-[#0B7A95] p-2 sm:p-3 rounded-lg flex-shrink-0 animate-pulseGentle">
-                              <i className="fas fa-envelope text-white text-sm sm:text-lg animate-bounceSubtle"></i>
-                            </div>
-                            <div className="flex-1 min-w-0 overflow-hidden">
-                              <h3 className="text-sm sm:text-lg font-semibold text-gray-800 mb-1 leading-tight">
-                                Laporan dari Perawat{" "}
-                                {report.namaPerawatYangMenangani}
-                              </h3>
+                      currentReports.map((report, index) => {
+                        // Gunakan tanggalWaktuPelaporan dari report object yang sudah di-mapping dari r.tgl_waktu_pelaporan
+                        const tanggalLaporan = report.tanggalWaktuPelaporan;
+                        const isOver48Hours =
+                          isReportOver48Hours(tanggalLaporan);
 
-                              <div className="space-y-1">
-                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                  <span className="font-medium">
-                                    Judul Insiden:
-                                  </span>{" "}
-                                  {report.judulInsiden}
-                                </p>
-                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                  <span className="font-medium">
-                                    Tanggal Laporan:
-                                  </span>{" "}
-                                  {report.tanggalWaktuPelaporan}
-                                </p>
+                        // Debug log (bisa dihapus setelah testing)
+                        if (tanggalLaporan) {
+                          console.log(
+                            "Report ID:",
+                            report.id,
+                            "Tanggal:",
+                            tanggalLaporan,
+                            "IsOver48Hours:",
+                            isOver48Hours
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={report.id}
+                            className={`${
+                              isOver48Hours
+                                ? "bg-red-500/90 backdrop-blur-sm border-red-600/50 hover:bg-red-500/95"
+                                : "bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white/95"
+                            } rounded-xl shadow-lg border p-3 sm:p-6 transition-colors cursor-pointer hover-lift animate-glow ${
+                              index === 0
+                                ? "animate-fadeInDelayed"
+                                : index === 1
+                                ? "animate-fadeInDelayed2"
+                                : "animate-fadeInDelayed"
+                            }`}
+                            style={{ animationDelay: `${index * 0.1}s` }}
+                            onClick={() => fetchReportDetail(report.id)}
+                          >
+                            <div className="flex items-start space-x-3 sm:space-x-4">
+                              <div
+                                className={`${
+                                  isOver48Hours ? "bg-red-600" : "bg-[#0B7A95]"
+                                } p-2 sm:p-3 rounded-lg flex-shrink-0 animate-pulseGentle`}
+                              >
+                                <i className="fas fa-envelope text-white text-sm sm:text-lg animate-bounceSubtle"></i>
+                              </div>
+                              <div className="flex-1 min-w-0 overflow-hidden">
+                                <h3
+                                  className={`text-sm sm:text-lg font-semibold mb-1 leading-tight ${
+                                    isOver48Hours
+                                      ? "text-white"
+                                      : "text-gray-800"
+                                  }`}
+                                >
+                                  Laporan dari Perawat{" "}
+                                  {report.namaPerawatYangMenangani}
+                                </h3>
+
+                                <div className="space-y-1">
+                                  <p
+                                    className={`text-xs sm:text-sm leading-relaxed ${
+                                      isOver48Hours
+                                        ? "text-white/90"
+                                        : "text-gray-600"
+                                    }`}
+                                  >
+                                    <span className="font-medium">
+                                      Judul Insiden:
+                                    </span>{" "}
+                                    {report.judulInsiden}
+                                  </p>
+                                  <p
+                                    className={`text-xs sm:text-sm leading-relaxed ${
+                                      isOver48Hours
+                                        ? "text-white/90"
+                                        : "text-gray-600"
+                                    }`}
+                                  >
+                                    <span className="font-medium">
+                                      Tanggal Laporan:
+                                    </span>{" "}
+                                    {report.tanggalWaktuPelaporan}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <div className="text-center py-8">
                         <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mx-auto max-w-md">
@@ -1387,26 +1530,44 @@ export default function LaporanMasukChiefNursingPage() {
                       </p>
                     </div>
 
-                    {/* Action Buttons - Moved above Catatan */}
-                    <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center pt-4 pb-4">
+                    {/* Action Buttons - Grid Layout Desktop, Stack Mobile */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 pb-4">
                       <button
                         onClick={handleValidasi}
-                        className="bg-[#28a745] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm w-full sm:w-auto"
+                        className="bg-[#28a745] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm w-full sm:col-span-2"
                       >
                         Validasi
                       </button>
                       <button
                         onClick={handleRevisi}
-                        className="bg-[#ffc107] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm w-full sm:w-auto"
+                        className="bg-[#ffc107] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm w-full"
                       >
                         Revisi
                       </button>
                       <button
                         onClick={() => setShowRiwayatModal(true)}
-                        className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full sm:w-auto"
+                        className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full"
                       >
                         Riwayat
                       </button>
+                    </div>
+
+                    {/* Penjelasan Tombol */}
+                    <div className="text-xs text-gray-600 space-y-1 px-2 pb-2">
+                      <p>
+                        <span className="font-semibold">Validasi:</span> Setujui
+                        laporan dan isi implementasi, hasil, serta rencana
+                        tindak lanjut.
+                      </p>
+                      <p>
+                        <span className="font-semibold">Revisi:</span> Minta
+                        perbaikan laporan dengan mengubah kategori, grading,
+                        atau kronologi.
+                      </p>
+                      <p>
+                        <span className="font-semibold">Riwayat:</span> Lihat
+                        riwayat perubahan dan catatan pada laporan ini.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1893,7 +2054,11 @@ export default function LaporanMasukChiefNursingPage() {
                     <div className="flex flex-col space-y-2 pt-2">
                       <button
                         onClick={handleKonfirmasiValidasi}
-                        disabled={!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()}
+                        disabled={
+                          !implementasi.trim() ||
+                          !hasil.trim() ||
+                          !rencanaTindakLanjut.trim()
+                        }
                         className="w-full bg-[#28a745] text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm sm:text-base disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         Validasi
@@ -1919,7 +2084,9 @@ export default function LaporanMasukChiefNursingPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
+          <p className="text-xs text-white/80">
+            Penelitian Tesis Magister Kemdiktisaintek
+          </p>
         </div>
       </footer>
       <Toaster

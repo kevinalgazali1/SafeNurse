@@ -1851,32 +1851,40 @@ export default function DashboardChiefNursing() {
                     </p>
                   </div>
 
-                  {/* Action Buttons - Mobile: stacked vertically, Desktop: horizontal */}
-                  <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center pt-4 pb-4">
+                  {/* Action Buttons - Grid 2x2 Desktop, Stack Mobile */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 pb-4">
                     <button
                       onClick={handleValidasi}
-                      className="bg-[#28a745] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm w-full sm:w-auto"
+                      className="bg-[#28a745] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm w-full"
                     >
                       Validasi
                     </button>
                     <button
-                      onClick={handleRevisi}
-                      className="bg-[#ffc107] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm w-full sm:w-auto"
-                    >
-                      Revisi
-                    </button>
-                    <button
                       onClick={handleTolak}
-                      className="bg-[#dc3545] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#c82333] transition-colors font-medium text-sm w-full sm:w-auto"
+                      className="bg-[#dc3545] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#c82333] transition-colors font-medium text-sm w-full"
                     >
                       Tolak
                     </button>
                     <button
+                      onClick={handleRevisi}
+                      className="bg-[#ffc107] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#e0a800] transition-colors font-medium text-sm w-full"
+                    >
+                      Revisi
+                    </button>
+                    <button
                       onClick={handleRiwayat}
-                      className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full sm:w-auto"
+                      className="bg-[#6B8CAE] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#5a7a9a] transition-colors font-medium text-sm w-full"
                     >
                       Riwayat
                     </button>
+                  </div>
+                  
+                  {/* Penjelasan Tombol */}
+                  <div className="text-xs text-gray-600 space-y-1 px-2 pb-2">
+                    <p><span className="font-semibold">Validasi:</span> Setujui laporan dan isi implementasi, hasil, serta rencana tindak lanjut.</p>
+                    <p><span className="font-semibold">Revisi:</span> Minta perbaikan laporan dengan mengubah kategori, grading, atau kronologi.</p>
+                    <p><span className="font-semibold">Tolak:</span> Tolak laporan dengan memberikan alasan penolakan.</p>
+                    <p><span className="font-semibold">Riwayat:</span> Lihat riwayat perubahan dan catatan pada laporan ini.</p>
                   </div>
                 </div>
               </div>
