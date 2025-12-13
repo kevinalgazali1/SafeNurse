@@ -473,18 +473,18 @@ export default function LaporanMasukVerifikator() {
         validasiKepalaRuangan: {
           kategori: r.validasi_kepala_ruangan?.kategori || "-",
           grading: r.validasi_kepala_ruangan?.grading || "-",
-          kronologi: "-",
-          implementasi: "-",
-          hasil: "-",
-          rencanaTindakLanjut: "-",
+          kronologi: r.validasi_kepala_ruangan?.kronologi || "-",
+          implementasi: r.validasi_kepala_ruangan?.implementasi || "-",
+          hasil: r.validasi_kepala_ruangan?.hasil || "-",
+          rencanaTindakLanjut: r.validasi_kepala_ruangan?.rencana_tindak_lanjut || "-",
         },
         validasiChiefNursing: {
           kategori: r.validasi_chief_nursing?.kategori || "-",
           grading: r.validasi_chief_nursing?.grading || "-",
-          kronologi: "-",
-          implementasi: "-",
-          hasil: "-",
-          rencanaTindakLanjut: "-",
+          kronologi: r.validasi_chief_nursing?.kronologi || "-",
+          implementasi: r.validasi_chief_nursing?.implementasi || "-",
+          hasil: r.validasi_chief_nursing?.hasil || "-",
+          rencanaTindakLanjut: r.validasi_chief_nursing?.rencana_tindak_lanjut || "-",
         },
       };
 
@@ -598,7 +598,11 @@ export default function LaporanMasukVerifikator() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            implementasi,
+            hasil,
+            rencana_tindak_lanjut: rencanaTindakLanjut,
+          }),
         }
       );
 
@@ -607,24 +611,6 @@ export default function LaporanMasukVerifikator() {
         throw new Error(errData.message || "Gagal memvalidasi laporan");
       }
 
-      // Kirim alasan validasi sebagai catatan
-      // const catatanRes = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       catatan: alasanValidasi,
-      //     }),
-      //   }
-      // );
-
-      // if (!catatanRes.ok) {
-      //   console.warn("Gagal mengirim alasan validasi, tapi validasi berhasil");
-      // }
 
       console.log("✅ Validasi berhasil");
 
@@ -680,29 +666,13 @@ export default function LaporanMasukVerifikator() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
+            kronologi: kronologi,
             catatan: catatanRevisi,
           }),
         }
       );
 
       if (!res.ok) throw new Error("Gagal mengirim revisi");
-
-      // Kirim catatan revisi
-      // const catatanRes = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       catatan: catatanRevisi,
-      //     }),
-      //   }
-      // );
-
-      // if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
 
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);

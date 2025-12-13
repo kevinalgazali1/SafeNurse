@@ -532,9 +532,9 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.catatan_kepala_ruangan,
-        catatanChiefnursing: r.catatan_chief_nursing,
-        catatanVerifikator: r.catatan_verifikator,
+        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
       }));
 
@@ -659,9 +659,9 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.catatan_kepala_ruangan,
-        catatanChiefnursing: r.catatan_chief_nursing,
-        catatanVerifikator: r.catatan_verifikator,
+        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0],
 
         // isi array dari backend
@@ -694,43 +694,29 @@ export default function DashboardChiefNursing() {
 
     // Validasi ketiga field harus diisi
     if (!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()) {
-      toast.error("Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!");
+      toast.error(
+        "Mohon isi Implementasi, Hasil, dan Rencana tindak lanjut sebelum validasi!"
+      );
       return;
     }
 
-    const reportId = selectedReport.id; // contoh: LAP-20250918-4342
+    const reportId = selectedReport.id;
 
     try {
-      // Kirim catatan validasi terlebih dahulu
-      // const catatanRes = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       catatan: alasanValidasi,
-      //     }),
-      //   }
-      // );
-
-      // if (!catatanRes.ok) {
-      //   const errData = await catatanRes.json();
-      //   throw new Error(errData.message || "Gagal mengirim catatan validasi");
-      // }
-
       // Lakukan approve laporan
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/approve/${reportId}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // pastikan token valid
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            implementasi,
+            hasil,
+            rencana_tindak_lanjut: rencanaTindakLanjut,
+          }),
         }
       );
 
@@ -808,6 +794,7 @@ export default function DashboardChiefNursing() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
+            kronologi: kronologi,
             catatan: catatanRevisi,
           }),
         }
@@ -818,23 +805,6 @@ export default function DashboardChiefNursing() {
         toast.error(data.message || "Gagal memvalidasi laporan");
         return;
       }
-
-      // Kirim catatan revisi
-      // const catatanRes = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //     body: JSON.stringify({ catatan: catatanRevisi }),
-      //   }
-      // );
-
-      // if (!catatanRes.ok) {
-      //   throw new Error("Gagal mengirim catatan revisi");
-      // }
 
       const resData = await res.json();
       console.log("Revisi berhasil:", resData);
@@ -875,22 +845,6 @@ export default function DashboardChiefNursing() {
     const reportId = selectedReport.id;
 
     try {
-      // Kirim catatan penolakan
-      // const catatanRes = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //     body: JSON.stringify({ catatan: `DITOLAK: ${alasanTolak}` }),
-      //   }
-      // );
-
-      // if (!catatanRes.ok) {
-      //   throw new Error("Gagal mengirim catatan penolakan");
-      // }
 
       // Proses penolakan laporan
       const res = await fetch(
@@ -1350,36 +1304,16 @@ export default function DashboardChiefNursing() {
                   {/* Table Header */}
                   <div className="bg-[#0B7A95] text-white animate-fadeInRight">
                     <div className="grid grid-cols-10 gap-2 px-4 py-3 text-sm font-medium">
-                      <div className="text-center">
-                        Tanggal Laporan
-                      </div>
-                      <div className="text-center">
-                        Kategori Insiden
-                      </div>
-                      <div className="text-center">
-                        Status Laporan
-                      </div>
-                      <div className="text-center">
-                        Grading
-                      </div>
-                      <div className="text-center">
-                      RTL kepala ruangan
-                      </div>
-                      <div className="text-center">
-                      RTL Chief Nursing
-                      </div>
-                      <div className="text-center">
-                      RTL verifikator
-                      </div>
-                      <div className="text-center">
-                        Kode Laporan
-                      </div>
-                      <div className="text-center">
-                        Tindak Lanjut
-                      </div>
-                      <div className="text-center">
-                        Detail
-                      </div>
+                      <div className="text-center">Tanggal Laporan</div>
+                      <div className="text-center">Kategori Insiden</div>
+                      <div className="text-center">Status Laporan</div>
+                      <div className="text-center">Grading</div>
+                      <div className="text-center">RTL kepala ruangan</div>
+                      <div className="text-center">RTL Chief Nursing</div>
+                      <div className="text-center">RTL verifikator</div>
+                      <div className="text-center">Kode Laporan</div>
+                      <div className="text-center">Tindak Lanjut</div>
+                      <div className="text-center">Detail</div>
                     </div>
                   </div>
 
@@ -1878,13 +1812,27 @@ export default function DashboardChiefNursing() {
                       Riwayat
                     </button>
                   </div>
-                  
+
                   {/* Penjelasan Tombol */}
                   <div className="text-xs text-gray-600 space-y-1 px-2 pb-2">
-                    <p><span className="font-semibold">Validasi:</span> Setujui laporan dan isi implementasi, hasil, serta rencana tindak lanjut.</p>
-                    <p><span className="font-semibold">Revisi:</span> Minta perbaikan laporan dengan mengubah kategori, grading, atau kronologi.</p>
-                    <p><span className="font-semibold">Tolak:</span> Tolak laporan dengan memberikan alasan penolakan.</p>
-                    <p><span className="font-semibold">Riwayat:</span> Lihat riwayat perubahan dan catatan pada laporan ini.</p>
+                    <p>
+                      <span className="font-semibold">Validasi:</span> Setujui
+                      laporan dan isi implementasi, hasil, serta rencana tindak
+                      lanjut.
+                    </p>
+                    <p>
+                      <span className="font-semibold">Revisi:</span> Minta
+                      perbaikan laporan dengan mengubah kategori, grading, atau
+                      kronologi.
+                    </p>
+                    <p>
+                      <span className="font-semibold">Tolak:</span> Tolak
+                      laporan dengan memberikan alasan penolakan.
+                    </p>
+                    <p>
+                      <span className="font-semibold">Riwayat:</span> Lihat
+                      riwayat perubahan dan catatan pada laporan ini.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -2407,7 +2355,11 @@ export default function DashboardChiefNursing() {
 
               <button
                 onClick={handleKonfirmasiValidasi}
-                disabled={!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()}
+                disabled={
+                  !implementasi.trim() ||
+                  !hasil.trim() ||
+                  !rencanaTindakLanjut.trim()
+                }
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Validasi
@@ -2423,7 +2375,9 @@ export default function DashboardChiefNursing() {
           <p className="text-sm font-medium">
             Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
+          <p className="text-xs text-white/80">
+            Penelitian Tesis Magister Kemdiktisaintek
+          </p>
         </div>
       </footer>
       <Toaster

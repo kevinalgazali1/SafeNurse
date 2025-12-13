@@ -414,7 +414,11 @@ export default function LaporanMasukKepalaRuangan() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            implementasi,
+            hasil,
+            rencana_tindak_lanjut: rencanaTindakLanjut,
+          }),
         }
       );
 
@@ -487,6 +491,7 @@ export default function LaporanMasukKepalaRuangan() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
+            kronologi: kronologi,
             catatan: catatanRevisi,
           }),
         }

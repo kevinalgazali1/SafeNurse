@@ -431,9 +431,9 @@ export default function DashboardPerawatPage() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.catatan_kepala_ruangan,
-        catatanChiefnursing: r.catatan_chief_nursing,
-        catatanVerifikator: r.catatan_verifikator,
+        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
       }));
 

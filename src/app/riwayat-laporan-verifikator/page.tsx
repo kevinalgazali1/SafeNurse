@@ -644,9 +644,9 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.catatan_kepala_ruangan,
-        catatanChiefnursing: r.catatan_chief_nursing,
-        catatanVerifikator: r.catatan_verifikator,
+        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
       }));
 
@@ -768,9 +768,9 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.catatan_kepala_ruangan,
-        catatanChiefnursing: r.catatan_chief_nursing,
-        catatanVerifikator: r.catatan_verifikator,
+        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0],
 
         // isi array dari backend
@@ -780,18 +780,18 @@ export default function DashboardChiefNursing() {
         validasiKepalaRuangan: {
           kategori: r.validasi_kepala_ruangan?.kategori || "-",
           grading: r.validasi_kepala_ruangan?.grading || "-",
-          kronologi: "-",
-          implementasi: "-",
-          hasil: "-",
-          rencanaTindakLanjut: "-",
+          kronologi: r.validasi_kepala_ruangan?.kronologi || "-",
+          implementasi: r.validasi_kepala_ruangan?.implementasi || "-",
+          hasil: r.validasi_kepala_ruangan?.hasil || "-",
+          rencanaTindakLanjut: r.validasi_kepala_ruangan?.rencana_tindak_lanjut || "-",
         },
         validasiChiefNursing: {
           kategori: r.validasi_chief_nursing?.kategori || "-",
           grading: r.validasi_chief_nursing?.grading || "-",
-          kronologi: "-",
-          implementasi: "-",
-          hasil: "-",
-          rencanaTindakLanjut: "-",
+          kronologi: r.validasi_chief_nursing?.kronologi || "-",
+          implementasi: r.validasi_chief_nursing?.implementasi || "-",
+          hasil: r.validasi_chief_nursing?.hasil || "-",
+          rencanaTindakLanjut: r.validasi_chief_nursing?.rencana_tindak_lanjut || "-",
         },
       };
 
@@ -846,7 +846,11 @@ export default function DashboardChiefNursing() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            implementasi,
+            hasil,
+            rencana_tindak_lanjut: rencanaTindakLanjut,
+          }),
         }
       );
 
@@ -920,6 +924,7 @@ export default function DashboardChiefNursing() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
+            kronologi: kronologi,
             catatan: catatanRevisi,
           }),
         }
@@ -995,41 +1000,7 @@ export default function DashboardChiefNursing() {
     ); // tambahkan zona sesuai kebutuhan
   };
 
-  // const handleKirimCatatan = async () => {
-  //   if (!selectedReport) return;
 
-  //   const reportId = selectedReport.id;
-
-  //   try {
-  //     const res = await fetch(
-  //       `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({ catatan }),
-  //       }
-  //     );
-
-  //     if (!res.ok) {
-  //       throw new Error("Gagal mengirim catatan");
-  //     }
-
-  //     const data = await res.json();
-  //     console.log("Catatan berhasil dikirim:", data);
-
-  //     // reset input catatan setelah berhasil
-  //     setCatatan("");
-  //     handleCloseModal();
-
-  //     // kalau mau refresh data laporan
-  //     // await fetchReportDetail(selectedReport.kodeLaporan);
-  //   } catch (error) {
-  //     console.error("Error saat kirim catatan:", error);
-  //   }
-  // };
 
   if (isLoading) {
     return (

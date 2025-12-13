@@ -414,7 +414,9 @@ export default function LaporanMasukChiefNursingPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            catatan: "", // alasan penolakan
+            implementasi,
+            hasil,
+            rencana_tindak_lanjut: rencanaTindakLanjut,
           }),
         }
       );
@@ -480,6 +482,7 @@ export default function LaporanMasukChiefNursingPage() {
           body: JSON.stringify({
             kategori: selectedKategori,
             grading: selectedGrading,
+            kronologi: kronologi,
             catatan: catatanRevisi,
           }),
         }
