@@ -109,7 +109,6 @@ export default function LoginPage() {
             <span className="font-bold text-[#0B7A95]">Nurse</span>
           </h1>
         </div>
-
       </header>
 
       {/* Main content */}
@@ -122,9 +121,10 @@ export default function LoginPage() {
           className="relative flex w-full rounded-lg overflow-hidden"
           style={{ minHeight: "520px", height: "520px" }}
         >
-          {/* Left side with gradient and background icons */}
+          {/* Left side with text only */}
           <div
-            className={`w-full md:w-1/2 p-8 flex flex-col justify-center transition-all duration-1000 delay-500 ${
+            id="left-side"
+            className={`w-full md:w-1/2 p-8 flex flex-col justify-center items-center transition-all duration-1000 delay-500 ${
               isLoaded
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 -translate-x-8"
@@ -141,101 +141,24 @@ export default function LoginPage() {
               fill
               style={{ zIndex: 0 }}
             />
-            <div className="flex flex-col justify-center items-center h-full">
-              <div className="relative z-10 max-w-xs">
-                <div
-                  className={`transition-all duration-1000 delay-700 ${
-                    isLoaded
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <h1 className="text-white text-center text-5xl font-bold mb-1">
-                    Safe
-                    <span className="font-extrabold text-[#09839C]">
-                      {" "}
-                      Nurse{" "}
-                    </span>
-                  </h1>
-                </div>
-                <h2
-                  className={`text-white text-center text-5xl font-extrabold mb-8 transition-all duration-1000 delay-800 ${
-                    isLoaded
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  Log<span className="text-[#09839C]">in</span>
-                </h2>
-                <form
-                  className={`space-y-6 transition-all duration-1000 delay-1000 ${
-                    isLoaded
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-8"
-                  }`}
-                  onSubmit={handleSubmit}
-                >
-                  <div>
-                    <label
-                      className="block text-white font-semibold text-lg mb-1"
-                      htmlFor="email"
-                    >
-                      Email
-                    </label>
-                    <div className="flex items-center border-b border-[#0E364A]">
-                      <input
-                        className="bg-transparent text-black placeholder-[#a0cbd9] text-sm font-normal focus:outline-none w-full py-1 focus:scale-105 transition-transform duration-300"
-                        id="email"
-                        placeholder="perawat@gmail.com"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      <i className="fas fa-envelope text-[#0E364A] text-lg"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <label
-                      className="block text-white font-semibold text-lg mb-1"
-                      htmlFor="password"
-                    >
-                      Password
-                    </label>
-                    <div className="flex items-center border-b border-[#0E364A]">
-                      <input
-                        className="bg-transparent text-black placeholder-[#a0cbd9] text-sm font-normal focus:outline-none w-full py-1 focus:scale-105 transition-transform duration-300"
-                        id="password"
-                        placeholder="***************"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <i
-                        className={`fas ${
-                          showPassword ? "fa-eye-slash" : "fa-eye"
-                        } text-[#0E364A] text-lg cursor-pointer hover:scale-110 transition-transform duration-200`}
-                        onClick={() => setShowPassword(!showPassword)}
-                      ></i>
-                    </div>
-                  </div>
-                  <div className="text-[#0E364A] text-lg underline text-right cursor-pointer hover:scale-105 transition-transform duration-200">
-                    <a href="/forgot-password">Lupa kata sandi?</a>
-                  </div>
-                  <button
-                    className="mt-6 bg-[#0E364A] text-white font-semibold text-lg rounded-lg py-2 w-full hover:brightness-110 hover:scale-105 transition-all duration-300"
-                    type="submit"
-                  >
-                    Login
-                  </button>
-                </form>
-              </div>
+            {/* Text content */}
+            <div
+              className="relative z-10 text-center px-8 py-10 space-y-6"
+              style={{ zIndex: 10 }}
+            >
+              <h2 className="text-[#0E364A] text-3xl md:text-4xl font-bold leading-tight">
+                Aplikasi Pelaporan Insiden Keselamatan Pasien Berbasis AI
+              </h2>
+              <p className="text-white text-xl md:text-2xl font-bold leading-relaxed">
+                Karena Setiap Laporan Adalah Langkah Menuju Keselamatan Pasien
+              </p>
             </div>
           </div>
 
-          {/* Right side image with angled shapes */}
+          {/* Right side with background image and login form in transparent box */}
           <div
             id="right-side"
-            className={`hidden md:flex md:w-1/2 relative items-center justify-center overflow-hidden transition-all duration-1000 delay-600 ${
+            className={`w-full md:w-1/2 relative items-center justify-center overflow-hidden transition-all duration-1000 delay-600 ${
               isLoaded ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
             }`}
             style={{
@@ -251,11 +174,103 @@ export default function LoginPage() {
             />
             <Image
               alt="Photo of a doctor and nurse pointing at a clipboard with medical documents"
-              className="absolute inset-0 w-full h-full object-cover z-10 hover:scale-105 transition-transform duration-500"
+              className="hidden md:block absolute inset-0 w-full h-full object-cover z-10"
               src="/dokterkanan.png"
               fill
               style={{ objectFit: "cover" }}
             />
+            {/* Login form in transparent box */}
+            <div className="relative z-20 flex items-center justify-center h-full p-8">
+              <div className="md:backdrop-blur-md md:bg-white/20 rounded-2xl md:shadow-2xl md:border md:border-white/30 p-8 w-full max-w-md">
+                <div className="relative z-10">
+                  <div
+                    className={`transition-all duration-1000 delay-700 ${
+                      isLoaded
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    }`}
+                  >
+                    <h1 className="text-white text-center text-3xl md:text-5xl font-bold mb-1">
+                      Safe
+                      <span className="font-extrabold text-[#09839C]">
+                        {" "}
+                        Nurse{" "}
+                      </span>
+                    </h1>
+                  </div>
+                  <h2
+                    className={`text-white text-center text-3xl md:text-5xl font-extrabold mb-8 transition-all duration-1000 delay-800 ${
+                      isLoaded
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    }`}
+                  >
+                    Log<span className="text-[#09839C]">in</span>
+                  </h2>
+                  <form
+                    className={`space-y-6 transition-all duration-1000 delay-1000 ${
+                      isLoaded
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-8"
+                    }`}
+                    onSubmit={handleSubmit}
+                  >
+                    <div>
+                      <label
+                        className="block text-white font-semibold text-lg mb-1"
+                        htmlFor="email"
+                      >
+                        Email
+                      </label>
+                      <div className="flex items-center border-b border-[#0E364A]">
+                        <input
+                          className="bg-transparent text-white placeholder-white/70 text-sm font-normal focus:outline-none w-full py-1 focus:scale-105 transition-transform duration-300"
+                          id="email"
+                          placeholder="perawat@gmail.com"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <i className="fas fa-envelope text-white text-lg"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        className="block text-white font-semibold text-lg mb-1"
+                        htmlFor="password"
+                      >
+                        Password
+                      </label>
+                      <div className="flex items-center border-b border-[#0E364A]">
+                        <input
+                          className="bg-transparent text-white placeholder-white/70 text-sm font-normal focus:outline-none w-full py-1 focus:scale-105 transition-transform duration-300"
+                          id="password"
+                          placeholder="***************"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <i
+                          className={`fas ${
+                            showPassword ? "fa-eye-slash" : "fa-eye"
+                          } text-white text-lg cursor-pointer hover:scale-110 transition-transform duration-200`}
+                          onClick={() => setShowPassword(!showPassword)}
+                        ></i>
+                      </div>
+                    </div>
+                    <div className="text-white text-lg underline text-right cursor-pointer hover:scale-105 transition-transform duration-200">
+                      <a href="/forgot-password">Lupa kata sandi?</a>
+                    </div>
+                    <button
+                      className="mt-6 bg-[#0E364A] text-white font-semibold text-lg rounded-lg py-2 w-full hover:brightness-110 hover:scale-105 transition-all duration-300"
+                      type="submit"
+                    >
+                      Login
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -266,18 +281,19 @@ export default function LoginPage() {
           <p className="text-sm font-medium">
             Copyright 2025 © SAFE-Nurse Universitas Hasanuddin.
           </p>
-          <p className="text-xs text-white/80">Penelitian Tesis Magister Kemdiktisaintek</p>
+          <p className="text-xs text-white/80">
+            Penelitian Tesis Magister Kemdiktisaintek
+          </p>
         </div>
       </footer>
 
       <style jsx>{`
         @media (max-width: 768px) {
-          #right-side {
+          #left-side {
             display: none;
           }
-          #left-side {
+          #right-side {
             width: 100%;
-            padding: 10px;
           }
         }
       `}</style>
