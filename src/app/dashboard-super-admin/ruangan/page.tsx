@@ -201,9 +201,31 @@ export default function RuanganSuperAdmin() {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteRoom = () => {
-    if (roomToDelete) {
-      setRuangan(ruangan.filter((r) => r.id !== roomToDelete.id));
+  const confirmDeleteRoom = async () => {
+    if (!roomToDelete) return;
+
+    try {
+
+      // 2. Lakukan request ke backend menggunakan Environment Variable
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan/delete/${roomToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 3. Jika berhasil di database, baru update state local UI
+        setRuangan(ruangan.filter((r) => r.id !== roomToDelete.id));
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.error("Error saat menghapus ruangan:", error);
+    } finally {
+      // 4. Tutup modal dan reset state
       setShowDeleteModal(false);
       setRoomToDelete(null);
     }
