@@ -360,10 +360,14 @@ export default function DashboardSuperAdmin() {
   const handleEditUser = (user: any) => {
     setUserToEdit(user);
 
+    const selectedRooms = user.role === "kepala_ruangan"
+    ? (user.ruangan?.map((r: any) => r.id_ruangan) || [])
+    : (user.id_ruangan || "");
+
     setEditUser({
       nama: user.nama || "",
       email: user.email || "",
-      id_ruangan: user.id_ruangan || "",
+      id_ruangan: selectedRooms, 
       role: user.role || "perawat",
       jabatan: user.jabatan || "",
       unit_kerja: user.unit_kerja || "",
@@ -1103,10 +1107,16 @@ export default function DashboardSuperAdmin() {
                         Ruangan :
                       </label>
                       <select
-                        value={editUser.id_ruangan}
+                        // FIX: Cek jika id_ruangan adalah array, ambil item pertama saja agar tidak error
+                        value={
+                          Array.isArray(editUser.id_ruangan) 
+                            ? editUser.id_ruangan[0] || "" 
+                            : editUser.id_ruangan
+                        }
                         onChange={(e) =>
                           setEditUser({
                             ...editUser,
+                            // Simpan sebagai string biasa
                             id_ruangan: e.target.value,
                           })
                         }
@@ -1114,10 +1124,7 @@ export default function DashboardSuperAdmin() {
                       >
                         <option value="">-- Pilih Ruangan --</option>
                         {ruanganList.map((ruang) => (
-                          <option
-                            key={ruang.id_ruangan}
-                            value={ruang.id_ruangan}
-                          >
+                          <option key={ruang.id_ruangan} value={ruang.id_ruangan}>
                             {ruang.nama_ruangan}
                           </option>
                         ))}
