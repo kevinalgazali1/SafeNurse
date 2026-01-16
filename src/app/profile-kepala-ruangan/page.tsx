@@ -767,7 +767,9 @@ export default function ProfileKepalaRuanganPage() {
                           Nama Ruangan :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.ruangan?.nama_ruangan || "-"}
+                          {userData.ruangan && userData.ruangan.length > 0
+                          ? userData.ruangan.map((r: { nama_ruangan: any; }) => r.nama_ruangan).join(", ")
+                          : "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-4">
