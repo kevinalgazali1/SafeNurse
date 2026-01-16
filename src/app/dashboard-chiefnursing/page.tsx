@@ -2149,97 +2149,81 @@ export default function DashboardChiefNursing() {
 
       {/* Modal Validasi */}
       {showValidasiModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#A8C8D8] rounded-2xl w-full max-w-md mx-auto animate-scale-in">
-            {/* Header */}
-            <div className="bg-[#6B8CAE] rounded-t-2xl px-6 py-4">
-              <h3 className="text-lg md:text-xl font-bold text-white text-center">
-                Validasi Laporan
-              </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
+            {/* Header Modal */}
+            <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                  <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
+                </div>
+                <h2 className="text-white font-bold text-sm sm:text-lg">
+                  Validasi Laporan
+                </h2>
+              </div>
+              <button
+                onClick={handleCloseValidasiModal}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <i className="fas fa-times text-lg sm:text-xl"></i>
+              </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6">
-              {/* Icon */}
-              <div className="flex justify-center mb-4">
-                <div className="bg-white rounded-full p-3">
-                  <svg
-                    className="w-8 h-8 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
+            {/* Content Modal */}
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Implementasi */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Implementasi :
+                </label>
+                <textarea
+                  value={implementasi}
+                  onChange={(e) => setImplementasi(e.target.value)}
+                  placeholder="Masukkan implementasi..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
               </div>
 
-              {/* Form */}
-              <div className="space-y-4">
-                {/* Implementasi */}
-                <div>
-                  <label className="block text-sm md:text-base font-medium text-[#2C3E50] mb-2">
-                    Implementasi :
-                  </label>
-                  <textarea
-                    value={implementasi}
-                    onChange={(e) => setImplementasi(e.target.value)}
-                    placeholder="Masukkan implementasi..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm md:text-base"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Hasil */}
-                <div>
-                  <label className="block text-sm md:text-base font-medium text-[#2C3E50] mb-2">
-                    Hasil :
-                  </label>
-                  <textarea
-                    value={hasil}
-                    onChange={(e) => setHasil(e.target.value)}
-                    placeholder="Masukkan hasil..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm md:text-base"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Rencana Tindak Lanjut */}
-                <div>
-                  <label className="block text-sm md:text-base font-medium text-[#2C3E50] mb-2">
-                    Rencana tindak lanjut :
-                  </label>
-                  <textarea
-                    value={rencanaTindakLanjut}
-                    onChange={(e) => setRencanaTindakLanjut(e.target.value)}
-                    placeholder="Masukkan rencana tindak lanjut..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm md:text-base"
-                    rows={3}
-                  />
-                </div>
+              {/* Hasil */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Hasil :
+                </label>
+                <textarea
+                  value={hasil}
+                  onChange={(e) => setHasil(e.target.value)}
+                  placeholder="Masukkan hasil..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
               </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col gap-3 mt-6">
-                <button
-                  onClick={handleKonfirmasiValidasi}
-                  disabled={!implementasi.trim() || !hasil.trim() || !rencanaTindakLanjut.trim()}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Validasi
-                </button>
-                <button
-                  onClick={handleCloseValidasiModal}
-                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm md:text-base"
-                >
-                  Batal
-                </button>
+              {/* Rencana Tindak Lanjut */}
+              <div>
+                <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
+                  Rencana tindak lanjut :
+                </label>
+                <textarea
+                  value={rencanaTindakLanjut}
+                  onChange={(e) => setRencanaTindakLanjut(e.target.value)}
+                  placeholder="Masukkan rencana tindak lanjut..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                  rows={3}
+                />
               </div>
+
+              <button
+                onClick={handleKonfirmasiValidasi}
+                disabled={
+                  !implementasi.trim() ||
+                  !hasil.trim() ||
+                  !rencanaTindakLanjut.trim()
+                }
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Validasi
+              </button>
             </div>
           </div>
         </div>

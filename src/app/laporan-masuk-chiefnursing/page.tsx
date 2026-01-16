@@ -1982,13 +1982,18 @@ export default function LaporanMasukChiefNursingPage() {
 
             {/* Modal Validasi Laporan */}
             {showValidasiModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-[#A8C8D8] rounded-2xl w-full max-w-md animate-scale-in overflow-hidden">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+                <div className="bg-[#A8C8D8] rounded-2xl max-w-md w-full mx-2 sm:mx-0">
                   {/* Header Modal */}
-                  <div className="bg-[#6B8CAE] px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl flex items-center justify-between">
-                    <h3 className="text-lg sm:text-xl font-bold text-white">
-                      Validasi Laporan
-                    </h3>
+                  <div className="bg-[#6B8CAE] rounded-t-2xl p-3 sm:p-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className="bg-white p-1.5 sm:p-2 rounded-lg">
+                        <i className="fas fa-check-circle text-green-500 text-sm sm:text-lg"></i>
+                      </div>
+                      <h2 className="text-white font-bold text-sm sm:text-lg">
+                        Validasi Laporan
+                      </h2>
+                    </div>
                     <button
                       onClick={handleCloseValidasiModal}
                       className="text-white hover:text-gray-200 transition-colors"
@@ -1998,81 +2003,60 @@ export default function LaporanMasukChiefNursingPage() {
                   </div>
 
                   {/* Content Modal */}
-                  <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                    {/* Icon dan Pesan */}
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                        <i className="fas fa-check-circle text-green-600 text-lg sm:text-xl"></i>
-                      </div>
-                      <div>
-                        <p className="text-[#2C3E50] text-sm sm:text-base font-medium">
-                          Berikan alasan validasi untuk laporan ini:
-                        </p>
-                      </div>
-                    </div>
-
+                  <div className="p-4 sm:p-6 space-y-4">
                     {/* Implementasi */}
                     <div>
-                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
                         Implementasi :
                       </label>
                       <textarea
                         value={implementasi}
                         onChange={(e) => setImplementasi(e.target.value)}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
-                        rows={3}
                         placeholder="Masukkan implementasi..."
+                        className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                        rows={3}
                       />
                     </div>
 
                     {/* Hasil */}
                     <div>
-                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
                         Hasil :
                       </label>
                       <textarea
                         value={hasil}
                         onChange={(e) => setHasil(e.target.value)}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
-                        rows={3}
                         placeholder="Masukkan hasil..."
+                        className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                        rows={3}
                       />
                     </div>
 
                     {/* Rencana Tindak Lanjut */}
                     <div>
-                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm sm:text-base">
+                      <label className="block text-[#2C3E50] font-medium mb-2 text-sm">
                         Rencana tindak lanjut :
                       </label>
                       <textarea
                         value={rencanaTindakLanjut}
                         onChange={(e) => setRencanaTindakLanjut(e.target.value)}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none text-sm sm:text-base"
-                        rows={3}
                         placeholder="Masukkan rencana tindak lanjut..."
+                        className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] focus:border-transparent bg-white text-gray-800"
+                        rows={3}
                       />
                     </div>
 
-                    {/* Tombol Aksi */}
-                    <div className="flex flex-col space-y-2 pt-2">
-                      <button
-                        onClick={handleKonfirmasiValidasi}
-                        disabled={
-                          !implementasi.trim() ||
-                          !hasil.trim() ||
-                          !rencanaTindakLanjut.trim()
-                        }
-                        className="w-full bg-[#28a745] text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-[#218838] transition-colors font-medium text-sm sm:text-base disabled:bg-gray-300 disabled:cursor-not-allowed"
-                      >
-                        Validasi
-                      </button>
-                      <button
-                        onClick={handleCloseValidasiModal}
-                        className="w-full bg-gray-500 text-white px-4 py-2 sm:py-3 rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm sm:text-base"
-                      >
-                        Batal
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleKonfirmasiValidasi}
+                      disabled={
+                        !implementasi.trim() ||
+                        !hasil.trim() ||
+                        !rencanaTindakLanjut.trim()
+                      }
+                      className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Validasi
+                    </button>
                   </div>
                 </div>
               </div>
