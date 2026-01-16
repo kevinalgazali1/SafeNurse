@@ -237,7 +237,7 @@ export default function ProfileKepalaRuanganPage() {
 
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.users?.email || "",
+      email: userData?.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
@@ -400,10 +400,6 @@ export default function ProfileKepalaRuanganPage() {
         </div>
       </div>
     );
-  }
-
-  if (!userData) {
-    return <p className="text-center mt-10">Data tidak ditemukan</p>;
   }
 
   return (
@@ -733,10 +729,10 @@ export default function ProfileKepalaRuanganPage() {
                       <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                     </div>
                     <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                      {userData.nama_kepala_ruangan}
+                      {userData?.nama_kepala_ruangan}
                     </h2>
                     <p className="text-gray-600 text-center text-xs md:text-sm">
-                      {userData.users.email}
+                      {userData?.users.email}
                     </p>
                   </div>
 
@@ -751,7 +747,7 @@ export default function ProfileKepalaRuanganPage() {
                           Nama Lengkap :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.nama_kepala_ruangan || "-"}
+                          {userData?.nama_kepala_ruangan || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
@@ -759,7 +755,7 @@ export default function ProfileKepalaRuanganPage() {
                           Jabatan :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.jabatan || "-"}
+                          {userData?.jabatan || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-2">
@@ -767,8 +763,8 @@ export default function ProfileKepalaRuanganPage() {
                           Nama Ruangan :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.ruangan && userData.ruangan.length > 0
-                          ? userData.ruangan.map((r: { nama_ruangan: any; }) => r.nama_ruangan).join(", ")
+                          {userData?.ruangan && userData?.ruangan.length > 0
+                          ? userData?.ruangan.map((r: { nama_ruangan: any; }) => r.nama_ruangan).join(", ")
                           : "-"}
                         </span>
                       </div>
@@ -777,7 +773,7 @@ export default function ProfileKepalaRuanganPage() {
                           No Telp :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.no_telp || "-"}
+                          {userData?.no_telp || "-"}
                         </span>
                       </div>
                     </div>
@@ -805,7 +801,7 @@ export default function ProfileKepalaRuanganPage() {
                           Email
                         </label>
                         <p className="text-sm md:text-base text-gray-800">
-                          {userData.users.email}
+                          {userData?.users.email}
                         </p>
                       </div>
                       <div className="animate-fade-in-delay-6">

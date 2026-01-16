@@ -204,7 +204,7 @@ export default function ProfilePage() {
 
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.users?.email || "",
+      email: userData?.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
@@ -313,29 +313,6 @@ export default function ProfilePage() {
                 style={{ animationDelay: "300ms" }}
               ></div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {!isLoading && !userData && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
-            </div>
-            <h3 className="text-red-600 text-lg font-semibold mb-2">
-              Data Tidak Ditemukan
-            </h3>
-            <p className="text-red-500 text-sm mb-4">
-              Terjadi kesalahan saat memuat data profil
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Coba Lagi
-            </button>
           </div>
         </div>
       )}
@@ -620,10 +597,10 @@ export default function ProfilePage() {
                           <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                         </div>
                         <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                          {userData.nama_perawat || "-"}
+                          {userData?.nama_perawat || "-"}
                         </h2>
                         <p className="text-gray-600 text-center text-xs md:text-sm">
-                          {userData.users.email}
+                          {userData?.users.email}
                         </p>
                       </div>
 
@@ -638,7 +615,7 @@ export default function ProfilePage() {
                               Nama Lengkap :
                             </span>
                             <span className="text-gray-800 text-sm md:text-base">
-                              {userData.nama_perawat || "-"}
+                              {userData?.nama_perawat || "-"}
                             </span>
                           </div>
                           <div className="flex flex-col sm:flex-row animate-fade-in-delay-2">
@@ -646,7 +623,7 @@ export default function ProfilePage() {
                               Nama Ruangan :
                             </span>
                             <span className="text-gray-800 text-sm md:text-base">
-                              {userData.ruangan?.nama_ruangan}
+                              {userData?.ruangan?.nama_ruangan}
                             </span>
                           </div>
                         </div>
@@ -674,7 +651,7 @@ export default function ProfilePage() {
                               Email
                             </label>
                             <p className="text-gray-800 text-sm md:text-base">
-                              {userData.users.email}
+                              {userData?.users.email}
                             </p>
                           </div>
                           <div className="animate-fade-in-delay-4">

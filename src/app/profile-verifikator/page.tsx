@@ -203,7 +203,7 @@ export default function ProfileVerifikatorPage() {
 
   const handleChangeAccount = () => {
     setEditForm({
-      email: userData.users?.email || "",
+      email: userData?.users?.email || "",
       oldPassword: "",
       password: "",
       confirmPassword: "",
@@ -369,10 +369,6 @@ export default function ProfileVerifikatorPage() {
         </div>
       </div>
     );
-  }
-
-  if (!userData) {
-    return <p className="text-center mt-10">Data tidak ditemukan</p>;
   }
 
   return (
@@ -718,10 +714,10 @@ export default function ProfileVerifikatorPage() {
                       <i className="fas fa-user text-2xl md:text-3xl text-white"></i>
                     </div>
                     <h2 className="text-base md:text-lg font-bold text-gray-800 text-center mb-1">
-                      {userData.nama_verifikator}
+                      {userData?.nama_verifikator}
                     </h2>
                     <p className="text-gray-600 text-center text-xs md:text-sm">
-                      {userData.users.email}
+                      {userData?.users.email}
                     </p>
                   </div>
 
@@ -736,7 +732,7 @@ export default function ProfileVerifikatorPage() {
                           Nama Lengkap :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.nama_verifikator || "-"}
+                          {userData?.nama_verifikator || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
@@ -744,7 +740,7 @@ export default function ProfileVerifikatorPage() {
                           Jabatan :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.jabatan || "-"}
+                          {userData?.jabatan || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-3">
@@ -752,7 +748,7 @@ export default function ProfileVerifikatorPage() {
                           Unit Kerja :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.unit_kerja || "-"}
+                          {userData?.unit_kerja || "-"}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row animate-fade-in-delay-4">
@@ -760,7 +756,7 @@ export default function ProfileVerifikatorPage() {
                           No Telp :
                         </span>
                         <span className="text-gray-800 text-sm md:text-base">
-                          {userData.no_telp || "-"}
+                          {userData?.no_telp || "-"}
                         </span>
                       </div>
                     </div>
@@ -788,7 +784,7 @@ export default function ProfileVerifikatorPage() {
                           Email
                         </label>
                         <p className="text-sm md:text-base text-gray-800">
-                          {userData.users.email}
+                          {userData?.users.email}
                         </p>
                       </div>
                       <div className="animate-fade-in-delay-6">
