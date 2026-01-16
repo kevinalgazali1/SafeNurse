@@ -205,29 +205,38 @@ export default function RuanganSuperAdmin() {
     if (!roomToDelete) return;
 
     try {
-
-      // 2. Lakukan request ke backend menggunakan Environment Variable
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan/delete/${roomToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/ruangan/delete/${roomToDelete.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Pastikan variabel token sudah tersedia
+          },
         }
-      });
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // 3. Jika berhasil di database, baru update state local UI
-        setRuangan(ruangan.filter((r) => r.id !== roomToDelete.id));
-        console.log(data.message);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Gagal menghapus ruangan");
       }
-    } catch (error) {
-      console.error("Error saat menghapus ruangan:", error);
-    } finally {
-      // 4. Tutup modal dan reset state
+
+      const resData = await res.json();
+
+      // Menampilkan Toast Sukses
+      toast.success("Ruangan berhasil dihapus!");
+
+      // Refresh data agar UI tersinkronisasi dengan database
+      await fetchRuangan(); 
+      
+      // Tutup modal
       setShowDeleteModal(false);
       setRoomToDelete(null);
+
+    } catch (err) {
+      console.error(err);
+      // Menampilkan Toast Error
+      toast.error("Gagal menghapus ruangan");
     }
   };
 
