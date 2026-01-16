@@ -724,7 +724,10 @@ export default function DashboardSuperAdmin() {
                               {roleLabel[user.role] || user.role}
                             </div>
                             <div className="text-center text-gray-600">
-                              {namaRuanganGabungan}
+                              {user.role === "kepala_ruangan" 
+                                ? namaRuanganGabungan 
+                                : (user.nama_ruangan || "-")
+                              }
                             </div>
                             <div className="text-center">
                               <div className="flex justify-center space-x-2">
