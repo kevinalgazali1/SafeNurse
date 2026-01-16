@@ -21,7 +21,8 @@ interface User {
   nama: string;
   nama_ruangan: string;
   unit_kerja: string;
-}
+  ruangan?: Array<{ id_ruangan: string; nama_ruangan: string }>;
+} 
 
 type UserRole =
   | "perawat"
@@ -702,6 +703,10 @@ export default function DashboardSuperAdmin() {
                           admin: "Admin",
                         };
 
+                        const namaRuanganGabungan = user.ruangan && user.ruangan.length > 0
+                          ? user.ruangan.map((r: any) => r.nama_ruangan).join(", ")
+                          : "-"; // Tampilkan strip jika tidak ada ruangan
+
                         return (
                           <div
                             key={user.id_user}
@@ -719,7 +724,7 @@ export default function DashboardSuperAdmin() {
                               {roleLabel[user.role] || user.role}
                             </div>
                             <div className="text-center text-gray-600">
-                              {user.nama_ruangan}
+                              {namaRuanganGabungan}
                             </div>
                             <div className="text-center">
                               <div className="flex justify-center space-x-2">
