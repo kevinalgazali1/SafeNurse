@@ -694,7 +694,7 @@ export default function DashboardChiefNursing() {
 
   const handleRevisi = () => {
     setShowRevisiModal(true);
-    setKronologi("");
+    setCatatanRevisi("");
   };
 
   const handleValidasi = () => {
