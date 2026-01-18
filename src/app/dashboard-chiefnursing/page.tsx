@@ -283,6 +283,7 @@ export default function DashboardChiefNursing() {
     setSelectedKategori(selectedReport.kategori);
     setSelectedGrading(selectedReport.grading);
     setKronologi(selectedReport.kronologi);
+
   }, [selectedReport]);
 
   // Add CSS animations
