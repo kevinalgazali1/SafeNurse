@@ -706,6 +706,17 @@ export default function DashboardChiefNursing() {
     reports,
   ]);
 
+  useEffect(() => {
+    if (!selectedReport) return;
+
+    setSelectedKategori(selectedReport.kategori);
+    setSelectedGrading(selectedReport.grading);
+    setKronologi(selectedReport.kronologi);
+
+    console.log("kronologi ", selectedReport.kronologi);
+  }, [selectedReport]);
+
+
   // Logika pagination
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
   const startIndex = (currentPage - 1) * reportsPerPage;
@@ -796,6 +807,7 @@ export default function DashboardChiefNursing() {
       };
 
       setSelectedReport(mappedDetail);
+
       setCatatan("");
       setShowDetailModal(true);
     } catch (error) {
@@ -974,10 +986,7 @@ export default function DashboardChiefNursing() {
 
   const handleRevisi = () => {
     setShowRevisiModal(true);
-    setSelectedKategori("");
-    setSelectedGrading("");
     setCatatanRevisi("");
-    setKronologi("");
   };
 
   const handleCloseRiwayatModal = () => {

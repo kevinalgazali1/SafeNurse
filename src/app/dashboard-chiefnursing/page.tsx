@@ -277,6 +277,14 @@ export default function DashboardChiefNursing() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!selectedReport) return;
+
+    setSelectedKategori(selectedReport.kategori);
+    setSelectedGrading(selectedReport.grading);
+    setKronologi(selectedReport.kronologi);
+  }, [selectedReport]);
+
   // Add CSS animations
   useEffect(() => {
     const style = document.createElement("style");
@@ -685,9 +693,6 @@ export default function DashboardChiefNursing() {
 
   const handleRevisi = () => {
     setShowRevisiModal(true);
-    setSelectedKategori("");
-    setSelectedGrading("");
-    setCatatanRevisi("");
     setKronologi("");
   };
 
