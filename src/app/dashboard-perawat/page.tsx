@@ -19,8 +19,11 @@ interface Report {
   kategori: string;
   status: string;
   grading: string;
+  rtlKepalaRuangan: string;
+  rtlChiefnursing: string;
+  rtlVerifikator: string;
   catatanKepalaRuangan: string;
-  catatanChiefnursing: string;
+  catatanChiefNursing: string;
   catatanVerifikator: string;
   kode: string;
   kodeLaporan: string;
@@ -151,26 +154,26 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Kepala Ruangan:
+                RTL Kepala Ruangan:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanKepalaRuangan}
+                {report.rtlKepalaRuangan}
               </p>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Chief Nursing:
+                RTL Chief Nursing:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanChiefnursing}
+                {report.rtlChiefnursing}
               </p>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Verifikator:
+                RTL Verifikator:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanVerifikator}
+                {report.rtlVerifikator}
               </p>
             </div>
           </div>
@@ -431,9 +434,12 @@ export default function DashboardPerawatPage() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
-        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
-        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
+        rtlKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        rtlChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        rtlVerifikator: r.rencana_tindak_lanjut_verifikator,
+        catatanKepalaRuangan: r.catatan_kepala_ruangan,
+        catatanChiefNursing: r.catatan_chief_nursing,
+        catatanVerifikator: r.catatan_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
       }));
 
@@ -981,13 +987,13 @@ export default function DashboardPerawatPage() {
                             </span>
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanKepalaRuangan || "-"}
+                            {report.rtlKepalaRuangan || "-"}
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanChiefnursing || "-"}
+                            {report.rtlChiefnursing || "-"}
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanVerifikator || "-"}
+                            {report.rtlVerifikator || "-"}
                           </div>
                           <div className="text-gray-600">
                             {report.kodeLaporan}
@@ -1419,6 +1425,36 @@ export default function DashboardPerawatPage() {
                     </label>
                     <p className="text-gray-800 bg-white/50 p-2 rounded">
                       {formatTanggal(selectedReport.tanggalWaktuPelaporan)}
+                    </p>
+                  </div>
+
+                  {/* Catatan Kepala Ruangan */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Kepala Ruangan :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanKepalaRuangan || "-"}
+                    </p>
+                  </div>
+
+                  {/* Catatan Chief Nursing */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Chief Nursing :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanChiefNursing || "-"}
+                    </p>
+                  </div>
+
+                  {/* Catatan Verifikator */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Verifikator :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanVerifikator || "-"}
                     </p>
                   </div>
                 </div>

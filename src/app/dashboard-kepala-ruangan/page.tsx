@@ -20,8 +20,11 @@ interface Report {
   kategori: string;
   status: string;
   grading: string;
+  rtlKepalaRuangan: string;
+  rtlChiefnursing: string;
+  rtlVerifikator: string;
   catatanKepalaRuangan: string;
-  catatanChiefnursing: string;
+  catatanChiefNursing: string;
   catatanVerifikator: string;
   kodeLaporan: string;
   namaPerawatYangMenangani: string;
@@ -175,26 +178,26 @@ function MobileReportCard({ report, onDetailClick }: MobileReportCardProps) {
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Kepala Ruangan:
+                RTL Kepala Ruangan:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanKepalaRuangan || "Belum ada catatan"}
+                {report.rtlKepalaRuangan || "Belum ada catatan"}
               </p>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Chief Nursing:
+                RTL Chief Nursing:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanChiefnursing || "Belum ada catatan"}
+                {report.rtlChiefnursing || "Belum ada catatan"}
               </p>
             </div>
             <div className="mt-3">
               <span className="font-medium text-gray-600 block mb-1">
-                Catatan Verifikator:
+                RTL Verifikator:
               </span>
               <p className="text-gray-800 text-xs leading-relaxed">
-                {report.catatanVerifikator || "Belum ada catatan"}
+                {report.rtlVerifikator || "Belum ada catatan"}
               </p>
             </div>
           </div>
@@ -540,9 +543,9 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
-        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
-        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
+        rtlKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        rtlChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        rtlVerifikator: r.rencana_tindak_lanjut_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0], // yyyy-mm-dd
       }));
 
@@ -667,9 +670,12 @@ export default function DashboardChiefNursing() {
         kategori: r.kategori,
         rekomendasiTindakan: r.rekomendasi_tindakan,
         tanggalWaktuPelaporan: r.tgl_waktu_pelaporan,
-        catatanKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
-        catatanChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
-        catatanVerifikator: r.rencana_tindak_lanjut_verifikator,
+        rtlKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan,
+        rtlChiefnursing: r.rencana_tindak_lanjut_chief_nursing,
+        rtlVerifikator: r.rencana_tindak_lanjut_verifikator,
+        catatanKepalaRuangan: r.catatan_kepala_ruangan,
+        catatanChiefNursing: r.catatan_chief_nursing,
+        catatanVerifikator: r.catatan_verifikator,
         tanggal: new Date(r.tgl_insiden).toISOString().split("T")[0],
 
         // isi array dari backend
@@ -807,7 +813,7 @@ export default function DashboardChiefNursing() {
 
       if (!res.ok) {
         const data = await res.json();
-        toast.error(data.message || "Gagal memvalidasi laporan");
+        toast.error(data.error || data.message);
         return;
       }
 
@@ -1358,13 +1364,13 @@ export default function DashboardChiefNursing() {
                             </span>
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanKepalaRuangan || "-"}
+                            {report.rtlKepalaRuangan || "-"}
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanChiefnursing || "-"}
+                            {report.rtlChiefnursing || "-"}
                           </div>
                           <div className="text-gray-600">
-                            {report.catatanVerifikator || "-"}
+                            {report.rtlVerifikator || "-"}
                           </div>
                           <div className="text-gray-600">
                             {report.kodeLaporan}
@@ -1790,6 +1796,36 @@ export default function DashboardChiefNursing() {
                     </p>
                   </div>
 
+                  {/* Catatan Kepala Ruangan */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Kepala Ruangan :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanKepalaRuangan || "-"}
+                    </p>
+                  </div>
+
+                  {/* Catatan Chief Nursing */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Chief Nursing :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanChiefNursing || "-"}
+                    </p>
+                  </div>
+
+                  {/* Catatan Verifikator */}
+                  <div className="mb-4">
+                    <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                      Catatan Verifikator :
+                    </label>
+                    <p className="text-gray-800 bg-white/50 p-2 rounded">
+                      {selectedReport.catatanVerifikator || "-"}
+                    </p>
+                  </div>
+
                   {/* Action Buttons - Grid 2x2 Desktop, Stack Mobile */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 pb-4">
                     <button
@@ -1910,7 +1946,7 @@ export default function DashboardChiefNursing() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { name: "biru", color: "bg-blue-500" },
+                        { name: "biru ", color: "bg-blue-500" },
                         { name: "hijau", color: "bg-green-500" },
                         { name: "kuning", color: "bg-yellow-500" },
                         { name: "merah", color: "bg-red-500" },

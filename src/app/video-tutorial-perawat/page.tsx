@@ -98,63 +98,9 @@ export default function VideoTutorialPerawatPage() {
     {
       id: 1,
       title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    },
-    {
-      id: 2,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=9bZkp7q19f0",
-    },
-    {
-      id: 3,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/L_jWHffIx5E/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=L_jWHffIx5E",
-    },
-    {
-      id: 4,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
-    },
-    {
-      id: 5,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/ZZ5LpwO-An4/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=ZZ5LpwO-An4",
-    },
-    {
-      id: 6,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/astISOttCQ0/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=astISOttCQ0",
-    },
-    {
-      id: 7,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=M7lc1UVf-VE",
-    },
-    {
-      id: 8,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/fJ9rUzIMcZQ/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
-    },
-    {
-      id: 9,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/Ct6BUPvE2sM/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=Ct6BUPvE2sM",
-    },
-    {
-      id: 10,
-      title: "Pengenalan SAFENurse",
-      thumbnail: "https://img.youtube.com/vi/oHg5SJYRHA0/maxresdefault.jpg",
-      url: "https://www.youtube.com/watch?v=oHg5SJYRHA0",
-    },
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpgg",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQaaaaaa",
+    }
   ]);
 
   // Simulate loading data from backend
@@ -347,7 +293,7 @@ export default function VideoTutorialPerawatPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 md:px-6 py-4 md:py-6 animate-slide-up">
+      <main className="flex-1 px-4 md:px-6 py-4 md:py-6 animate-slide-up select-none">
         <div
           className="bg-white rounded-lg p-4 md:p-8 h-full relative overflow-hidden animate-scale-in"
           style={{
@@ -382,36 +328,26 @@ export default function VideoTutorialPerawatPage() {
             <div className="overflow-x-auto pb-4">
               {/* Desktop: Horizontal Scrollable, Mobile: Grid Layout */}
               <div
-                className="hidden md:flex md:space-x-6 animate-slide-in-right"
+                className="hidden md:flex md:space-x-6"
                 style={{ width: "max-content" }}
               >
                 {videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className="flex-shrink-0 w-80 bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-3 animate-video-card"
-                    style={{
-                      animationDelay: `${index * 0.15}s`,
-                    }}
+                    className="flex-shrink-0 w-80 bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer"
                     onClick={() => handleVideoClick(video.url)}
                   >
                     {/* Video Thumbnail */}
                     <div className="relative h-48 bg-gray-200 overflow-hidden">
-                      <Image
+                      <img
                         src={video.thumbnail}
                         alt={video.title}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        width={320}
-                        height={180}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src =
-                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNDQgNzJMMTc2IDkwTDE0NCAxMDhWNzJaIiBmaWxsPSIjOUI5QjlCIi8+Cjwvc3ZnPgo=";
-                        }}
+                        className="w-full h-full object-cover"
                       />
                       {/* Play Button Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all duration-300">
-                        <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-300 hover:scale-110 animate-pulse-gentle">
-                          <i className="fas fa-play text-2xl text-gray-700 ml-1 animate-bounce-subtle"></i>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+                          <i className="fas fa-play text-2xl text-gray-700 ml-1"></i>
                         </div>
                       </div>
                     </div>
@@ -430,44 +366,34 @@ export default function VideoTutorialPerawatPage() {
               </div>
 
               {/* Mobile: Grid Layout */}
-              <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up">
+              <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 animate-video-card-mobile"
-                    style={{
-                      animationDelay: `${index * 0.1}s`,
-                    }}
+                    className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer"
                     onClick={() => handleVideoClick(video.url)}
                   >
                     {/* Video Thumbnail */}
                     <div className="relative h-40 bg-gray-200 overflow-hidden">
-                      <Image
+                      <img
                         src={video.thumbnail}
                         alt={video.title}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        width={320}
-                        height={180}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src =
-                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNDQgNzJMMTc2IDkwTDE0NCAxMDhWNzJaIiBmaWxsPSIjOUI5QjlCIi8+Cjwvc3ZnPgo=";
-                        }}
+                        className="w-full h-full object-cover"
                       />
                       {/* Play Button Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-all duration-300">
-                        <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-300 hover:scale-110 animate-pulse-gentle">
-                          <i className="fas fa-play text-lg text-gray-700 ml-1 animate-bounce-subtle"></i>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+                          <i className="fas fa-play text-lg text-gray-700 ml-1"></i>
                         </div>
                       </div>
                     </div>
 
                     {/* Video Info */}
-                    <div className="p-3 animate-fade-in-up">
-                      <h3 className="text-base font-semibold text-gray-800 mb-1 animate-fade-in-right">
+                    <div className="p-3">
+                      <h3 className="text-base font-semibold text-gray-800 mb-1">
                         {video.title}
                       </h3>
-                      <p className="text-xs text-[#0B7A95] font-medium animate-fade-in-delayed">
+                      <p className="text-xs text-[#0B7A95] font-medium">
                         SAFE<span className="text-[#09839C]">Nurse</span>
                       </p>
                     </div>
