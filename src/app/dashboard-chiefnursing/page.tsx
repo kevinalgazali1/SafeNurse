@@ -65,6 +65,15 @@ interface Report {
   }[];
 }
 
+const normalizeGrading = (value = "") =>
+  value.split(" ")[0];
+
+const normalizeKategori = (value = "") =>
+  value.split(" ")[0];
+
+const normalizeKronologi = (text = "") =>
+  text.replace(/\s*\(Updated\)\s*$/i, "");
+
 // Color functions for Status Laporan and Grading
 const getStatusLaporanColor = (status: string) => {
   switch (status) {
@@ -795,9 +804,9 @@ export default function DashboardChiefNursing() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            kategori: selectedKategori,
-            grading: selectedGrading,
-            kronologi: kronologi,
+            kategori: normalizeKategori(selectedKategori),
+            grading: normalizeKronologi(selectedGrading),
+            kronologi: normalizeKronologi(kronologi),
             catatan: catatanRevisi,
           }),
         }
@@ -1834,7 +1843,7 @@ export default function DashboardChiefNursing() {
                             key={kategori}
                             onClick={() => setSelectedKategori(kategori)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                              selectedKategori === kategori
+                              normalizeKategori(selectedKategori) === kategori
                                 ? "bg-[#2C3E50] text-white"
                                 : "bg-white/70 text-[#2C3E50] hover:bg-white/90"
                             }`}
@@ -1862,7 +1871,7 @@ export default function DashboardChiefNursing() {
                           key={grading.name}
                           onClick={() => setSelectedGrading(grading.name)}
                           className={`px-4 py-2 rounded-full text-sm font-medium text-white transition-colors ${
-                            selectedGrading === grading.name
+                            normalizeGrading(selectedGrading) === grading.name
                               ? `${grading.color} ring-2 ring-[#2C3E50]`
                               : `${grading.color} opacity-70 hover:opacity-100`
                           }`}
@@ -1879,7 +1888,7 @@ export default function DashboardChiefNursing() {
                       Kronologi :
                     </label>
                     <textarea
-                      value={kronologi}
+                      value={normalizeKronologi(kronologi)}
                       onChange={(e) => setKronologi(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                       rows={3}
