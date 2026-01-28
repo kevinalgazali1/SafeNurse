@@ -22,6 +22,45 @@ export default function LoginPage() {
     setIsLoaded(true);
   }, []);
 
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+
+      // Optional: cek expiry
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        Cookies.remove("token");
+        return;
+      }
+
+      // Redirect sesuai role
+      switch (decoded.role) {
+        case "super_admin":
+          window.location.href = "/dashboard-superadmin";
+          break;
+        case "perawat":
+          window.location.href = "/dashboard-perawat";
+          break;
+        case "kepala_ruangan":
+          window.location.href = "/dashboard-kepala-ruangan";
+          break;
+        case "chief_nursing":
+          window.location.href = "/dashboard-chiefnursing";
+          break;
+        case "verifikator":
+          window.location.href = "/dashboard-verifikator";
+          break;
+        default:
+          Cookies.remove("token");
+      }
+    } catch (err) {
+      Cookies.remove("token"); // token rusak
+    }
+  }, []);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

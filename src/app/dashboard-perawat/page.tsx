@@ -986,13 +986,13 @@ export default function DashboardPerawatPage() {
                               {report.grading}
                             </span>
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlKepalaRuangan || "-"}
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlChiefnursing || "-"}
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlVerifikator || "-"}
                           </div>
                           <div className="text-gray-600">

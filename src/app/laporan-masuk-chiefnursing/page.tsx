@@ -20,8 +20,11 @@ interface Report {
   kategori: string;
   status: string;
   grading: string;
+  rtlKepalaRuangan: string;
+  rtlChiefnursing: string;
+  rtlVerifikator: string;
   catatanKepalaRuangan: string;
-  catatanChiefnursing: string;
+  catatanChiefNursing: string;
   catatanVerifikator: string;
   kode: string;
   kodeLaporan: string;
@@ -98,6 +101,15 @@ interface ReportDetail extends Report {
     created_at: string;
   }[];
 }
+
+const normalizeGrading = (value = "") =>
+  value.split(" ")[0];
+
+const normalizeKategori = (value = "") =>
+  value.split(" ")[0];
+
+const normalizeKronologi = (text = "") =>
+  text.replace(/\s*\(Updated\)\s*$/i, "");
 
 export default function LaporanMasukChiefNursingPage() {
   const [reports, setReports] = useState<Report[]>([]);
@@ -293,8 +305,11 @@ export default function LaporanMasukChiefNursingPage() {
         grading: r.grading || "-",
         kategori: r.kategori || "-",
         tanggal: r.tanggal || "-",
+        rtlKepalaRuangan: r.rencana_tindak_lanjut_kepala_ruangan || "-",
+        rtlChiefnursing: r.rencana_tindak_lanjut_chief_nursing || "-",
+        rtlVerifikator: r.rencana_tindak_lanjut_verifikator || "-",
         catatanKepalaRuangan: r.catatan_kepala_ruangan || "-",
-        catatanChiefnursing: r.catatan_chiefnursing || "-",
+        catatanChiefNursing: r.catatan_chief_nursing || "-",
         catatanVerifikator: r.catatan_verifikator || "-",
 
         // tambahan
@@ -312,6 +327,14 @@ export default function LaporanMasukChiefNursingPage() {
   useEffect(() => {
     fetchReports();
   }, []);
+
+  useEffect(() => {
+    if (!selectedReport) return;
+
+    setSelectedKategori(selectedReport.kategori);
+    setSelectedGrading(selectedReport.grading);
+    setKronologi(selectedReport.kronologi);
+  }, [selectedReport]);
 
   const fetchNotifications = async () => {
     const token = Cookies.get("token");
@@ -445,18 +468,11 @@ export default function LaporanMasukChiefNursingPage() {
 
   const handleRevisi = () => {
     setShowRevisiModal(true);
-    setSelectedKategori("");
-    setSelectedGrading("");
     setCatatanRevisi("");
-    setKronologi("");
   };
 
   const handleCloseRevisiModal = () => {
     setShowRevisiModal(false);
-    setSelectedKategori("");
-    setSelectedGrading("");
-    setCatatanRevisi("");
-    setKronologi("");
   };
 
   const handleKirimRevisi = async () => {
@@ -480,9 +496,9 @@ export default function LaporanMasukChiefNursingPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            kategori: selectedKategori,
-            grading: selectedGrading,
-            kronologi: kronologi,
+            kategori: normalizeKategori(selectedKategori),
+            grading: normalizeGrading(selectedGrading),
+            kronologi: normalizeKronologi(kronologi),
             catatan: catatanRevisi,
           }),
         }
@@ -1533,6 +1549,36 @@ export default function LaporanMasukChiefNursingPage() {
                       </p>
                     </div>
 
+                    {/* Catatan Kepala Ruangan */}
+                    <div className="mb-4">
+                      <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                        Catatan Kepala Ruangan :
+                      </label>
+                      <p className="text-gray-800 bg-white/50 p-2 rounded">
+                        {selectedReport.catatanKepalaRuangan || "-"}
+                      </p>
+                    </div>
+
+                    {/* Catatan Chief Nursing */}
+                    <div className="mb-4">
+                      <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                        Catatan Chief Nursing :
+                      </label>
+                      <p className="text-gray-800 bg-white/50 p-2 rounded">
+                        {selectedReport.catatanChiefNursing || "-"}
+                      </p>
+                    </div>
+
+                    {/* Catatan Verifikator */}
+                    <div className="mb-4">
+                      <label className="block text-[#2C3E50] font-medium mb-1 text-sm">
+                        Catatan Verifikator :
+                      </label>
+                      <p className="text-gray-800 bg-white/50 p-2 rounded">
+                        {selectedReport.catatanVerifikator || "-"}
+                      </p>
+                    </div>
+
                     {/* Action Buttons - Grid Layout Desktop, Stack Mobile */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4 pb-4">
                       <button
@@ -1624,7 +1670,7 @@ export default function LaporanMasukChiefNursingPage() {
                               key={kategori}
                               onClick={() => setSelectedKategori(kategori)}
                               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                                selectedKategori === kategori
+                                normalizeKategori(selectedKategori) === kategori
                                   ? "bg-[#2C3E50] text-white"
                                   : "bg-white/70 text-[#2C3E50] hover:bg-white/90"
                               }`}
@@ -1652,7 +1698,7 @@ export default function LaporanMasukChiefNursingPage() {
                             key={grading.name}
                             onClick={() => setSelectedGrading(grading.name)}
                             className={`px-4 py-2 rounded-full text-sm font-medium text-white transition-colors ${
-                              selectedGrading === grading.name
+                              normalizeGrading(selectedGrading) === grading.name
                                 ? `${grading.color} ring-2 ring-[#2C3E50]`
                                 : `${grading.color} opacity-70 hover:opacity-100`
                             }`}
@@ -1669,7 +1715,7 @@ export default function LaporanMasukChiefNursingPage() {
                         Kronologi :
                       </label>
                       <textarea
-                        value={kronologi}
+                        value={normalizeKronologi(kronologi)}
                         onChange={(e) => setKronologi(e.target.value)}
                         className="w-full px-3 py-2 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#6B8CAE] bg-white text-gray-800 resize-none"
                         rows={3}
@@ -1788,37 +1834,42 @@ export default function LaporanMasukChiefNursingPage() {
 
                       {/* Mobile Cards */}
                       <div className="md:hidden space-y-3">
-                        {selectedReport.historyCatatan?.map((item) => (
-                          <div
-                            key={item.id_catatan}
-                            className="bg-white/50 rounded-lg p-4"
-                          >
-                            <div className="flex flex-col space-y-2">
-                              <div className="flex justify-between items-start">
-                                <span className="text-xs text-gray-600 font-medium">
-                                  Tanggal
-                                </span>
-                                <span className="text-sm text-gray-800">
-                                  {new Date(item.created_at).toLocaleString(
-                                    "id-ID",
-                                    {
+                        {selectedReport.historyCatatan &&
+                        selectedReport.historyCatatan.length > 0 ? (
+                          selectedReport.historyCatatan.map((item) => (
+                            <div
+                              key={item.id_catatan}
+                              className="bg-white/50 rounded-lg p-4"
+                            >
+                              <div className="flex flex-col space-y-2">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-xs text-gray-600 font-medium">
+                                    Tanggal
+                                  </span>
+                                  <span className="text-sm text-gray-800">
+                                    {new Date(item.created_at).toLocaleString("id-ID", {
                                       dateStyle: "medium",
                                       timeStyle: "short",
-                                    }
-                                  )}
-                                </span>
-                              </div>
-                              <div className="border-t pt-2">
-                                <span className="text-xs text-gray-600 font-medium">
-                                  Catatan
-                                </span>
-                                <p className="text-sm text-gray-800 mt-1">
-                                  {item.catatan}
-                                </p>
+                                    })}
+                                  </span>
+                                </div>
+
+                                <div className="border-t pt-2">
+                                  <span className="text-xs text-gray-600 font-medium">
+                                    Catatan
+                                  </span>
+                                  <p className="text-sm text-gray-800 mt-1">
+                                    {item.catatan}
+                                  </p>
+                                </div>
                               </div>
                             </div>
+                          ))
+                        ) : (
+                          <div className="bg-white/40 rounded-lg p-4 text-center text-sm text-gray-600">
+                            Belum ada catatan
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
 
@@ -1846,7 +1897,16 @@ export default function LaporanMasukChiefNursingPage() {
                                 Grading
                               </th>
                               <th className="px-4 py-3 text-left text-sm font-medium">
-                                Rekomendasi Tindakan
+                              Hasil
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">
+                                Implementasi
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">
+                                Rencana Tindak Lanjut
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">
+                                Kronologi
                               </th>
                             </tr>
                           </thead>
@@ -1884,7 +1944,16 @@ export default function LaporanMasukChiefNursingPage() {
                                     {aksi.grading}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-gray-800">
-                                    {aksi.rekomendasi_tindakan}
+                                  {aksi.hasil || "-"}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-800">
+                                    {aksi.implementasi || "-"}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-800">
+                                    {aksi.rencana_tindak_lanjut || "-"}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-800">
+                                    {aksi.kronologi || "-"}
                                   </td>
                                 </tr>
                               ))
@@ -1904,75 +1973,107 @@ export default function LaporanMasukChiefNursingPage() {
 
                       {/* Mobile Cards */}
                       <div className="md:hidden space-y-3">
-                        {selectedReport.historyAksi?.map((aksi) => (
-                          <div
-                            key={aksi.id_aksi}
-                            className="bg-white/50 rounded-lg p-4"
-                          >
-                            <div className="flex flex-col space-y-3">
-                              <div className="flex justify-between items-start">
-                                <span className="text-xs text-gray-600 font-medium">
-                                  Tanggal
-                                </span>
-                                <span className="text-sm text-gray-800">
-                                  {aksi.created_at
-                                    ? new Date(aksi.created_at).toLocaleString(
-                                        "id-ID",
-                                        {
+                        {selectedReport.historyAksi &&
+                        selectedReport.historyAksi.length > 0 ? (
+                          selectedReport.historyAksi.map((aksi) => (
+                            <div
+                              key={aksi.id_aksi}
+                              className="bg-white/50 rounded-lg p-4"
+                            >
+                              <div className="flex flex-col space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-xs text-gray-600 font-medium">
+                                    Tanggal
+                                  </span>
+                                  <span className="text-sm text-gray-800">
+                                    {aksi.created_at
+                                      ? new Date(aksi.created_at).toLocaleString("id-ID", {
                                           dateStyle: "medium",
                                           timeStyle: "short",
-                                        }
-                                      )
-                                    : "-"}
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <span className="text-xs text-gray-600 font-medium">
-                                    Aksi
+                                        })
+                                      : "-"}
                                   </span>
-                                  <div className="mt-1">
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs ${
-                                        aksi.aksi === "validasi"
-                                          ? "bg-green-100 text-green-800"
-                                          : aksi.aksi === "revisi"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-blue-100 text-blue-800"
-                                      }`}
-                                    >
-                                      {aksi.aksi}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Aksi
                                     </span>
+                                    <div className="mt-1">
+                                      <span
+                                        className={`px-2 py-1 rounded-full text-xs ${
+                                          aksi.aksi === "validasi"
+                                            ? "bg-green-100 text-green-800"
+                                            : aksi.aksi === "revisi"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-blue-100 text-blue-800"
+                                        }`}
+                                      >
+                                        {aksi.aksi}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-600 font-medium">
-                                    Kategori
-                                  </span>
-                                  <p className="text-sm text-gray-800 mt-1">
-                                    {aksi.kategori}
-                                  </p>
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-600 font-medium">
-                                    Grading
-                                  </span>
-                                  <p className="text-sm text-gray-800 mt-1">
-                                    {aksi.grading}
-                                  </p>
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-600 font-medium">
-                                    Rekomendasi
-                                  </span>
-                                  <p className="text-sm text-gray-800 mt-1">
-                                    {aksi.rekomendasi_tindakan}
-                                  </p>
+
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Kategori
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.kategori || "-"}
+                                    </p>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Grading
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.grading || "-"}
+                                    </p>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Hasil
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.hasil || "-"}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Implementasi
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.implementasi || "-"}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Rencana Tindak Lanjut
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.rencana_tindak_lanjut || "-"}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-600 font-medium">
+                                      Kronologi
+                                    </span>
+                                    <p className="text-sm text-gray-800 mt-1">
+                                      {aksi.kronologi || "-"}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                          ))
+                        ) : (
+                          <div className="bg-white/40 rounded-lg p-4 text-center text-sm text-gray-600">
+                            Belum ada riwayat tindakan
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   </div>

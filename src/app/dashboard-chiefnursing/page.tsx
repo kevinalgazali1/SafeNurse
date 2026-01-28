@@ -753,12 +753,11 @@ export default function DashboardChiefNursing() {
         }
       );
 
-      if (!approveRes.ok) {
-        const errData = await approveRes.json();
-        throw new Error(errData.message || "Gagal memvalidasi laporan");
-      }
-
       const data = await approveRes.json();
+      if (!approveRes.ok) {
+        toast.error(data.error || data.message);
+        return;
+      }
       console.log("✅ Validasi berhasil:", data);
 
       // Refresh data laporan
@@ -812,8 +811,6 @@ export default function DashboardChiefNursing() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal mengirim revisi");
-
       // Kirim catatan revisi
       // const catatanRes = await fetch(
       //   `${process.env.NEXT_PUBLIC_BACKEND_API}/laporan/addCatatan/${reportId}`,
@@ -832,6 +829,10 @@ export default function DashboardChiefNursing() {
       // if (!catatanRes.ok) throw new Error("Gagal mengirim catatan revisi");
 
       const resData = await res.json();
+      if (!res.ok) {
+        toast.error(resData.error || resData.message);
+        return;
+      }
       console.log("Revisi berhasil:", resData);
 
       // Refresh list laporan agar perubahan terlihat
@@ -1305,13 +1306,13 @@ export default function DashboardChiefNursing() {
                               {report.grading}
                             </span>
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlKepalaRuangan || "-"}
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlChiefnursing || "-"}
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 break-words whitespace-normal">
                             {report.rtlVerifikator || "-"}
                           </div>
                           <div className="text-gray-600">
@@ -2061,7 +2062,16 @@ export default function DashboardChiefNursing() {
                               Grading
                             </th>
                             <th className="px-4 py-3 text-left text-sm font-medium">
-                              Rekomendasi Tindakan
+                              Hasil
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">
+                              Implementasi
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">
+                              Rencana Tindak Lanjut
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">
+                              Kronologi
                             </th>
                           </tr>
                         </thead>
@@ -2100,7 +2110,16 @@ export default function DashboardChiefNursing() {
                                   {aksi.grading}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-800">
-                                  {aksi.rekomendasi_tindakan}
+                                  {aksi.hasil || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-800">
+                                  {aksi.implementasi || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-800">
+                                  {aksi.rencana_tindak_lanjut || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-800">
+                                  {aksi.kronologi || "-"}
                                 </td>
                               </tr>
                             ))
@@ -2179,10 +2198,34 @@ export default function DashboardChiefNursing() {
                               </div>
                               <div>
                                 <span className="text-xs text-gray-600 font-medium">
-                                  Rekomendasi
+                                  Hasil
                                 </span>
                                 <p className="text-sm text-gray-800 mt-1">
-                                  {aksi.rekomendasi_tindakan}
+                                  {aksi.hasil || "-"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-600 font-medium">
+                                  Implementasi
+                                </span>
+                                <p className="text-sm text-gray-800 mt-1">
+                                  {aksi.implementasi || "-"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-600 font-medium">
+                                  Rencana Tindak Lanjut
+                                </span>
+                                <p className="text-sm text-gray-800 mt-1">
+                                  {aksi.rencana_tindak_lanjut || "-"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-600 font-medium">
+                                  Kronologi
+                                </span>
+                                <p className="text-sm text-gray-800 mt-1">
+                                  {aksi.kronologi || "-"}
                                 </p>
                               </div>
                             </div>
